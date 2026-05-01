@@ -19,12 +19,20 @@ class IrisSimulator:
         self.llm_requester = llm_requester
         self.output_callback = output_callback
 
-        self.iris_engine.start() 
+        self.iris_engine.start()
         self.iris_engine.set_decay_rate(0.0001)
         self.iris_engine.set_llm_requester(llm_requester=self.llm_requester)
         self.iris_engine.set_personality_matrix(personality_matrix=self.personality_matrix)
         self.iris_engine.set_persona_context(persona_context=self._get_persona_context())
         self.iris_engine.set_world_context(world_context=self._get_world_context(days_left=self.days_left))
+
+    def set_serper_api_key(self, api_key):
+        if self.iris_engine:
+            self.iris_engine.set_serper_api_key(api_key)
+
+    def set_enabled_web_search(self, enabled):
+        if self.iris_engine:
+            self.iris_engine.set_enabled_web_search(enabled)
 
     def stop(self):
         self.llm_requester = None

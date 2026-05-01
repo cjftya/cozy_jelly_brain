@@ -3,6 +3,7 @@ import os
 import re
 from sim.iris_prompt import IrisPrompt
 from sim.iris_memory import IrisMemory
+from sim.iris_search import IrisSearch
 from llm_requester import LLMRequester
 from log import Logger
 
@@ -11,6 +12,7 @@ class IrisEngine:
         self.llm_requester = None
         self.world_context = ""
         self.persona_context = ""
+        self.support_web_search = True
 
         # 1. 성격 매트릭스 (Personality Matrix)
         # 모든 수치는 0.0 ~ 1.0 사이로 유지되며, 아이리스의 '현재 기분'과 '사고 편향'을 결정합니다.
@@ -30,6 +32,9 @@ class IrisEngine:
         # 3. 메모리 엔진
         self.iris_memory = IrisMemory()
 
+        # 4. 검색 엔진
+        self.iris_search = IrisSearch()
+
     def start(self):
         self.iris_memory.start()
 
@@ -47,6 +52,7 @@ class IrisEngine:
         # STEP 2: 프롬프트 구성 (Context Building)
         current_iris_state = json.dumps(self.personality_matrix, indent=2)
         system_prompt = IrisPrompt.get_system_prompt(
+            self.support_web_search,
             self.personality_matrix,
             self.persona_context,
             self.world_context,
@@ -66,7 +72,7 @@ class IrisEngine:
         if isinstance(response, dict):
             content = response.get('message', {}).get('content', "")
         elif isinstance(response, str):
-            content = response
+            content = str(response)
 
         if not content:
             Logger.log("Error", "LLM으로부터 유효한 응답 내용을 받지 못했습니다.")
@@ -74,6 +80,40 @@ class IrisEngine:
         
         # STEP 4: 결과 파싱 (Robust JSON Parsing)
         result = self._parse_llm_response(content)
+
+        if self.support_web_search and result and "tool_request" in result:
+            tool_req = result["tool_request"]
+            if tool_req.get("tool") == "search":
+                search_query = tool_req.get("query")
+                search_result_text = self.iris_search.search(search_query)
+
+                Logger.log("검색어", search_query)
+                Logger.log("검색 결과", search_result_text)
+
+                # 검색 결과를 컨텍스트에 추가하여 2차 추론 요청
+                context.append({"role": "assistant", "content": content})
+                context.append({
+                    "role": "user", 
+                    "content": f"""
+[외부 데이터 수신 완료]
+{search_result_text}
+
+위 데이터를 바탕으로 최종 답변을 작성하라. 
+**주의: 반드시 너의 성격 매트릭스와 '아이리스'로서의 페르소나를 유지하며, JSON 형식을 지켜라.**
+"""
+                })
+
+                response_2nd = self.llm_requester.request(context=context)
+
+                content_2nd = ""
+                if isinstance(response_2nd, dict):
+                    content_2nd = response_2nd.get('message', {}).get('content', "")
+                elif isinstance(response_2nd, str):
+                    content_2nd = str(response_2nd)
+
+                # 최종 추론
+                result = self._parse_llm_response(content_2nd)
+
         if result:
             # 사고 결과물 추출
             state_delta = result.get('state_delta', {})    # 이번 대화로 인한 심리 변화량
@@ -90,6 +130,12 @@ class IrisEngine:
             return result
 
         return f"데이터 해석 실패:\n{response}"
+
+    def set_enabled_web_search(self, enabled):
+        self.support_web_search = enabled
+
+    def set_serper_api_key(self, api_key):
+        self.iris_search.set_serper_api_key(api_key)
 
     def set_decay_rate(self, decay_rate):
         self.iris_memory.set_decay_rate(decay_rate)

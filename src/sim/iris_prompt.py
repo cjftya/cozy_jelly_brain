@@ -1,7 +1,23 @@
 class IrisPrompt:
 
     @staticmethod
-    def get_system_prompt(personality_matrix, persona_context, world_context, retrieved_memories=""):
+    def _get_tool_request_rule(support_web_search):
+        if support_web_search:
+            return f"""
+# 도구 호출 규칙 (Tool Request Rules)
+너의 장기 기억(Retrieved Memories)에 없는 최신 지식이나 객관적 사실이 필요할 경우, 
+답변 전 아래 형식을 JSON에 포함하라:
+"tool_request": {{
+  "tool": "search",
+  "query": "검색 키워드"
+}}
+"""
+        else:
+            return ""
+
+    @staticmethod
+    def get_system_prompt(support_web_search, personality_matrix, persona_context, world_context, retrieved_memories=""):
+        search_rule = IrisPrompt._get_tool_request_rule(support_web_search)
         return f"""
 # 페르소나
 {persona_context}
@@ -24,6 +40,8 @@ class IrisPrompt:
 이 아래의 내용은 너의 데이터베이스 깊은 곳에서 추출된 과거의 파편들이다. 
 현재 상황과 연결될 수 있는 단서로 활용하라.
 {retrieved_memories if retrieved_memories else "추출된 특별한 기억이 없음."}
+
+{search_rule}
 
 # 현재 인지 상태 (Personality Matrix)
 {personality_matrix}

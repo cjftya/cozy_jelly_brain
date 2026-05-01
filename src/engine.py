@@ -17,10 +17,14 @@ class Engine:
             self.iris_simulator = IrisSimulator()
             self.iris_simulator.start(self.llm_requester, self.output_callback)
 
-    def load(self, api_key):
+    def load(self, api_key, serper_api_key, use_web_search):
         if self.llm_requester:
             self.llm_requester.init_client()
             self.llm_requester.set_api_key(api_key)
+        
+        if self.iris_simulator:
+            self.iris_simulator.set_serper_api_key(serper_api_key)
+            self.iris_simulator.set_enabled_web_search(use_web_search)
         
     def stop(self):
         if self.llm_requester:

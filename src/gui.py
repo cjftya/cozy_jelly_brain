@@ -31,19 +31,35 @@ class ChatApp(ctk.CTk):
         # API Key Section
         self.api_key_label = ctk.CTkLabel(self.sidebar_frame, text="Google API Key", font=ctk.CTkFont(size=13, weight="bold"))
         self.api_key_label.grid(row=1, column=0, padx=20, pady=(10, 0), sticky="w")
-        self.api_key_entry = ctk.CTkEntry(self.sidebar_frame, placeholder_text="Enter API Key...", show="*")
-        self.api_key_entry.grid(row=2, column=0, padx=20, pady=(5, 15), sticky="ew")
+        self.api_key_entry = ctk.CTkEntry(self.sidebar_frame, placeholder_text="Enter Google API Key...", show="*")
+        self.api_key_entry.grid(row=2, column=0, padx=20, pady=(5, 10), sticky="ew")
+
+        self.serper_key_label = ctk.CTkLabel(self.sidebar_frame, text="Serper API Key", font=ctk.CTkFont(size=13, weight="bold"))
+        self.serper_key_label.grid(row=3, column=0, padx=20, pady=(5, 0), sticky="w")
+        self.serper_key_entry = ctk.CTkEntry(self.sidebar_frame, placeholder_text="Enter Serper API Key...", show="*")
+        self.serper_key_entry.grid(row=4, column=0, padx=20, pady=(5, 10), sticky="ew")
+
+        # Web Search Support
+        self.web_search_var = ctk.BooleanVar(value=True)
+        self.web_search_check = ctk.CTkCheckBox(
+            self.sidebar_frame, 
+            text="Support Web Search", 
+            variable=self.web_search_var, 
+            command=self.toggle_serper_input,
+            font=ctk.CTkFont(size=12)
+        )
+        self.web_search_check.grid(row=5, column=0, padx=20, pady=(5, 15), sticky="w")
         
         # Model Selection Section
         self.model_label = ctk.CTkLabel(self.sidebar_frame, text="Select Model", font=ctk.CTkFont(size=13, weight="bold"))
-        self.model_label.grid(row=3, column=0, padx=20, pady=(10, 0), sticky="w")
+        self.model_label.grid(row=6, column=0, padx=20, pady=(10, 0), sticky="w")
         
         initial_models = self.engine.get_model_list()
         if not initial_models:
             initial_models = ["Select a model..."]
             
         self.model_spinner = ctk.CTkOptionMenu(self.sidebar_frame, values=initial_models)
-        self.model_spinner.grid(row=4, column=0, padx=20, pady=(5, 20), sticky="ew")
+        self.model_spinner.grid(row=7, column=0, padx=20, pady=(5, 20), sticky="ew")
         
         # System Start Button
         self.start_button = ctk.CTkButton(
@@ -53,7 +69,7 @@ class ChatApp(ctk.CTk):
             font=ctk.CTkFont(weight="bold"),
             height=40
         )
-        self.start_button.grid(row=5, column=0, padx=20, pady=10, sticky="ew")
+        self.start_button.grid(row=8, column=0, padx=20, pady=10, sticky="ew")
         
         # Divider or status
         self.status_label = ctk.CTkLabel(self.sidebar_frame, text="Ready", text_color="gray")
@@ -89,15 +105,23 @@ class ChatApp(ctk.CTk):
         self.last_ai_msg_index = None
 
     def on_system_start(self):
-        api_key = self.api_key_entry.get()
-        if not api_key:
-            self.log_to_chat("System", "Please enter a valid API Key first.")
+        google_api_key = self.api_key_entry.get()
+        serper_api_key = self.serper_key_entry.get()
+        use_web_search = self.web_search_var.get()
+        
+        # Validation
+        if not google_api_key:
+            self.log_to_chat("System", "Please enter a valid Google API Key.")
+            return
+        
+        if use_web_search and not serper_api_key:
+            self.log_to_chat("System", "Web Search is enabled. Please enter a Serper API Key.")
             return
         
         try:
-            self.engine.load(api_key)
+            self.engine.load(google_api_key, serper_api_key, use_web_search)
             self.status_label.configure(text="System Online", text_color="#4CAF50")
-            self.log_to_chat("System", "Engine loaded. Ready to simulate.")
+            self.log_to_chat("System", f"Engine loaded (Web Search: {'ON' if use_web_search else 'OFF'}). Ready to simulate.")
             
             # Refresh model list
             models = self.engine.get_model_list()
@@ -107,6 +131,14 @@ class ChatApp(ctk.CTk):
         except Exception as e:
             self.status_label.configure(text="Load Error", text_color="#F44336")
             self.log_to_chat("System", f"Error loading engine: {str(e)}")
+
+    def toggle_serper_input(self):
+        if self.web_search_var.get():
+            self.serper_key_entry.configure(state="normal")
+            self.serper_key_label.configure(text_color=ctk.ThemeManager.theme["CTkLabel"]["text_color"])
+        else:
+            self.serper_key_entry.configure(state="disabled")
+            self.serper_key_label.configure(text_color="gray")
 
     def on_send(self):
         prompt = self.user_input.get().strip()
