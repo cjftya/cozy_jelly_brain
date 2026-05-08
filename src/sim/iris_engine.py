@@ -26,9 +26,9 @@ class IrisEngine:
         Logger.log(f"[{self.id}] Memory", memories if memories else "연관된 기억 없음")
         
         # STEP 2: 프롬프트 구성 (Context Building)
+        raw_matrix = agent.get_personality_matrix()
         system_prompt = IrisPrompt.get_system_prompt(
-            support_web_search=agent.support_web_search(),
-            personality_matrix=json.dumps(agent.get_personality_matrix(), indent=2),
+            personality_matrix=raw_matrix,
             persona_context=agent.get_persona_context(),
             world_context=agent.get_world_context(),
             retrieved_memories=memories,
@@ -59,39 +59,6 @@ class IrisEngine:
         
         # STEP 4: 결과 파싱 (Robust JSON Parsing)
         result = self.iris_llm_api.parse_llm_response(content)
-
-        if agent.support_web_search() and result and "tool_request" in result:
-            tool_req = result["tool_request"]
-            if tool_req.get("tool") == "search":
-                search_query = tool_req.get("query")
-                search_result_text = self.iris_search.search(search_query)
-
-                Logger.log_debug("검색어", search_query)
-                Logger.log_debug("검색 결과", search_result_text)
-
-                # 검색 결과를 컨텍스트에 추가하여 2차 추론 요청
-                context.append({"role": "assistant", "content": content})
-                context.append({
-                    "role": "user", 
-                    "content": f"""
-[외부 데이터 수신 완료]
-{search_result_text}
-
-위 데이터를 바탕으로 최종 답변을 작성하라. 
-**주의: 반드시 너의 성격 매트릭스와 페르소나를 유지하며, JSON 형식을 지켜라.**
-"""
-                })
-
-                response_2nd = self.iris_llm_api.request(context=context)
-
-                content_2nd = ""
-                if isinstance(response_2nd, dict):
-                    content_2nd = response_2nd.get('message', {}).get('content', "")
-                elif isinstance(response_2nd, str):
-                    content_2nd = str(response_2nd)
-
-                # 최종 추론
-                result = self.iris_llm_api.parse_llm_response(content_2nd)
 
         if result:
             # 사고 결과물 추출

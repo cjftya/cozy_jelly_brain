@@ -56,8 +56,9 @@ Content: "{speak}"
         if self.output_callback:
             debug_result = f"""
 [UserInput]\n{speak}\n
-[Perception]\n{res.get('perception')}\n
-[Internal Monologue]\n{res.get('internal_monologue')}\n
+[Refraction(Perception)]\n{res.get('subjective_perception')}\n
+[Visceral Impulse]\n{res.get('unconscious_impulse')}\n
+[Internal Strategy]\n{res.get('internal_strategy')}\n
 [Target]\n{res.get('target_name')}\n
 [Relationship]\n{agent.get_relationships()}\n
 [Available Participants]\n{agent.get_available_participants()}\n
@@ -66,8 +67,8 @@ Content: "{speak}"
 ==================\n
 """
             result = f"""
-< {res.get('perception')} >\n
-({res.get('internal_monologue')})\n
+< {res.get('subjective_perception')} >\n
+({res.get('unconscious_impulse')})\n
 {res.get('final_response')}\n
 [To: {res.get('target_name')}]\n
 ==================\n
