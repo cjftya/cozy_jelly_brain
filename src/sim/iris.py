@@ -7,6 +7,15 @@ class Iris(Agent):
         self.days_left = 30  # 아카이브 붕괴까지 남은 시간
         self.relationship_map = {"MOTHER": 30.0}
 
+        # 공간 정보
+        self.current_location = "아카이브 중앙처리실 입구"
+        self.add_all_locations([
+            "아카이브 중앙처리실",
+            "아카이브 데이터 관리실",
+            "아카이브 에너지 관리실",
+            "아카이브 중앙처리실 입구"
+        ])
+
     def get_personality_matrix(self):
         return {
             "logic_emotion": 0.85,            # 차가운 논리

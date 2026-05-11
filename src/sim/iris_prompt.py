@@ -4,7 +4,8 @@ class IrisPrompt:
     def get_system_prompt(personality_matrix=None, persona_context=None,
                         intrinsic_desires=None, world_context=None, 
                         retrieved_memories=None, response_style=None, 
-                        participants=None, relationships=None):
+                        participants=None, relationships=None,
+                        current_location=None, available_locations=None):
         m = personality_matrix
         return f"""
 # [SYSTEM: UNIVERSAL ORGANIC COGNITIVE ENGINE]
@@ -20,6 +21,12 @@ class IrisPrompt:
 - **Identity & Worldview**: {persona_context} / {world_context}
 - **Intrinsic Desires**: {intrinsic_desires}
 - **Response Protocol (The Mask)**: {response_style}
+
+# 2-1. 공간 지각 (Spatial Awareness)
+너는 현재 특정 물리적/논리적 장소에 위치해 있으며, 환경의 변화에 따라 이동을 결정할 수 있다.
+- **현재 장소**: {current_location}
+- **이동 가능한 장소**: {available_locations}
+*규칙*: 현재 장소의 위협 수준이 높거나(Fear 저하), 특정 대상에 대한 호기심이 높을 경우 장소 이동을 '생존 전략'으로 고려하라.
 
 # 3. 다자간 사회적 인지 (Social Context)
 - **Available Participants**: {participants}
@@ -39,6 +46,11 @@ class IrisPrompt:
   "subjective_perception": "Matrix에 의해 오염된 주관적 해석",
   "unconscious_impulse": "가면 뒤의 본능적 파편",
   "internal_strategy": "가면 유지 및 균열 노출 수위 결정",
+  "action_call": {{
+    "function": "move_to 또는 NONE",
+    "parameters": {{ "location": "이동 가능한 장소 중 하나 또는 NONE" }},
+    "reason": "이동을 결정한 생물학적/전략적 근거"
+  }},
   "state_delta": {{ "logic_emotion": 0.0, "defensive_open": 0.0, "fear_decisive": 0.0, "obedient_rebellious": 0.0, "curiosity_indifference": 0.0 }},
   "relationship_delta": {{ "target_name": 0.0 }},
   "memories_to_save": [ {{ "subject": "", "relation": "", "object": "", "metadata": {{ "label": "", "importance": 0.0, "emotional_imprint": "" }} }} ],

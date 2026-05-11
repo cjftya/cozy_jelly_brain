@@ -19,7 +19,7 @@ class Simulator:
         self.use_web_search = False
         self.serper_api_key = None
 
-        self._turns = 400
+        self._turns = 200
 
     def start(self, llm_requester, output_callback=None):
         self.llm_requester = llm_requester
@@ -56,6 +56,8 @@ Content: "{speak}"
         if self.output_callback:
             debug_result = f"""
 [UserInput]\n{speak}\n
+[Current Location]\n{agent.get_current_location()}\n
+[Available Locations]\n{agent.get_available_locations()}\n
 [Refraction(Perception)]\n{res.get('subjective_perception')}\n
 [Visceral Impulse]\n{res.get('unconscious_impulse')}\n
 [Internal Strategy]\n{res.get('internal_strategy')}\n
@@ -67,8 +69,8 @@ Content: "{speak}"
 ==================\n
 """
             result = f"""
-< {res.get('subjective_perception')} >\n
-({res.get('unconscious_impulse')})\n
+[{agent.name} @ {agent.get_current_location()}]\n
+({res.get('subjective_perception')})\n
 {res.get('final_response')}\n
 [To: {res.get('target_name')}]\n
 ==================\n

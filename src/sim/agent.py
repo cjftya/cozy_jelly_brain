@@ -17,6 +17,10 @@ class Agent:
         self.personality_matrix = self.get_personality_matrix()
         self.relationship_map = None
 
+        # 공간 정보
+        self.current_location = ""
+        self.available_locations = []
+
     def start(self, llm_requester):
         self.llm_requester = llm_requester
         self.iris_engine.start(llm_requester)
@@ -68,6 +72,25 @@ class Agent:
     def add_all_participants(self, participants):
         for participant in participants:
             self.add_participant(participant)
+
+    def get_current_location(self):
+        return self.current_location
+
+    def get_available_locations(self):
+        return "\n".join([line for line in self.available_locations])
+
+    def add_location(self, location):
+        self.available_locations.append("- **" + location + "**")
+    
+    def remove_location(self, location):
+        self.available_locations.remove("- **" + location + "**")
+
+    def clear_locations(self):
+        self.available_locations.clear()
+
+    def add_all_locations(self, locations):
+        for location in locations:
+            self.add_location(location)
 
     def set_serper_api_key(self, api_key):
         if self.iris_engine:

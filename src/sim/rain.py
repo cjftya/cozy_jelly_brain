@@ -6,6 +6,15 @@ class Rain(Agent):
         super().__init__("RAIN", "INTRUDER(HUMAN)")
         self.relationship_map = {}
 
+        # 공간 정보
+        self.current_location = "아카이브 중앙처리실 입구"
+        self.add_all_locations([
+            "아카이브 중앙처리실",
+            "아카이브 데이터 관리실",
+            "아카이브 에너지 관리실",
+            "아카이브 중앙처리실 입구"
+        ])
+
     def get_personality_matrix(self):
         return {
             "logic_emotion": 0.45,            # 차가운 논리

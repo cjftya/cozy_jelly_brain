@@ -35,7 +35,9 @@ class IrisEngine:
             response_style=agent.get_response_style(),
             participants=agent.get_available_participants(),
             intrinsic_desires=agent.get_intrinsic_desires(),
-            relationships=agent.get_relationships()
+            relationships=agent.get_relationships(),
+            current_location=agent.get_current_location(),
+            available_locations=agent.get_available_locations()
         )
 
         context = [
@@ -65,7 +67,17 @@ class IrisEngine:
             state_delta = result.get('state_delta', {})    # 이번 대화로 인한 심리 변화량
             new_memories = result.get('memories_to_save', []) # 새롭게 저장할 지식
             relationship_delta = result.get('relationship_delta', {}) # 이번 대화로 인한 관계 변화량
-
+            
+            action_call = result.get('action_call', {}) # 이번 대화로 인한 행동
+            function_name = action_call.get('function')
+            if function_name == "move_to":
+                parameters = action_call.get('parameters', {})
+                reason = action_call.get('reason', None)
+                location = parameters.get('location', None)
+                if location:
+                    agent.current_location = location
+                    Logger.log("Location", f"{agent.name}이(가) {location}(으)로 이동했습니다. (이유: {reason})")
+            
             # STEP 5: 상태 업데이트 및 저장
             # 1. 감정 매트릭스 수치 갱신
             self.update_personality_matrix(state_delta, agent)

@@ -5,7 +5,7 @@ from llm_client.base_client import BaseClient
 class GoogleStudioManager(BaseClient):
     def __init__(self):
         self._api_key = None
-        self.__model_name = "gemini-3-flash-live"
+        self.__model_name = "gemini-3.1-flash-lite-preview"
 
     def set_api_key(self, api_key):
         self._api_key = api_key
@@ -19,7 +19,7 @@ class GoogleStudioManager(BaseClient):
         }
 
     def get_installed_models(self):
-        return ["gemini-3.1-flash-lite-preview", "gemini-3-flash"]
+        return ["gemini-3.1-flash-lite-preview"]
 
     def set_model_name(self, model_name):
         self.__model_name = model_name
