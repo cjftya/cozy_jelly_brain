@@ -35,11 +35,11 @@ class IrisEngine:
             world_context=agent.get_world_context(),
             retrieved_memories=memories,
             response_style=agent.get_response_style(),
-            participants=agent.get_available_participants(),
+            participants=agent.get_participant_delegate().get_available_participants(),
             intrinsic_desires=agent.get_intrinsic_desires(),
             relationships=agent.get_relationships(),
-            current_location=agent.get_current_location(),
-            available_locations=agent.get_available_locations()
+            current_location=agent.get_location_delegate().get_current_location(),
+            available_locations=agent.get_location_delegate().get_available_locations()
         )
 
         context = [

@@ -1,4 +1,4 @@
-class Vital:
+class VitalState:
     def __init__(self):
         # 나이
         self.age = 30  # 만 나이

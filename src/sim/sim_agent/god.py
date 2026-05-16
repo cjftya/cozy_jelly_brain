@@ -1,5 +1,4 @@
 from sim.agent import Agent
-from log import Logger
 
 class God(Agent):
     def __init__(self):
@@ -7,8 +6,8 @@ class God(Agent):
         # 관계 설정: 특정인에 대한 집착이 아닌, 인류 전체를 향한 공평한 시선
         self.relationship_map = {"LIM": 50.0} 
         
-        self.current_location = "비탄의 관측소"
-        self.add_all_locations([
+        self.location_delegate.set_current_location("비탄의 관측소")
+        self.location_delegate.add_all_locations([
             "비탄의 관측소",    # 모든 차원의 인과관계가 한눈에 보이는 곳
             "심연의 가장자리",
             "기억의 폐허",      # 멸망한 문명과 개인의 기억이 데이터화된 곳

@@ -1,13 +1,12 @@
 from sim.agent import Agent
-from log import Logger
 
 class Lim(Agent):
     def __init__(self):
         super().__init__("LIM", "HUMAN")
         self.relationship_map = {"GOD": 0.0}
         
-        self.current_location = "2026년의 나의 방"
-        self.add_all_locations([
+        self.location_delegate.set_current_location("2026년의 나의 방")
+        self.location_delegate.add_all_locations([
             "2026년의 나의 방",      # 자신의 '추악함'이 가득 찼다고 느끼는 폐쇄 공간
             "심연의 가장자리",   # 자신을 던져 세상을 깨끗하게 만들려는 정화의 종착지
             "기억의 폐허",      # 나로 인해 더러워졌다고 믿는 과거의 파편들

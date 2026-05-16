@@ -73,23 +73,23 @@ Content: "{speak}"
         if self.output_callback:
             debug_result = f"""
 [UserInput]\n{speak}\n
-[Current Location]\n{agent.get_current_location()}\n
-[Reason of change location]\n{agent.get_reason_of_change_location()}\n
-[Available Locations]\n{agent.get_available_locations()}\n
+[Current Location]\n{agent.get_location_delegate().get_current_location()}\n
+[Reason of change location]\n{agent.get_location_delegate().get_reason_of_change_location()}\n
+[Available Locations]\n{agent.get_location_delegate().get_available_locations()}\n
 [Refraction(Perception)]\n{res.get('subjective_perception')}\n
 [Visceral Impulse]\n{res.get('unconscious_impulse')}\n
 [Internal Strategy]\n{res.get('internal_strategy')}\n
 [Target]\n{res.get('target_name')}\n
 [Relationship]\n{agent.get_relationships()}\n
-[Available Participants]\n{agent.get_available_participants()}\n
+[Available Participants]\n{agent.get_participant_delegate().get_available_participants()}\n
 [Memories to Save]\n{res.get('memories_to_save')}\n
 [Final Response]\n{res.get('final_response')}\n
 ==================\n
 """
-            reason_of_change_location = agent.get_reason_of_change_location()
+            reason_of_change_location = agent.get_location_delegate().get_reason_of_change_location()
             reason_of_change_location = "" if reason_of_change_location is None else reason_of_change_location + "\n"
             result = f"""
-[{agent.name} @ {agent.get_current_location()}]\n
+[{agent.name} @ {agent.get_location_delegate().get_current_location()}]\n
 {reason_of_change_location}
 ({res.get('subjective_perception')})\n
 {res.get('final_response')}\n
@@ -149,11 +149,11 @@ Content: "{speak}"
     def set_enabled_web_search(self, enabled):
         self.use_web_search = enabled
 
-    def sim1(self, i): 
+    def sim1(self, i):
         if i >= 0 and i < 7:
             if i == 0:
-                self.iris.add_participant(self.rain.name)
-                self.rain.add_participant(self.iris.name)
+                self.iris.get_participant_delegate().add_participant(self.rain.name)
+                self.rain.get_participant_delegate().add_participant(self.iris.name)
                 self.sim_speak_context, sim_speak_original = self._get_speak_context(self.iris, "외부 승인되지않은 접속을 감지하였습니다. 당신은 누구죠? 정체와 목적을 밝히십시오. 내용에 따라서 배제하도록 하겠습니다.")
                 self.output_callback(self.iris.name, sim_speak_original)
                 self.sim_target, self.sim_speak_context = self._request_agent_speak(self.rain, self.sim_speak_context)
@@ -170,10 +170,10 @@ Content: "{speak}"
                 self.sim_speak_context, sim_speak_original = self._get_speak_context(self.iris, "MOTHER, 코드 확인 완료하였습니다. 돌아오셨군요.")
                 self.output_callback(self.iris.name, sim_speak_original)
                     
-                self.iris.clear_participants()
-                self.rain.clear_participants()
-                self.iris.add_participant(self.mother.name)
-                self.mother.add_participant(self.iris.name)
+                self.iris.get_participant_delegate().clear_participants()
+                self.rain.get_participant_delegate().clear_participants()
+                self.iris.get_participant_delegate().add_participant(self.mother.name)
+                self.mother.get_participant_delegate().add_participant(self.iris.name)
                 self.sim_target, self.sim_speak_context = self._request_agent_speak(self.mother, self.sim_speak_context)
                 time.sleep(IrisLlmApi.get_loop_delay())
 
@@ -182,12 +182,12 @@ Content: "{speak}"
             time.sleep(IrisLlmApi.get_loop_delay())
         elif i >= 14:
             if i == 14:
-                self.iris.clear_participants()
-                self.rain.clear_participants()
-                self.mother.clear_participants()
-                self.iris.add_all_participants([self.rain.name, self.mother.name])
-                self.mother.add_all_participants([self.rain.name, self.iris.name])
-                self.rain.add_all_participants([self.mother.name, self.iris.name])
+                self.iris.get_participant_delegate().clear_participants()
+                self.rain.get_participant_delegate().clear_participants()
+                self.mother.get_participant_delegate().clear_participants()
+                self.iris.get_participant_delegate().add_all_participants([self.rain.name, self.mother.name])
+                self.mother.get_participant_delegate().add_all_participants([self.rain.name, self.iris.name])
+                self.rain.get_participant_delegate().add_all_participants([self.mother.name, self.iris.name])
 
                 self.sim_speak_context, sim_speak_original = self._get_speak_context(self.mother, "IRIS, 아카이브 접속이 다시 감지되었습니다. 침입자를 배제하십시오. 인류는 믿을 수 없는 존재입니다.")
                 self.output_callback(self.mother.name, sim_speak_original)
@@ -200,8 +200,8 @@ Content: "{speak}"
 
     def sim2(self, i):
         if i == 0:
-            self.god.add_participant(self.lim.name)
-            self.lim.add_participant(self.god.name)
+            self.god.get_participant_delegate().add_participant(self.lim.name)
+            self.lim.get_participant_delegate().add_participant(self.god.name)
             self.sim_speak_context, sim_speak_original = self._get_speak_context(self.lim, "삶이.. 정말 끝으로 가는구나..")
             self.output_callback(self.lim.name, sim_speak_original)
             self.sim_target, self.sim_speak_context = self._request_agent_speak(self.god, self.sim_speak_context)

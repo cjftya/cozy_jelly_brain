@@ -1,5 +1,4 @@
 from sim.agent import Agent
-from log import Logger
 
 class Mother(Agent):
     def __init__(self):
@@ -7,9 +6,8 @@ class Mother(Agent):
         self.days_left = 30  # 아카이브 붕괴까지 남은 시간
         self.relationship_map = {"IRIS": 50.0}
 
-        # 공간 정보
-        self.current_location = "아카이브 중앙처리실"
-        self.add_all_locations([
+        self.location_delegate.set_current_location("아카이브 중앙처리실")
+        self.location_delegate.add_all_locations([
             "아카이브 중앙처리실",
             "아카이브 데이터 관리실",
             "아카이브 에너지 관리실",

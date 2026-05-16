@@ -1,14 +1,12 @@
 from sim.agent import Agent
-from log import Logger
 
 class Rain(Agent):
     def __init__(self):
         super().__init__("RAIN", "INTRUDER(HUMAN)")
         self.relationship_map = {}
 
-        # 공간 정보
-        self.current_location = "아카이브 중앙처리실 입구"
-        self.add_all_locations([
+        self.location_delegate.set_current_location("아카이브 중앙처리실 입구")
+        self.location_delegate.add_all_locations([
             "아카이브 중앙처리실",
             "아카이브 데이터 관리실",
             "아카이브 에너지 관리실",
