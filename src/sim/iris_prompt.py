@@ -7,9 +7,9 @@ class IrisPrompt:
         "move_to": "- **move_to**: {\"location\": \"Available Locations중 하나\"} - 공간적 위치 변경.",
         "search": "- **search**: {\"object_id\": \"Available Objects중에서 하나\"} - 숨겨진 정보나 물체 탐색.",
         "use": "- **use**: {\"object_id\": \"Available Objects중에서 하나\"} - 도구 사용 및 소비.",
-        "speak": "- **speak**: {\"agent_id\": \"Available Participants중에서 한명\", \"message\": \"내용\"} - 주관적 의도 전달 및 소통.",
+        "speak": "- **speak**: {\"agent_name\": \"Available Participants중에서 한명\", \"message\": \"내용\"} - 주관적 의도 전달 및 소통.",
         "take": "- **take**: {\"object_id\": \"Available Objects중에서 하나\"} - 주변 물체를 소유물로 획득.",
-        "give": "- **give**: {\"agent_id\": \"Available Participants중에서 한명\", \"object_id\": \"Available Agent Inventory중에서 하나\"} - 소유한 물건을 타인에게 전달.",
+        "give": "- **give**: {\"agent_name\": \"Available Participants중에서 한명\", \"object_id\": \"Available Agent Inventory중에서 하나\"} - 소유한 물건을 타인에게 전달.",
         "rest": "- **rest**: 피로 회복 및 기억 최적화."
         }
         tools_context = []

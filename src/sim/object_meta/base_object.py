@@ -1,14 +1,15 @@
 from sim.util.point import Point
 from sim.object_meta.object_type import ObjectType
-from sim.object_meta.object_pack import ObjectPack
+from sim.object_meta.object_manager import ObjectManager
 from sim.util.globar_util import GlobarUtil
 
 class BaseObject:
-    def __init__(self, name=None, detail=None, obj_type=None):
+    def __init__(self, name=None, detail=None, obj_type=None, parent=None):
         self.id = GlobarUtil.gen_object_id()
         self.name = name
         self.detail = detail
         self.type = obj_type
+        self.parent = parent
 
         # 좌표
         self.position = Point()
@@ -22,9 +23,6 @@ class BaseObject:
 
         # 위치 속성
         self.location = None
-
-        # 자식 객체 관리
-        self.child_objects = ObjectPack()
 
     def set_name(self, name):
         self.name = name

@@ -3,6 +3,9 @@ class ParticipantsDelegate:
         self.available_participants = []
 
     def get_available_participants(self):
+        if not self.available_participants:
+            return "주변에 대화할만한 대상이 없음"
+            
         return "\n".join([line for line in self.available_participants])
 
     def add_participant(self, participant):

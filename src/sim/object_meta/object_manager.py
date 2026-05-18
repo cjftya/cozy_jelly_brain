@@ -16,9 +16,16 @@ class ObjectManager:
     def add_object(self, obj):
         self.objects[obj.id] = obj
 
+    def add_objects(self, objs):
+        for obj in objs:
+            self.add_object(obj)
+
     def remove_object(self, id):
         if id in self.objects:
             self.objects.pop(id)
+
+    def clear_objects(self):
+        self.objects.clear()
 
     def get_object_context(self, id):
         obj = self.get_object(id)
@@ -28,7 +35,7 @@ class ObjectManager:
 
     def get_objects_full_context(self):
         if not self.objects:
-            return ""
+            return "관찰된 대상 없음"
             
         description_list = []
         for obj in self.objects.values():

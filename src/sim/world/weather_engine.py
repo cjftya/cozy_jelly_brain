@@ -11,7 +11,7 @@ class WeatherEngine:
             "번개": 2
         }
         self.weather = "맑음"
-        self.remaining_hours = 0  # 현재 날씨가 유지될 남은 시간
+        self.remaining_hours = 3  # 현재 날씨가 유지될 남은 시간
 
     def tick(self, time_scale, season):
         """

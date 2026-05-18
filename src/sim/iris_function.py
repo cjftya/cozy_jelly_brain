@@ -40,11 +40,11 @@ class IrisFunction:
         else:
             Logger.log_debug(f"skip function call: move_to, location: {location}")
 
-    # 2. 사회: speak(agent_id, message)
+    # 2. 사회: speak(agent_name, message)
     def _speak(self, params, agent: Agent):
-        target_agent_id = params.get('agent_id', 'ALL')
+        target_agent_name = params.get('agent_name', 'ALL')
         message = params.get('message', '')
-        Logger.log_debug(f"skip function call: speak, target agent {target_agent_id} is not found")
+        Logger.log_debug("speak", f"target agent {target_agent_name} is not found")
 
     # 3. 소유: take(object)
     def _take(self, params, agent: Agent):

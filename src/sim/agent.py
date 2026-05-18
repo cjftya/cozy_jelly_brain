@@ -1,10 +1,11 @@
+import random
 from sim.iris_engine import IrisEngine
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
 from sim.agent_meta.location_delegate import LocationDelegate
 from sim.agent_meta.vital_state import VitalState
 from sim.util.point import Point
 from sim.object_meta.object_detector import ObjectDetector
-from sim.object_meta.object_pack import ObjectPack
+from sim.object_meta.object_manager import ObjectManager
 from sim.world.world_context_manager import WorldContextManager
 from sim.util.globar_util import GlobarUtil
 
@@ -13,6 +14,9 @@ class Agent:
         self.id = GlobarUtil.gen_agent_id()
         self.name = name
         self.identifier = identifier
+
+        # LLM 트리거
+        self.enable_thinking = False
 
         # 월드 컨텍스트 매니져
         self.world_context_manager = world_context_manager
@@ -31,7 +35,7 @@ class Agent:
         self.location_delegate = LocationDelegate()
 
         # 인벤토리
-        self.inventory = ObjectPack()
+        self.inventory = ObjectManager()
 
         # 좌표
         self.position = Point()
@@ -40,7 +44,7 @@ class Agent:
         # 시야 감지 엔진
         self.object_detector = ObjectDetector()
 
-        # 성격 매트릭스
+        # 성격 매트릭스 (0 ~ 1.0)
         # logic_emotion : 감성적인가 이성적인가
         # defensive_open : 방어적인가 개방적인가
         # fear_decisive : 공포에 우유부단한가 용감하고 단호한가
@@ -59,15 +63,33 @@ class Agent:
         self.llm_requester = None
         self.iris_engine.stop()
     
-    def run(self, user_input):
-        res = self.iris_engine.run(user_input, self)
-        return res
+    def event(self, event_type, external_event):
+        if not self.enable_thinking:
+            return None, None
+
+        return self.iris_engine.event(self, event_type, external_event)
+
+    def search(self, external_event):
+        if not self.enable_thinking:
+            return None, None
+
+        found_agents = self.perceive_agents()
+        found_objects = self.perceive_objects()
+        if len(found_agents) <= 0 and len(found_objects) <= 0:
+            return None, None
+
+        if len(found_agents) > 0 and self.vital_state.fatigue < 70 and self.vital_state.health > 30:
+            ran_num = self.personality_matrix['defensive_open'] + random.random()
+            if ran_num >= 1.0:
+                return self.iris_engine.speak("주변에 대화할만한 대상이 있다.", self, found_agents, from_scan=True)
+
+        if len(found_objects) > 0:
+            return self.iris_engine.search(self, external_event, found_objects)
+
+        return None, None
 
     def tick(self, time_scale):
-        # 신체 결핍 처리
         self.vital_state.tick(time_scale)
-
-        # TODO: 이벤트 이미터에서 이미터된 이벤트 감지 및 처리
 
     def set_serper_api_key(self, api_key):
         if self.iris_engine:
@@ -115,6 +137,15 @@ class Agent:
         else:
             return ["take", "move_to", "search", "use", "rest", "none"]
 
-    def perceive_world(self, world_objects):
-        detected_entities = self.object_detector.detect(self, world_objects)
+    def perceive_agents(self):
+        all_agents = self.world_context_manager.agent_manager.get_agents()
+        detected_agents = self.object_detector.detect_agents(self, all_agents)
+        return detected_agents
+
+    def perceive_objects(self):
+        world_objects = self.world_context_manager.object_manager.get_objects()
+        detected_entities = self.object_detector.detect_objects(self, world_objects)
         return detected_entities
+
+    def set_enable_thinking(self, enable):
+        self.enable_thinking = enable

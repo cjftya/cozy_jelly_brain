@@ -5,6 +5,9 @@ from sim.iris_memory import IrisMemory
 from sim.iris_search import IrisSearch
 from sim.iris_llm_api import IrisLlmApi
 from sim.iris_function import IrisFunction
+from sim.agent_meta.participants_delegate import ParticipantsDelegate
+from sim.object_meta.object_manager import ObjectManager
+from sim.agent import Agent
 from log import Logger
 
 class IrisEngine:
@@ -22,15 +25,16 @@ class IrisEngine:
     def stop(self):
         self.iris_memory.stop()
 
-    def run(self, user_input, agent):
-        # TODO: agent내부에 detector로 판단하게 수정
-        is_dialogue_mode = False
+    def event(self, agent, event_type, external_event):
+        available_participants = ParticipantsDelegate().get_available_participants()
 
-        # STEP 1: 기억 소환 (Retrieval) - [VIVID]/[FAINT] 태그 포함
-        memories = self._retrieve_memory(agent, user_input) # TODO: 독백의 경우 변경되어야함
-        Logger.log_debug(f"[{self.id}] Memory", memories if memories else "연관된 기억 없음")
-        
-        # STEP 2: 프롬프트 구성 (Context Building)
+        memories = "연관된 기억 없음"
+
+        detected_objects = agent.perceive_objects()
+        object_manager = ObjectManager()
+        object_manager.add_objects(detected_objects)
+        available_objects = object_manager.get_objects_full_context()
+
         raw_matrix = agent.get_personality_matrix()
         system_prompt = IrisPrompt.get_system_prompt(
             personality_matrix=raw_matrix,
@@ -38,24 +42,95 @@ class IrisEngine:
             world_context=agent.get_world_context(),
             retrieved_memories=memories,
             response_style=agent.get_response_style(),
-            available_participants=agent.get_participant_delegate().get_available_participants(),
+            available_participants=available_participants,
             intrinsic_desires=agent.get_intrinsic_desires(),
             relationships=agent.get_relationships(),
             current_location=agent.get_location_delegate().get_current_location(),
             available_locations=agent.get_location_delegate().get_available_locations(),
             available_agent_inventory=agent.get_inventory().get_objects_full_context(),
-            available_objects=agent.world_context_manager.object_manager.get_objects_full_context(),
-            available_tools=agent.get_available_tools(is_dialogue_mode),
-            is_dialogue_mode=is_dialogue_mode,
+            available_objects=available_objects,
+            available_tools=agent.get_available_tools(False),
+            is_dialogue_mode=False,
             vital_context=agent.get_vital_state().get_context()
         )
 
-        context = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input}
-        ]
+        context.append({"role": "system", "content": system_prompt})
+        context.append({"role": "user", "content": external_event})
 
-        # STEP 3: 모델 호출 및 추론 (Inference)
+        return self._run_llm_core(context, agent)
+
+    def search(self, agent, external_event, detected_objects):
+        available_participants = ParticipantsDelegate().get_available_participants()
+
+        memories = "연관된 기억 없음"
+
+        object_manager = ObjectManager()
+        object_manager.add_objects(detected_objects)
+        available_objects = object_manager.get_objects_full_context()
+
+        raw_matrix = agent.get_personality_matrix()
+        system_prompt = IrisPrompt.get_system_prompt(
+            personality_matrix=raw_matrix,
+            persona_context=agent.get_persona_context(),
+            world_context=agent.get_world_context(),
+            retrieved_memories=memories,
+            response_style=agent.get_response_style(),
+            available_participants=available_participants,
+            intrinsic_desires=agent.get_intrinsic_desires(),
+            relationships=agent.get_relationships(),
+            current_location=agent.get_location_delegate().get_current_location(),
+            available_locations=agent.get_location_delegate().get_available_locations(),
+            available_agent_inventory=agent.get_inventory().get_objects_full_context(),
+            available_objects=available_objects,
+            available_tools=agent.get_available_tools(False),
+            is_dialogue_mode=False,
+            vital_context=agent.get_vital_state().get_context()
+        )
+
+        context.append({"role": "system", "content": system_prompt})
+        context.append({"role": "user", "content": external_event})
+
+        return self._run_llm_core(context, agent)
+
+    def speak(self, user_input, agent, available_agents, from_scan=False):
+        names = [d.name for d in available_agents]
+        participant_delegate = ParticipantsDelegate()
+        participant_delegate.add_all_participants(names)
+        available_participants = participant_delegate.get_available_participants()
+
+        memories = None if from_scan else self._retrieve_memory(agent, user_input)
+        Logger.log_debug(f"[{self.id}] Memory", memories if memories else "연관된 기억 없음")
+
+        detected_objects = agent.perceive_objects()
+        object_manager = ObjectManager()
+        object_manager.add_objects(detected_objects)
+        available_objects = object_manager.get_objects_full_context()
+
+        raw_matrix = agent.get_personality_matrix()
+        system_prompt = IrisPrompt.get_system_prompt(
+            personality_matrix=raw_matrix,
+            persona_context=agent.get_persona_context(),
+            world_context=agent.get_world_context(),
+            retrieved_memories=memories,
+            response_style=agent.get_response_style(),
+            available_participants=available_participants,
+            intrinsic_desires=agent.get_intrinsic_desires(),
+            relationships=agent.get_relationships(),
+            current_location=agent.get_location_delegate().get_current_location(),
+            available_locations=agent.get_location_delegate().get_available_locations(),
+            available_agent_inventory=agent.get_inventory().get_objects_full_context(),
+            available_objects=available_objects,
+            available_tools=agent.get_available_tools(True),
+            is_dialogue_mode=True,
+            vital_context=agent.get_vital_state().get_context()
+        )
+
+        context.append({"role": "system", "content": system_prompt})
+        context.append({"role": "user", "content": user_input})
+
+        return self._run_llm_core(context, agent)
+
+    def _run_llm_core(self, context, agent: Agent):
         response = self.iris_llm_api.request(context=context)
 
         content = ""
@@ -66,35 +141,29 @@ class IrisEngine:
 
         if not content:
             Logger.log_debug("Error", "LLM으로부터 유효한 응답 내용을 받지 못했습니다.")
-            return "인지 프로세스 중단..."
+            return "인지 프로세스 중단...", None
         
-        # STEP 4: 결과 파싱 (Robust JSON Parsing)
         result = self.iris_llm_api.parse_llm_response(content)
 
         if result:
-            # 사고 결과물 추출
-            state_delta = result.get('state_delta', {})    # 이번 대화로 인한 심리 변화량
-            new_memories = result.get('memories_to_save', []) # 새롭게 저장할 지식
-            relationship_delta = result.get('relationship_delta', {}) # 이번 대화로 인한 관계 변화량
+            state_delta = result.get('state_delta', {})
+            new_memories = result.get('memories_to_save', [])
+            relationship_delta = result.get('relationship_delta', {})
         
-            # TODO: 세부 데이터 처리 예정
-            self.iris_function.process_action_call(result.get('action_call', {}), agent)
+            # TODO: process_action_call 구현
+            action_data = self.iris_function.process_action_call(result.get('action_call', {}), agent)
             
-            # STEP 5: 상태 업데이트 및 저장
-            # 1. 감정 매트릭스 수치 갱신
             self.update_personality_matrix(state_delta, agent)
             
-            # 2. 새로운 지식을 그래프 DB에 각인
             if new_memories:
                 self.iris_memory.add_memory(new_memories, state_delta)
 
-            # 3. 관계 변화량 갱신
             if relationship_delta:
                 self.update_relationship_delta(relationship_delta, agent)
 
-            return result
+            return result, action_data
 
-        return f"데이터 해석 실패:\n{response}"
+        return f"데이터 해석 실패:\n{response}", None
 
     def _retrieve_memory(self, agent, user_input):
         # 1. 매트릭스 기반 내부 감정 계산
