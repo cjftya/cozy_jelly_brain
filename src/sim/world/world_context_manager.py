@@ -48,17 +48,15 @@ class WorldContextManager:
             event_type = obj[1]
             event_message = obj[2]
 
-            # TODO: 루프 수정 필요 (순환성 필요)
-            # agent 루프에서 event를 주입하는 방향으로 변경 필요
             if event_type == EventType.WEATHER_CHANGE:
                 for agent in self.agents:
-                    agent.event(event_type, event_message)
+                    agent.queue_event(event_type, event_message)
             elif event_type == EventType.RANDOM_SCAN:
                 for agent in self.agents:
-                    agent.search(event_message)
+                    agent.scan(event_message)
 
             if event_type == EventType.FATIGUE_TRIPPED or event_type == EventType.HUNGER_TRIPPED:
-                event_agent.event(event_type, event_message)
+                event_agent.queue_event(event_type, event_message)
 
     def get_context(self):
         return f"""\

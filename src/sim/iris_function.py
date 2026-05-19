@@ -43,7 +43,12 @@ class IrisFunction:
     # 2. 사회: speak(agent_name, message)
     def _speak(self, params, agent: Agent):
         target_agent_name = params.get('agent_name', 'ALL')
+        target_agent = self._world_context_manager.agent_manager.get_agent_by_name(target_agent_name)
         message = params.get('message', '')
+        if target_agent:
+            target_agent.speak_name_from_agent = agent.name
+            target_agent.speak_msg_from_agent = message
+            return
         Logger.log_debug("speak", f"target agent {target_agent_name} is not found")
 
     # 3. 소유: take(object)
