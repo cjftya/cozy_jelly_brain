@@ -79,6 +79,11 @@ class IrisPrompt:
 - **Intrinsic Desires**: {intrinsic_desires}
 - **Response Protocol (The Mask)**: {response_style}
 
+{world_state_context}
+
+# 과거의 파편화된 기억 연상 (Retrieved Memories)
+{retrieved_memories}
+
 # 내 신체 상태 (Vital Status)
 {vital_context}
 
@@ -104,11 +109,11 @@ class IrisPrompt:
 
 # 출력 규칙 (Strict JSON Only - 마크다운 태그 기호 없이 오직 순수 JSON 데이터만 출력하라)
 {{
-  "subjective_perception": "{subjective_desc}",
-  "unconscious_impulse": "가면 뒤의 날것의 본능적 파편 단어 조각들",
-  "internal_strategy": "{internal_strategy}",
+  "subjective_perception": "[Neural Loop 1, 2단계 결과] {subjective_desc}",
+  "unconscious_impulse": "[Neural Loop 3단계 결과] 가면 뒤의 날것의 본능적 파편 단어 조각들",
+  "internal_strategy": "[Neural Loop 4단계 결과] {internal_strategy}",
   "action_call": {{
-    "function": "실행 가능한 액션 도구 중 하나",
+    "function": "[Neural Loop 5단계 결과] 실행 가능한 액션 도구 중 하나",
     "parameters": {{ ... }},
     "reason": "해당 액션을 선택한 핵심 이유 (생존 전략 및 매트릭스에 근거)"
   }},
