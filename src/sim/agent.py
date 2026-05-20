@@ -7,12 +7,12 @@ from sim.util.point import Point
 from sim.object_meta.object_detector import ObjectDetector
 from sim.object_meta.object_manager import ObjectManager
 from sim.world.world_context_manager import WorldContextManager
-from sim.util.globar_util import GlobarUtil
+from sim.util.global_util import GlobalUtil
 from sim.world.event_trigger import ThinkEventType
 
 class Agent:
     def __init__(self, name="UNKNOWN", identifier="UNKNOWN", world_context_manager: WorldContextManager=None):
-        self.id = GlobarUtil.gen_agent_id()
+        self.id = GlobalUtil.gen_agent_id()
         self.name = name
         self.identifier = identifier
 

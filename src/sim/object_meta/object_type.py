@@ -4,6 +4,7 @@ class ObjectType:
     BUILDING = 2
 
 class ObjectDetailType:
-    FOOD = 0
-    WATER = 1
+    NONE = 0
+    FOOD = 1
+    WATER = 2
     

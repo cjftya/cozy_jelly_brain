@@ -1,10 +1,11 @@
 from sim.util.point import Point
 from sim.object_meta.object_manager import ObjectManager
-from sim.util.globar_util import GlobarUtil
+from sim.object_meta.object_type import ObjectDetailType
+from sim.util.global_util import GlobalUtil
 
 class BaseObject:
     def __init__(self, name=None, detail=None, detail_type=None, obj_type=None, parent=None):
-        self.id = GlobarUtil.gen_object_id()
+        self.id = GlobalUtil.gen_object_id()
         self.name = name
         self.detail = detail
         self.detail_type = detail_type
@@ -25,7 +26,7 @@ class BaseObject:
         self.location = None
 
     def use(self):
-        return None
+        return ObjectDetailType.NONE, None
 
     def set_name(self, name):
         self.name = name
