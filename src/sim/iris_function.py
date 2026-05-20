@@ -2,6 +2,7 @@ from log import Logger
 from sim.world.world_context_manager import WorldContextManager
 from sim.agent import Agent
 from sim.world.event_trigger import ThinkEventType
+from sim.object_meta.object_type import ObjectType
 
 class IrisFunction:
     def __init__(self, world_context_manager: WorldContextManager):
@@ -36,8 +37,29 @@ class IrisFunction:
         location = params.get('location', None)
         reason = params.get('reason', None)
         if location and location in agent.location_delegate.get_available_locations():
+            # 문자열 상태 정보 업데이트
             agent.location_delegate.set_current_location(location)
             agent.location_delegate.set_reason_of_change_location(reason)
+            
+            # 무한 확장 절대 좌표계를 고려한 로컬 좌표 초기화
+            target_space = None
+            all_objects = self.world_context_manager.object_manager.get_objects()
+            for obj in all_objects:
+                # obj.type == 0 (SpaceObject) 이고 이름이 같은 공간 객체 검색
+                if obj.type == ObjectType.SPACE and obj.name == location: 
+                    target_space = obj
+                    break
+            
+            # 방의 규격(size) 정보를 찾았다면 정중앙 로컬 좌표계로 자동 세팅
+            if target_space and hasattr(target_space, 'size'):
+                agent.position.x = float(target_space.size.x // 2)
+                agent.position.y = float(target_space.size.y // 2)
+            else:
+                # 방 오브젝트 누락 예외를 대비한 기본 방어 좌표
+                agent.position.x = 4.0
+                agent.position.y = 4.0
+                
+            Logger.log_debug(f"[{agent.name}] {location} 공간 진입완료. 로컬 좌표 세팅: ({agent.position.x}, {agent.position.y})")
         else:
             Logger.log_debug(f"skip function call: move_to, location: {location}")
 

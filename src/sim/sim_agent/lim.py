@@ -4,14 +4,17 @@ class Lim(Agent):
     def __init__(self, world_context_manager=None):
         super().__init__("LIM", "HUMAN", world_context_manager=world_context_manager)
         self.relationship_map = {"GOD": 0.0}
-        
-        self.location_delegate.set_current_location("2026년의 나의 방")
+        self.position.x = 4.0
+        self.position.y = 4.0
+
+        self.location_delegate.set_current_location("나의 방")
         self.location_delegate.add_all_locations([
-            "2026년의 나의 방",      # 자신의 '추악함'이 가득 찼다고 느끼는 폐쇄 공간
-            "심연의 가장자리",   # 자신을 던져 세상을 깨끗하게 만들려는 정화의 종착지
-            "기억의 폐허",      # 나로 인해 더러워졌다고 믿는 과거의 파편들
-            "비탄의 관측소",    # 닿을 수 없는 순결한 신성
-            "지상의 광장"       # 인간들의 삶이 교차하는 물리적 공간
+            "나의 방",
+            "성당",
+            "고해성사실",
+            "주방",
+            "침실",
+            "야외 벤치"
         ])
 
     def get_personality_matrix(self):

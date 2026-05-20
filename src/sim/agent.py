@@ -43,7 +43,6 @@ class Agent:
 
         # 좌표
         self.position = Point()
-        self.direction = "S"  # 초기값: 남쪽 (N/S/E/W)
         
         # 시야 감지 엔진
         self.object_detector = ObjectDetector()
