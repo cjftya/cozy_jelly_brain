@@ -28,7 +28,7 @@ class IrisEngine:
     def event(self, agent, event_type, external_event, available_tools=["none"]):
         available_participants = ParticipantsDelegate().get_available_participants()
 
-        memories = "연관된 기억 없음"
+        memories = self._retrieve_memory(agent, external_event)
 
         detected_objects = agent.perceive_objects()
         object_manager = ObjectManager()
@@ -64,7 +64,7 @@ class IrisEngine:
     def search(self, agent, external_event, detected_objects, available_tools=["none"]):
         available_participants = ParticipantsDelegate().get_available_participants()
 
-        memories = "연관된 기억 없음"
+        memories = self._retrieve_memory(agent, external_event)
 
         object_manager = ObjectManager()
         object_manager.add_objects(detected_objects)
@@ -184,9 +184,11 @@ class IrisEngine:
         rel_score = agent.relationship_map.get(sender_name, 0.0)
         rel_valence = (rel_score - 50.0) / 50.0 # -1.0 ~ 1.0 범위로 변환
 
-        # 3. 최종 Valence 융합 (가중치 조절 가능)
-        # 이성적(Logic)일수록 감정 수치를 0(중립)에 가깝게 감쇄(Damping) 시킴
-        damping_factor = 1.0 - matrix['logic_emotion'] 
+        # 3. 최종 Valence 융합
+        # 이성적일수록 감정을 감쇄시키되, 최소 0.3의 최소 감정선은 유지
+        base_resonance = self.iris_memory.emotional_resonance
+        damping_factor = max(base_resonance, 1.0 - matrix['logic_emotion'])
+
         combined_valence = (internal_valence * 0.4 + rel_valence * 0.6) * damping_factor
         current_valence = round(combined_valence, 2)
 

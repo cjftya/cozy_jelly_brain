@@ -22,6 +22,7 @@ class IrisMemory:
         self.vivid_threshold = 0.85       # [VIVID] 판정 기준 점수
         self.imp_weight = 0.7             # 주관적 중요도 반영 비중
         self.impact_weight = 0.3          # 시스템적 충격량(Matrix 변화량) 반영 비중
+        self.emotional_resonance = 0.3    # 감정 공명 계수
 
     def start(self):
         self._prepare_schema()

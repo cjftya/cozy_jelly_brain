@@ -117,7 +117,7 @@ class Agent:
             found_agents = think_event.get("data", None)
 
             self.think_event_queue.clear()
-            res = self.iris_engine.speak(user_input=think_event_message, agent=self, available_agents=found_agents, from_scan=True, available_tools=available_tools)
+            res = self.iris_engine.speak(user_input=think_event_message, agent=self, available_agents=found_agents, from_scan=True, available_tools=self.get_available_tools(True))
             return res
 
         # find item signal
@@ -136,10 +136,10 @@ class Agent:
             think_event_message = think_event.get("message", "")
             found_agent_name = think_event.get("data", None)
             user_input = f"[From {found_agent_name}] : {think_event_message}"
-            available_agent = self.world_context_manager.agent_manager.get_agent_by_name(self.found_agent_name)
+            available_agent = self.world_context_manager.agent_manager.get_agent_by_name(found_agent_name)
 
             self.think_event_queue.clear()
-            res = self.iris_engine.speak(user_input=user_input, agent=self,available_agents=[available_agent], from_scan=False, available_tools=self.get_available_tools(True))
+            res = self.iris_engine.speak(user_input=user_input, agent=self, available_agents=[available_agent], from_scan=False, available_tools=self.get_available_tools(True))
             return res
 
         # event signal
@@ -197,7 +197,7 @@ class Agent:
         if is_dialogue_mode:
             return ["speak", "give", "none"]
         else:
-            return ["take" "move_to", "search", "use", "rest", "none"]
+            return ["take", "move_to", "search", "use", "rest", "none"]
 
     def perceive_agents(self):
         all_agents = self.world_context_manager.agent_manager.get_agents()
