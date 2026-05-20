@@ -1,11 +1,13 @@
 from log import Logger
-from sim.world.world_context_manager import WorldContextManager
-from sim.agent import Agent
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from sim.world.world_context_manager import WorldContextManager
+    from sim.agent import Agent
 from sim.world.event_trigger import ThinkEventType
-from sim.object_meta.object_type import ObjectType
+from sim.object_meta.object_type import ObjectType, ObjectDetailType
 
 class IrisFunction:
-    def __init__(self, world_context_manager: WorldContextManager):
+    def __init__(self, world_context_manager: "WorldContextManager"):
         self.world_context_manager = world_context_manager
 
         # action map
@@ -20,7 +22,7 @@ class IrisFunction:
             "none": self._none_action
         }
 
-    def process_action_call(self, action_call, agent: Agent):
+    def process_action_call(self, action_call, agent: "Agent"):
         function_name = action_call.get('function')
         if function_name not in self.action_map:
             Logger.log_debug(f"skip function call: {function_name}")
@@ -33,7 +35,7 @@ class IrisFunction:
             Logger.log_debug(f"Action Execution Error ({function_name})", e)
 
     # 1. 이동: move_to(location)
-    def _move_to(self, params, agent: Agent):
+    def _move_to(self, params, agent: "Agent"):
         location = params.get('location', None)
         reason = params.get('reason', None)
         if location and location in agent.location_delegate.get_available_locations():
@@ -64,7 +66,7 @@ class IrisFunction:
             Logger.log_debug(f"skip function call: move_to, location: {location}")
 
     # 2. 사회: speak(agent_name, message)
-    def _speak(self, params, agent: Agent):
+    def _speak(self, params, agent: "Agent"):
         target_agent_name = params.get('agent_name')
         target_agent = self.world_context_manager.agent_manager.get_agent_by_name(target_agent_name)
         message = params.get('message', '')
@@ -72,7 +74,7 @@ class IrisFunction:
             target_agent.push_think_event(ThinkEventType.SPEAK, message, agent.name)
 
     # 3. 소유: take(object)
-    def _take(self, params, agent: Agent):
+    def _take(self, params, agent: "Agent"):
         object_id = params.get('object_id')
         target_object = self.world_context_manager.object_manager.get_object(object_id)
         if target_object:

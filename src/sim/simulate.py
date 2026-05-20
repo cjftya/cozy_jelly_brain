@@ -21,7 +21,7 @@ class Simulator:
     def start(self, llm_requester, output_callback=None):
         self.llm_requester = llm_requester
         self.output_callback = output_callback
-        self.world_context_manager.start()
+        self.world_context_manager.start(self.llm_requester, self.output_callback)
 
     def stop(self):
         self.world_context_manager.stop()

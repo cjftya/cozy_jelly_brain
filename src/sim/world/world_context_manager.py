@@ -8,6 +8,9 @@ from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
 
 class WorldContextManager:
     def __init__(self):
+        self.llm_requester = None
+        self.output_callback = None
+
         self.agent_manager = AgentManager()
         self.object_manager = ObjectManager()
         self.world_object_creator = WorldObjectCreator()
@@ -19,13 +22,16 @@ class WorldContextManager:
         self.agent_manager.add_agent(lim)
         self.agents = self.agent_manager.get_agents()
         
-    def start(self):
+    def start(self, llm_requester, output_callback):
+        self.llm_requester = llm_requester
+        self.output_callback = output_callback
+
         objects = self.world_object_creator.create_lim_world()
         for obj in objects:
             self.object_manager.add_object(obj)
 
         for agent in self.agents:
-            agent.start()
+            agent.start(llm_requester)
 
     def stop(self):
         for agent in self.agents:

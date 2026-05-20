@@ -7,7 +7,9 @@ from sim.iris_llm_api import IrisLlmApi
 from sim.iris_function import IrisFunction
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
 from sim.object_meta.object_manager import ObjectManager
-from sim.agent import Agent
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from sim.agent import Agent
 from log import Logger
 
 class IrisEngine:
@@ -136,7 +138,7 @@ class IrisEngine:
 
         return self._run_llm_core(context, agent)
 
-    def _run_llm_core(self, context, agent: Agent):
+    def _run_llm_core(self, context, agent: "Agent"):
         response = self.iris_llm_api.request(context=context)
 
         content = ""
