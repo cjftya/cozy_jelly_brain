@@ -4,18 +4,30 @@ from sim.simulate import Simulator
 class Engine:
     def __init__(self):
         self.llm_requester = None
-        self.output_callback = None
         self.model_name = None
         self.simulator = None
 
-    def start(self, output_callback=None):
-        self.output_callback = output_callback
+    def start(self, 
+              refresh_biometrics=None,
+              refresh_inventory=None,
+              append_agent_chat_log=None,
+              append_world_log=None,
+              refresh_ascii_map=None,
+              append_system_log=None):
         if self.llm_requester is None:
             self.llm_requester = LLMRequester()
             self.llm_requester.start_engine(full=True)
         if self.simulator is None:
             self.simulator = Simulator()
-            self.simulator.start(self.llm_requester, self.output_callback)
+            self.simulator.start(
+                self.llm_requester,
+                refresh_biometrics=refresh_biometrics,
+                refresh_inventory=refresh_inventory,
+                append_agent_chat_log=append_agent_chat_log,
+                append_world_log=append_world_log,
+                refresh_ascii_map=refresh_ascii_map,
+                append_system_log=append_system_log
+            )
 
     def load(self, api_key, serper_api_key, use_web_search, auto_play):
         if self.llm_requester:

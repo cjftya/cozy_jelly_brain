@@ -109,7 +109,7 @@ class IrisFunction:
             Logger.log_debug("skip function call: search")
             return
 
-        context = f"{reason} 라는 이유로, 나는 {target_object.name}를 정밀 탐색함. 탐색한 결과: {target_object.detail}"
+        context = f"[{reason}] 라는 이유로, 나는 {target_object.name}를 정밀 탐색함. 탐색한 결과: {target_object.detail}"
         agent.push_think_event(ThinkEventType.SEARCH, context, agent.name)
         
     # 6. 상호작용: use(object)

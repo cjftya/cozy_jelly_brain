@@ -9,11 +9,9 @@ class LLMRequester:
         self.chunck_spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self.pretty_emojis = ["🔍", "🧠", "⚙️", "🔬", "📡", "💠", "💎", "✨"]
         
-    def chunk_callback(self, chunk, output_callback=None):
+    def chunk_callback(self, chunk):
         if chunk is None:
             self.chunk_count[0] = 0
-            if output_callback:
-                output_callback("", False)
             return
 
         status_text = "Thinking..."
@@ -28,9 +26,6 @@ class LLMRequester:
         
         spinner_msg = f"\r{current_emoji} {status_text} {current_symbol}"
         
-        if output_callback:
-            output_callback(spinner_msg, False)
-            
         self.chunk_count[0] += 1
 
     def init_client(self):

@@ -55,7 +55,6 @@ class IrisEngine:
         memories = self._retrieve_memory(agent, external_event)
 
         system_prompt = self._get_system_context(agent, available_participants, available_objects, available_tools, False, memories)
-        print(system_prompt)
 
         context = []
         context.append({"role": "system", "content": system_prompt})
@@ -120,6 +119,8 @@ class IrisEngine:
             return "인지 프로세스 중단..."
         
         result = self.iris_llm_api.parse_llm_response(content)
+
+        print(result)
 
         if result:
             state_delta = result.get('state_delta', {})

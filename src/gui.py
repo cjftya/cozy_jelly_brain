@@ -10,15 +10,16 @@ class ChatApp(ctk.CTk):
         
         # Configure window
         self.title("Iris Brain Agent")
-        self.geometry("1100x750")
+        self.geometry("1400x850")
         
         # Set appearance
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("blue")
 
-        # Grid layout (0: Sidebar, 1: Main)
+        # Grid layout (0: Sidebar, 1: Main Area)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=0)
         
         # Sidebar
         self.sidebar_frame = ctk.CTkFrame(self, width=250, corner_radius=0)
@@ -86,19 +87,25 @@ class ChatApp(ctk.CTk):
         self.status_label = ctk.CTkLabel(self.sidebar_frame, text="Ready", text_color="gray")
         self.status_label.grid(row=11, column=0, padx=20, pady=20)
         
-        # Main Chat Area
-        self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.main_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
-        self.main_frame.grid_rowconfigure(0, weight=1)
-        self.main_frame.grid_columnconfigure(0, weight=1)
+        # Left Views Frame (6 Views) - Scrollable to prevent squishing
+        self.left_views_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        self.left_views_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=(20, 10))
         
-        self.chat_display = ctk.CTkTextbox(self.main_frame, font=ctk.CTkFont(size=14))
-        self.chat_display.grid(row=0, column=0, sticky="nsew", padx=0, pady=(0, 20))
-        self.chat_display.configure(state="disabled")
+        # Configure layout for the 6 views inside the frame
+        self.left_views_frame.grid_columnconfigure(0, weight=1)
+        self.left_views_frame.grid_columnconfigure(1, weight=1)
         
+        # Create the 6 text views with explicit heights for scroll container
+        self.biometrics_view = self.create_text_view(self.left_views_frame, "BIOMETRICS & MATRIX", 0, 0, height=220)
+        self.inventory_view = self.create_text_view(self.left_views_frame, "Inventory", 0, 1, height=220)
+        self.agent_chat_log_view = self.create_text_view(self.left_views_frame, "agent chat log", 1, 0, height=250)
+        self.world_log_view = self.create_text_view(self.left_views_frame, "world log", 1, 1, height=250)
+        self.ascii_map_view = self.create_text_view(self.left_views_frame, "ascii map", 2, 0, columnspan=2, height=350)
+        self.system_log_view = self.create_text_view(self.left_views_frame, "system log", 3, 0, columnspan=2, height=200)
+
         # Input Area
-        self.input_container = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        self.input_container.grid(row=1, column=0, sticky="ew")
+        self.input_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.input_container.grid(row=1, column=1, sticky="ew", padx=25, pady=(0, 20))
         self.input_container.grid_columnconfigure(0, weight=1)
         
         self.user_input = ctk.CTkEntry(self.input_container, placeholder_text="Message AI...", height=50)
@@ -115,7 +122,14 @@ class ChatApp(ctk.CTk):
         self.toggle_auto_play()
         
         # Initialize Engine
-        self.engine.start(output_callback=self.on_engine_output)
+        self.engine.start(
+            refresh_biometrics=self.refresh_biometrics,
+            refresh_inventory=self.refresh_inventory,
+            append_agent_chat_log=self.append_agent_chat_log,
+            append_world_log=self.append_world_log,
+            refresh_ascii_map=self.refresh_ascii_map,
+            append_system_log=self.append_system_log
+        )
         self.last_ai_msg_index = None
 
     def on_system_start(self):
@@ -211,45 +225,31 @@ class ChatApp(ctk.CTk):
             self.after(0, self.reenable_input)
 
     def prepare_ai_message(self):
-        self.chat_display.configure(state="normal")
-        self.chat_display.insert("end", "AI: ")
-        self.last_ai_msg_index = self.chat_display.index("end-1c")
-        self.chat_display.insert("end", "Thinking...\n\n")
-        self.chat_display.configure(state="disabled")
-        self.chat_display.see("end")
-
-    def on_engine_output(self, sender, text):
-        # Update the chat display with messages from the engine/simulator
-        self.after(0, lambda: self.log_to_chat(sender, text))
+        self.agent_chat_log_view.configure(state="normal")
+        self.agent_chat_log_view.insert("end", "AI: ")
+        self.last_ai_msg_index = self.agent_chat_log_view.index("end-1c")
+        self.agent_chat_log_view.insert("end", "Thinking...\n\n")
+        self.agent_chat_log_view.configure(state="disabled")
+        self.agent_chat_log_view.see("end")
 
     def _update_thinking_text(self, text):
         if not self.last_ai_msg_index:
             return
             
-        self.chat_display.configure(state="normal")
+        self.agent_chat_log_view.configure(state="normal")
         # Find where "AI: " ends
-        line_start = self.chat_display.index(f"{self.last_ai_msg_index} linestart")
-        # We want to replace the text after "AI: " on that line
-        # Simple way: delete from line_start + 4 chars to end of that line
-        # But indices in tkinter can be tricky with line breaks.
-        # Let's just append to the end for now if it's simpler, or find the specific line.
-        
-        # Find the line that starts with "AI: " and is near the end
-        # For simplicity in this sim, we just replace the last "Thinking..." part
-        # Actually, let's just use a more robust way to find the last AI response line
+        line_start = self.agent_chat_log_view.index(f"{self.last_ai_msg_index} linestart")
         pass
 
     def finalize_ai_message(self, content):
-        self.chat_display.configure(state="normal")
+        self.agent_chat_log_view.configure(state="normal")
         # Clear the "Thinking..." or previous stream
-        # (This logic would be more complex for true streaming, but for a sim we can just replace)
-        
         # Delete the last line and insert final content
-        self.chat_display.delete("end-3c linestart", "end-1c")
-        self.chat_display.insert("end", f"AI: {content}\n\n")
+        self.agent_chat_log_view.delete("end-3c linestart", "end-1c")
+        self.agent_chat_log_view.insert("end", f"AI: {content}\n\n")
         
-        self.chat_display.configure(state="disabled")
-        self.chat_display.see("end")
+        self.agent_chat_log_view.configure(state="disabled")
+        self.agent_chat_log_view.see("end")
 
     def reenable_input(self):
         self.user_input.configure(state="normal")
@@ -257,10 +257,106 @@ class ChatApp(ctk.CTk):
         self.user_input.focus()
 
     def log_to_chat(self, sender, message):
-        self.chat_display.configure(state="normal")
-        self.chat_display.insert("end", f"{sender}: {message}\n\n")
-        self.chat_display.configure(state="disabled")
-        self.chat_display.see("end")
+        if sender == "System":
+            self.append_system_log(f"{sender}: {message}")
+        else:
+            self.append_agent_chat_log(f"{sender}: {message}")
+
+    def create_text_view(self, parent, title, row, column, columnspan=1, height=200):
+        frame = ctk.CTkFrame(parent)
+        frame.grid(row=row, column=column, columnspan=columnspan, sticky="nsew", padx=5, pady=5)
+        frame.grid_rowconfigure(1, weight=1)
+        frame.grid_rowconfigure(2, weight=0)
+        frame.grid_columnconfigure(0, weight=1)
+        
+        label = ctk.CTkLabel(
+            frame, 
+            text=title.upper(), 
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w",
+            text_color="#3B82F6"
+        )
+        label.grid(row=0, column=0, padx=10, pady=(5, 2), sticky="ew")
+        
+        font_family = "Consolas" if any(x in title.lower() for x in ["map", "biometrics"]) else "Inter"
+        textbox = ctk.CTkTextbox(
+            frame, 
+            font=ctk.CTkFont(family=font_family, size=12),
+            wrap="none",
+            height=height
+        )
+        textbox.grid(row=1, column=0, padx=5, pady=0, sticky="nsew")
+        textbox.configure(state="disabled")
+        
+        # Horizontal scrollbar linked to textbox
+        h_scrollbar = ctk.CTkScrollbar(frame, orientation="horizontal", height=12)
+        h_scrollbar.grid(row=2, column=0, padx=5, pady=(2, 5), sticky="ew")
+        
+        h_scrollbar.configure(command=textbox._textbox.xview)
+        textbox._textbox.configure(xscrollcommand=h_scrollbar.set)
+        
+        return textbox
+
+    def _update_text_view(self, textbox, text, scroll_to_end=False):
+        current_text = textbox.get("1.0", "end-1c")
+        if current_text == text:
+            return
+            
+        try:
+            x_pos = textbox._textbox.xview()
+            y_pos = textbox._textbox.yview()
+        except Exception:
+            x_pos, y_pos = None, None
+
+        textbox.configure(state="normal")
+        # Atomic replace to prevent flicker (acts like a double buffer swap)
+        try:
+            textbox._textbox.replace("1.0", "end", text)
+        except AttributeError:
+            textbox.delete("1.0", "end")
+            textbox.insert("1.0", text)
+        textbox.configure(state="disabled")
+        
+        if scroll_to_end:
+            textbox.see("end")
+        elif x_pos is not None and y_pos is not None:
+            try:
+                textbox._textbox.xview_moveto(x_pos[0])
+                textbox._textbox.yview_moveto(y_pos[0])
+            except Exception:
+                pass
+
+    def _append_text_view(self, textbox, text):
+        try:
+            y_pos = textbox._textbox.yview()
+            is_at_bottom = y_pos[1] >= 0.95
+        except Exception:
+            is_at_bottom = True
+
+        textbox.configure(state="normal")
+        textbox.insert("end", text + "\n")
+        textbox.configure(state="disabled")
+        
+        if is_at_bottom:
+            textbox.see("end")
+
+    def refresh_biometrics(self, text):
+        self._update_text_view(self.biometrics_view, text)
+
+    def refresh_inventory(self, text):
+        self._update_text_view(self.inventory_view, text)
+
+    def append_agent_chat_log(self, text):
+        self._append_text_view(self.agent_chat_log_view, text)
+
+    def append_world_log(self, text):
+        self._append_text_view(self.world_log_view, text)
+
+    def refresh_ascii_map(self, text):
+        self._update_text_view(self.ascii_map_view, text)
+
+    def append_system_log(self, text):
+        self._append_text_view(self.system_log_view, text)
 
     def on_closing(self):
         Logger.log("Stopping engine and closing application...")
