@@ -31,20 +31,20 @@ Update: v6
 
 # 프로젝트 설정 (Settings)
 
-# 0. 필요사항
+**0. 필요사항**
 Google API Key
 
-# 1. 의존성 라이브러리 설치
+**1. 의존성 라이브러리 설치**
 pip install customtkinter google-genai kuzu sentence-transformers numpy requests
 
-# 2. 모델 폴더 생성 및 Hugging Face 리포지토리 클론
+**2. 모델 폴더 생성 및 Hugging Face 리포지토리 클론**
 mkdir -p models
 git clone [https://huggingface.co/BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3) models/bge-m3
 
-# 3. 불필요한 대용량 파일 정리 (선택 사항)
+**3. 불필요한 대용량 파일 정리 (선택 사항)**
 cd models/bge-m3
 rm -rf .git
 
-# 4. 구동
+**4. 구동**
 cd src
 python main.py
