@@ -55,7 +55,7 @@ class EventTrigger:
             return event_pack
 
         # 계획 트리거 (15% 확률)
-        if self.turns_since_last_thought >= 10 and random.random() < 0.15:
+        if self.turns_since_last_thought >= 30 and random.random() < 0.15:
             self.turns_since_last_thought = 0
             for agent in agents:
                 event_pack.append([agent, EventType.PROACTIVE_PULSE, "[EXTERNAL_SIGNAL: 자율 계획] 현재 당면한 생체 위기는 없다. 최종 탈출 목표를 달성하기 위해 지금 이 구역에서 수집하거나 수행할 선제적 행동 계획을 수립하라."])
