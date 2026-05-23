@@ -1,4 +1,5 @@
 from sim.agent import Agent
+from sim.agent_meta.vital_state import GenderType
 
 class Lim(Agent):
     def __init__(self, world_context_manager=None):

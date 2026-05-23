@@ -1,8 +1,15 @@
+class GenderType:
+    MALE = 0
+    FEMALE = 1
+
 class VitalState:
     def __init__(self):
         # 나이 및 수명 (소수점으로 미세하게 증가)
         self.age = 30.0
-        self.life_span = 80.0
+        self.life_span = 100.0
+
+        # 성별
+        self.gender = GenderType.FEMALE
 
         # 건강
         self.health = 100.0
@@ -82,8 +89,11 @@ class VitalState:
             self.health = 0
 
     def get_context(self):
+        gender_str = "FEMALE" if self.gender == GenderType.FEMALE else "MALE"
+
         return f"""\
 - 나이: {self.age:.1f}세
+- 성별: {gender_str}
 - 건강도: {int(self.health)}/100 [{self.health_label}]
 - 피로도: {int(self.fatigue)}/100
 - 허기짐: {int(self.hunger)}/100

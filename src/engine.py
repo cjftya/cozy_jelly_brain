@@ -9,7 +9,7 @@ class Engine:
 
     def start(self, 
               refresh_biometrics=None,
-              refresh_inventory=None,
+              refresh_world_detail=None,
               append_agent_chat_log=None,
               append_world_log=None,
               refresh_ascii_map=None,
@@ -22,7 +22,7 @@ class Engine:
             self.simulator.start(
                 self.llm_requester,
                 refresh_biometrics=refresh_biometrics,
-                refresh_inventory=refresh_inventory,
+                refresh_world_detail=refresh_world_detail,
                 append_agent_chat_log=append_agent_chat_log,
                 append_world_log=append_world_log,
                 refresh_ascii_map=refresh_ascii_map,

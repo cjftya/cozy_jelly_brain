@@ -26,7 +26,7 @@ class BaseObject:
         self.location = None
 
     def use(self):
-        return ObjectDetailType.NONE, None
+        return self.detail_type, False
 
     def set_name(self, name):
         self.name = name

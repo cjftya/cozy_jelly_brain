@@ -1,3 +1,5 @@
+from sim.object_meta.object_type import ObjectType
+
 class ObjectManager:
     def __init__(self):
         self.objects = {}
@@ -41,3 +43,31 @@ class ObjectManager:
         for obj in self.objects.values():
             description_list.append(self.get_object_context(obj.id))
         return "\n".join(description_list)
+
+    def find_space(self, name):
+        for obj in self.objects.values():
+            if obj.name == name and obj.type == ObjectType.SPACE:
+                return obj
+        return None
+
+    def find_item(self, name, parent_name=None):
+        for obj in self.objects.values():
+            if obj.name == name and obj.type == ObjectType.ITEM:
+                if parent_name is None:
+                    return obj
+                elif obj.parent and obj.parent.name == parent_name:
+                    return obj
+        return None
+
+    def find_building(self, name):
+        for obj in self.objects.values():
+            if obj.name == name and obj.type == ObjectType.BUILDING:
+                return obj
+        return None
+
+    def find_childs(self, parent):
+        result = []
+        for obj in self.objects.values():
+            if obj.parent and obj.parent.id == parent.id:
+                result.append(obj)
+        return result

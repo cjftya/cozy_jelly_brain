@@ -5,6 +5,14 @@ class ObjectType:
 
 class ObjectDetailType:
     NONE = 0
-    FOOD = 1
-    WATER = 2
     
+    # Default details type
+    DEFAULT_SPACE = 100
+    DEFAULT_BUILDING = 101
+    DEFAULT_ITEM = 102
+
+    # Details type(food)
+    FOOD = 1
+    
+    # Details type(drink)
+    DRINK = 2

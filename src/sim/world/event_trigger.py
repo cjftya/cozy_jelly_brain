@@ -5,6 +5,7 @@ class EventType:
     HUNGER_TRIPPED = 1
     FATIGUE_TRIPPED = 2
     RANDOM_SCAN = 3
+    RANDOM_MOVE = 4
 
 class ThinkEventType:
     NO_EVENT = 0
@@ -13,8 +14,8 @@ class ThinkEventType:
     SPEAK = 3
     HUNGER = 4
     FATIGUE = 5
-    SEARCH = 6
-    
+    INSPECT = 6
+
 
 class EventTrigger:
     def __init__(self):
@@ -39,10 +40,16 @@ class EventTrigger:
         if len(event_pack) > 0:
             return event_pack
 
-        # 랜덤/주기적 외부 스캔 트리거
-        if self.turns_since_last_thought >= 30 or random.random() < 0.1:
+        # 랜덤/주기적 외부 스캔 트리거 (외부에서 직접 신호를 주지 않는 경우) (5% 확률)
+        if self.turns_since_last_thought >= 20 and random.random() < 0.05:
             self.turns_since_last_thought = 0
             event_pack.append([None, EventType.RANDOM_SCAN, "[EXTERNAL_SIGNAL: 환경 스캔] 주변 환경을 확인하라."])
+            return event_pack
+        
+        # 랜덤 이동 트리거 (외부에서 직접 신호를 주지 않는 경우) (8% 확률)
+        if self.turns_since_last_thought >= 10 and random.random() < 0.08:
+            self.turns_since_last_thought = 0
+            event_pack.append([None, EventType.RANDOM_MOVE, "[EXTERNAL_SIGNAL: 행동 명령] 이동하라."])
             return event_pack
 
         event_pack.append([None, EventType.NO_EVENT, "..."])

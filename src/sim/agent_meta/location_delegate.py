@@ -1,7 +1,6 @@
 class LocationDelegate:
-    def __init__(self, current_location=None, reason_of_change_location=None):
+    def __init__(self, current_location=None):
         self.current_location = current_location
-        self.reason_of_change_location = reason_of_change_location
         self.available_locations = []
 
     def set_current_location(self, current_location):
@@ -9,12 +8,6 @@ class LocationDelegate:
 
     def get_current_location(self):
         return self.current_location
-
-    def set_reason_of_change_location(self, reason):
-        self.reason_of_change_location = reason
-
-    def get_reason_of_change_location(self):
-        return self.reason_of_change_location
 
     def get_available_locations(self, context_format=False):
         if context_format:

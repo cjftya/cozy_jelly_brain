@@ -57,7 +57,7 @@ class WeatherEngine:
         else:
             print(f"[경고] '{weather_name}'은(는) 등록되지 않은 날씨입니다.")
 
-    def get_context(self):
+    def get_weather_description(self, weather):
         weather_description_dict = {
             "맑음": "하늘은 파랗고 구름 한 점 없이 맑습니다. 햇살이 따스하게 내리쬡니다.",
             "흐림": "하늘 전체가 두터운 회색 구름으로 덮여 있습니다. 빛이 약하게 들어옵니다.",
@@ -66,9 +66,10 @@ class WeatherEngine:
             "천둥": "멀리서 낮게 '우르릉'거리는 소리가 들려옵니다. 곧 비가 올 것 같습니다.",
             "번개": "하늘이 번쩍이며 순간적으로 밝아졌다가 다시 어두워집니다. 곧 천둥이 칠 것입니다."
         }
+        return weather_description_dict.get(weather)
 
-        description = weather_description_dict.get(self.weather, self.weather)
+    def get_context(self):
         return f"""\
 # 세계 날씨 정보 (World Weather Info)
 - 현재 날씨: {self.weather}
-- 날씨 설명: {description}"""
+- 날씨 설명: {self.get_weather_description(self.weather)}"""

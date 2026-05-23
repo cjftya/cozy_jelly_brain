@@ -106,6 +106,9 @@ class IrisEngine:
         )
 
     def _run_llm_core(self, context, agent: "Agent"):
+        # system_prompt = context[0]["content"]
+        # print(system_prompt)
+
         response = self.iris_llm_api.request(context=context)
 
         content = ""

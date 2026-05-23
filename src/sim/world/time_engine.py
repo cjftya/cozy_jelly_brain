@@ -5,7 +5,7 @@ class TimeEngine:
         기본값: 3000년 1월 1일 8시
         """
         self.days_in_month = 30
-        self.seconds_to_advance = 300
+        self.seconds_to_advance = 60  # 턴당 60초
         self.time_scale = self.seconds_to_advance / 3600
         
         # 시작 날짜를 가상 세계의 '총 누적 초(Total Seconds)'로 환산
@@ -92,6 +92,12 @@ class TimeEngine:
             self.day_cycle = "저녁"
         else:
             self.day_cycle = "밤"
+
+    def get_date(self):
+        return f"{self.year:04d}-{self.month:02d}-{self.day:02d}"
+
+    def get_clock(self):
+        return f"{self.hour:02d}:{self.minute:02d}:{self.second:02d}"
 
     def get_context(self):
         # 텍스트가 정렬되도록 :02d 포맷(두 자리 숫자 맞춤)을 적용했습니다.

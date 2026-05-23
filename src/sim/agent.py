@@ -153,7 +153,26 @@ class Agent:
         self.think_event_queue.clear()
         res = self.iris_engine.event(agent=self, event_type=None, external_event=combined_signal, available_tools=self.get_available_tools(False))
         return res
-        
+
+    def move(self, target_location=None):
+        current_location = self.location_delegate.get_current_location()
+        if current_location == target_location:
+            return False
+
+        if target_location is None:
+            available_locations = self.location_delegate.get_available_locations()
+            target_location = current_location
+            while target_location == current_location:
+                target_location = random.choice(available_locations)
+        move_json = {
+            "function": "move_to",
+            "parameters": {
+                "location": target_location
+            },
+            "reason": ""
+        }
+        self.iris_engine.iris_function.process_action_call(move_json, self)
+        return True
 
     def set_serper_api_key(self, api_key):
         if self.iris_engine:
@@ -201,7 +220,7 @@ class Agent:
         if is_dialogue_mode:
             return ["speak", "give", "none"]
         else:
-            return ["take", "move_to", "search", "use", "rest", "none"]
+            return ["take", "move_to", "inspect", "use", "rest", "none"]
 
     def perceive_agents(self):
         all_agents = self.world_context_manager.agent_manager.get_agents()

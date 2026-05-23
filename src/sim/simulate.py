@@ -10,7 +10,7 @@ class Simulator:
         
         # UI API Callbacks
         self.refresh_biometrics = None
-        self.refresh_inventory = None
+        self.refresh_world_detail = None
         self.append_agent_chat_log = None
         self.append_world_log = None
         self.refresh_ascii_map = None
@@ -25,7 +25,7 @@ class Simulator:
 
     def start(self, llm_requester,
               refresh_biometrics=None,
-              refresh_inventory=None,
+              refresh_world_detail=None,
               append_agent_chat_log=None,
               append_world_log=None,
               refresh_ascii_map=None,
@@ -33,7 +33,7 @@ class Simulator:
         self.llm_requester = llm_requester
         
         self.refresh_biometrics = refresh_biometrics
-        self.refresh_inventory = refresh_inventory
+        self.refresh_world_detail = refresh_world_detail
         self.append_agent_chat_log = append_agent_chat_log
         self.append_world_log = append_world_log
         self.refresh_ascii_map = refresh_ascii_map
@@ -41,7 +41,7 @@ class Simulator:
         
         self.world_context_manager.start(self.llm_requester,
             refresh_biometrics=refresh_biometrics,
-            refresh_inventory=refresh_inventory,
+            refresh_world_detail=refresh_world_detail,
             append_agent_chat_log=append_agent_chat_log,
             append_world_log=append_world_log,
             refresh_ascii_map=refresh_ascii_map,
@@ -53,7 +53,7 @@ class Simulator:
         self.llm_requester = None
         
         self.refresh_biometrics = None
-        self.refresh_inventory = None
+        self.refresh_world_detail = None
         self.append_agent_chat_log = None
         self.append_world_log = None
         self.refresh_ascii_map = None

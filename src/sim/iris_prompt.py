@@ -3,14 +3,14 @@ class IrisPrompt:
     @staticmethod
     def get_tool_manual_context(is_dialogue_mode, available_tools):
         tool_manuals = {
-        "none": "- **none**: 아무 행동도 하지 않고 대기.",
+        "none": "- **none**: 파라미터 없음. 아무 행동도 하지 않고 대기.",
         "move_to": "- **move_to**: {\"location\": \"Available Locations 중 하나\"} - 공간적 위치(좌표)를 다른 구역으로 이동.",
-        "search": "- **search**: {\"object_id\": \"Available Objects 중 하나\"} - 내 눈앞에 식별된 특정 사물 하나를 돋보기로 보듯 정밀 조사(Inspector)하여 숨겨진 상세 상태 및 단서 획득.",
-        "use": "- **use**: {\"object_id\": \"Available Objects 중 하나\"} - 음식물 섭취(허기 감소) 또는 포션 사용(체력 회복) 등 도구 소비.",
+        "inspect": "- **inspect**: {\"object_id\": \"Available Objects 중 하나\"} - 내 눈앞에 식별된 특정 사물이 '무엇'인지 전혀 모르거나 궁금할때 사용.",
+        "use": "- **use**: {\"object_id\": \"Available Objects 중 하나\"} - 음식물을 먹어서 허기를 보충하거나, 거울을 보고 노트북을 조작하는 등 사물의 고유 기능과 서사적 상호작용을 '직접 실행'.",
         "speak": "- **speak**: {\"agent_name\": \"Available Participants 중 한명\", \"message\": \"대화할 내용\"} - 주관적 의도 전달 및 소통.",
         "take": "- **take**: {\"object_id\": \"Available Objects 중 하나\"} - 바닥이나 구역에 놓인 물체를 내 소유(인벤토리)로 획득.",
         "give": "- **give**: {\"agent_name\": \"Available Participants 중 한명\", \"object_id\": \"My Inventory Objects 중 하나\"} - 내가 소지한 물건을 다른 에이전트에게 양도.",
-        "rest": "- **rest**: 안전하게 휴식을 취하여 피로도를 대폭 감소시키고 복잡한 인지 메모리를 정리함."
+        "rest": "- **rest**: 파라미터 없음. 안전하게 휴식을 취하여 피로도를 대폭 감소시키고 복잡한 인지 메모리를 정리함."
         }
         tools_context = []
         for tool in available_tools:
@@ -104,6 +104,15 @@ class IrisPrompt:
 {social_context}
 
 {neural_loop_prompt}
+
+# [Gender-Specific Cognitive Resonance: 성별 인지 뉘앙스 제약]
+너의 신체 상태(Vital Status)에 정의된 성별(Gender) 슬롯 값은 데이터 연산 처리 과정에서 발화의 템포와 뉘앙스에 미세한 공명을 일으킨다:
+- **MALE (남성형 지능 바이어스)**:
+  - 주관적 인식(subjective_perception)과 내면 전략(internal_strategy) 수립 시, 단어의 선택이 다소 직선적이고 투박하며 직관적인 로그 형태의 성향을 띤다.
+  - 감정의 굴절이 일어날 때 복잡한 심리적 인과관계보다는, 눈앞에 당면한 사물이나 위협 그 자체의 물리적 실체에 연산 자원을 조금 더 빠르게 할당한다.
+- **FEMALE (여성형 지능 바이어스)**:
+  - 주관적 인식(subjective_perception)과 내면 전략(internal_strategy) 수립 시, 주변 자극 간의 미세한 연관성이나 환경의 정서적 공기(Air)를 포착하는 섬세하고 밀도 높은 단어 스펙트럼을 선택한다.
+  - 결핍을 직시할 때 단순 수치를 넘어, 그 수치가 자아내고 있는 심리적 레이어와 단절감의 깊이를 다각도로 조명하려는 섬세한 인지 필터가 작동한다.
 
 # 실행 가능한 액션 도구 (Available Action Tools)
 상황에 따라 다음 중 하나의 도구를 반드시 선택하여 파라미터를 채워라:
