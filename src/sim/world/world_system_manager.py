@@ -116,6 +116,10 @@ class WorldSystemManager:
                     if not agent.move():
                         self.log_world_event(f"{agent.name}가 이동에 실패 함.")
 
+            if event_type == EventType.PROACTIVE_PULSE:
+                event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
+                self.log_world_event(f"{event_agent.name}가 계획 수립을 시도 함.")
+
         for agent in self.agents:
             result = agent.think_tick()
             if result:
