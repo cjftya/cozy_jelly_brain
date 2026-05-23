@@ -1,6 +1,6 @@
 # UNIVERSAL ORGANIC COGNITIVE ENGINE (CozyJelly Brain)
 
-![CozyJelly Brain Character](docs/character.png)
+![CozyJelly Brain Character](docs/cozy_jelly_fish.png)
 
 **AI 에이전트가 세계를 객관적으로 처리하지 않습니다.**
 AI는 감정을 느끼고, 호르몬에 따라 현실을 왜곡하며, 유기체처럼 생존을 위해 행동합니다.
