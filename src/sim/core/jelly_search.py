@@ -2,7 +2,7 @@ import requests
 import json
 import os
 
-class IrisSearch:
+class JellySearch:
     def __init__(self):
         self.serper_api_key = None
         self.url = "https://google.serper.dev/search"

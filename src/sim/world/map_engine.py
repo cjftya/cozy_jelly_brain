@@ -8,8 +8,8 @@ class MapData:
         self.agents = []
 
 class MapEngine:
-    def __init__(self, world_context_manager):
-        self.world_context_manager = world_context_manager
+    def __init__(self, world_system_manager):
+        self.world_system_manager = world_system_manager
         self.map_data = None
 
     def init_map(self, root_agent):
@@ -20,7 +20,7 @@ class MapEngine:
         # TODO: 버그수정
 
         # 모든 공간 로드
-        spaces = self.world_context_manager.object_manager.get_objects_by_type(ObjectType.SPACE)
+        spaces = self.world_system_manager.object_manager.get_objects_by_type(ObjectType.SPACE)
         for space in spaces:
             # 선택된 에이전트가 있는공간만 로드
             if root_agent.get_location_delegate().get_current_location() != space.name:
@@ -31,13 +31,13 @@ class MapEngine:
             map_data_info.h = space.size.y
 
             # 해당 공간의 아이템 로드
-            objects = self.world_context_manager.object_manager.find_childs(space)
+            objects = self.world_system_manager.object_manager.find_childs(space)
             for obj in objects:
                 map_data_info.objects.append([item_key, obj.name, obj.detail, obj.position.x, obj.position.y])
                 item_key = chr(ord(item_key) + 1)
 
             # 해당 공간의 에이전트 로드
-            global_agents = self.world_context_manager.agent_manager.get_agents()
+            global_agents = self.world_system_manager.agent_manager.get_agents()
             for agent in global_agents:
                 if agent.get_location_delegate().get_current_location() == space.name:
                     map_data_info.agents.append([agent_key, agent.name, None, agent.position.x, agent.position.y])

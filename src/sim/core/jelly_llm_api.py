@@ -4,7 +4,7 @@ import re
 import json
 from log import Logger
 
-class IrisLlmApi:
+class JellyLlmApi:
     def __init__(self):
         self.last_call_time = 0
         self.min_interval = 10

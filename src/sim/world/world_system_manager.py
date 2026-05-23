@@ -1,32 +1,35 @@
 import time
-from sim.iris_llm_api import IrisLlmApi
-from sim.object_meta.object_manager import ObjectManager
-from sim.agent_meta.agent_manager import AgentManager
+from sim.core.jelly_llm_api import JellyLlmApi
+from sim.util.object_manager import ObjectManager
+from sim.util.agent_manager import AgentManager
+from sim.agents.lim import Lim
+from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
+from sim.world.world_view_manager import WorldViewManager
+from sim.world.map_engine import MapEngine
 from sim.world.world_object_creator import WorldObjectCreator
 from sim.world.weather_engine import WeatherEngine
 from sim.world.time_engine import TimeEngine
-from sim.sim_agent.lim import Lim
-from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
-from sim.world.agent_view import AgentView
-from sim.world.map_engine import MapEngine
+from log import Logger
 
-class WorldContextManager:
+class WorldSystemManager:
     def __init__(self):
         self.llm_requester = None
 
+        # 관리자
         self.agent_manager = AgentManager()
-        self.map_engine = MapEngine(self)
         self.object_manager = ObjectManager()
+
+        # 엔진
         self.world_object_creator = WorldObjectCreator()
         self.weather_engine = WeatherEngine()
         self.time_engine = TimeEngine()
         self.event_trigger = EventTrigger()
+        self.map_engine = MapEngine(self)
+        self.world_view_manager = WorldViewManager(self)
 
-        lim = Lim(world_context_manager=self)
+        lim = Lim(world_system_manager=self)
         self.agent_manager.add_agent(lim)
         self.agents = self.agent_manager.get_agents()
-
-        self.agent_view = AgentView(self)
 
         self.refresh_biometrics = None
         self.refresh_world_detail = None
@@ -76,13 +79,13 @@ class WorldContextManager:
         for agent in self.agents:
             agent.tick(self.time_engine.time_scale)
 
-        agent_details = self.agent_view.update_agent_details_view(root_agent)
+        agent_details = self.world_view_manager.update_agent_details_view(root_agent)
         self.refresh_biometrics(agent_details)
 
-        world_details = self.agent_view.update_world_details_view()
+        world_details = self.world_view_manager.update_world_details_view()
         self.refresh_world_detail(world_details)
 
-        map_details = self.agent_view.update_ascii_map_view(root_agent)
+        map_details = self.world_view_manager.update_ascii_map_view(root_agent)
         self.refresh_ascii_map(map_details)
 
         event_objects = self.event_trigger.check_triggers(self.agents, self.weather_engine.weather)
@@ -113,92 +116,16 @@ class WorldContextManager:
         for agent in self.agents:
             result = agent.think_tick()
             if result:
-                agent_log = self.parse_think_result(result)
-                if agent_log:
-                    self.log_agent_event(agent_log)
-                time.sleep(IrisLlmApi.get_loop_delay())
-
-    def parse_think_result(self, result):
-        # 1. 문자열로 들어왔거나 "None" 텍스트인 경우 방어 처리
-        if not result or result == "None":
-            return None
-            
-        # 2. 혹시 result가 딕셔너리가 아니라 문자열(JSON) 상태라면 파싱 시도
-        if isinstance(result, str):
-            try:
-                import json
-                result = json.loads(result)
-            except Exception:
-                return f"--- CRITICAL: LOG PARSE ERROR ---\nRaw: {result}"
-
-        # 3. 안전하게 데이터 추출
-        subjective_perception = result.get('subjective_perception', '')
-        unconscious_impulse = result.get('unconscious_impulse', '')
-        internal_strategy = result.get('internal_strategy', '')
-        
-        action_call = result.get('action_call', {}) or {} # None 방지
-        function = action_call.get('function', 'NONE')
-        parameters = action_call.get('parameters', {})
-        reason = action_call.get('reason', 'No reason provided.')
-        
-        # 4. 무의식 파편 가로 정렬 뷰 포매팅 (아까 정한 블록 스타일)
-        if unconscious_impulse:
-            impulses = [imp.strip() for imp in unconscious_impulse.split(',') if imp.strip()]
-            unconscious_str = "  ".join([f"▶ [{imp}]" for imp in impulses])
-        else:
-            unconscious_str = "▶ [NONE]"
-
-        # 5. Graph DB 메모리 파트 예외 방어 및 파싱
-        memories_to_save = result.get('memories_to_save', [])
-        # 만약 LLM이 텍스트 형태로 중복 직렬화해서 보냈을 경우 2차 방어
-        if isinstance(memories_to_save, str):
-            try:
-                import json
-                memories_to_save = json.loads(memories_to_save)
-            except Exception:
-                memories_to_save = []
-
-        memories_str = ''
-        if memories_to_save:
-            for memory in memories_to_save:
-                try:
-                    memories_str += f"\n[RELATION] {memory.get('subject')} ──({memory.get('relation')})──> {memory.get('object')}\n"
-                    memories_str += f" └─ [METADATA] {memory.get('metadata', {})}\n"
-                except Exception:
-                    continue
-        else:
-            memories_str = "[NO GRAPH MEMORY UPDATE]"
-
-        # 6. 최종 압축 템플릿 출력
-        agent_log = f"""
-❖ SUBJECTIVE REFRACTION (주관적 환경 왜곡 수용)
-"{subjective_perception}"
-
-❖ UNCONSCIOUS IMPULSE (무의식적 욕구 분출)
-{unconscious_str}
-
-❖ INTERNAL STRATEGY (단독 행동 및 생존 전략)
-{internal_strategy}
-
-❖ SYSTEM ACTION EXECUTION (최종 의사결정 집행)
-• FUNCTION : {str(function).upper()}
-• PARAMS   : {parameters}
-• REASON   : {reason}
-
-❖ KUZU GRAPH MEMORY UPDATE (시냅스 기억 저장 로그)
-{memories_str.strip()}
-
-
-----------------------------------------------------------------------
-"""
-
-        return agent_log
+                agent_log = self.world_view_manager.update_agent_log_view(agent, result)
+                self.log_agent_event(agent_log)
+                time.sleep(JellyLlmApi.get_loop_delay())
 
     def log_world_event(self, log):
         self.append_world_log(f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
 
     def log_system_event(self, log):
         self.append_system_log(f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
+        Logger.log("[SYSTEM]", log)
 
     def log_agent_event(self, log):
         self.append_agent_chat_log(f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}]\n{log}")

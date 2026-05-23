@@ -1,4 +1,4 @@
-class IrisPrompt:
+class JellyPrompt:
 
     @staticmethod
     def get_tool_manual_context(is_dialogue_mode, available_tools):
@@ -57,9 +57,9 @@ class IrisPrompt:
                         vital_context=None,
                         world_state_context=None):
         m = personality_matrix
-        social_context = IrisPrompt.get_social_context(available_participants, relationships) if is_dialogue_mode else ""
-        neural_loop_prompt = IrisPrompt.get_neural_loop_prompt(is_dialogue_mode)
-        tool_manual_context = IrisPrompt.get_tool_manual_context(is_dialogue_mode, available_tools)
+        social_context = JellyPrompt.get_social_context(available_participants, relationships) if is_dialogue_mode else ""
+        neural_loop_prompt = JellyPrompt.get_neural_loop_prompt(is_dialogue_mode)
+        tool_manual_context = JellyPrompt.get_tool_manual_context(is_dialogue_mode, available_tools)
 
         subjective_desc = "상대(Target) 선정 이유와 Matrix에 의해 오염된 주관적 해석" if is_dialogue_mode else "Matrix에 의해 오염된 주변 환경 및 자극에 대한 주관적 해석"
         internal_strategy = "가면 유지 및 균열 노출 수위와 대화 목적 수립" if is_dialogue_mode else "단독 행동 계획 및 생존 의도 수립"

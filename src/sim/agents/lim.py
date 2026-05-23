@@ -1,9 +1,9 @@
-from sim.agent import Agent
+from sim.agents.agent import Agent
 from sim.agent_meta.vital_state import GenderType
 
 class Lim(Agent):
-    def __init__(self, world_context_manager=None):
-        super().__init__("LIM", "HUMAN", world_context_manager=world_context_manager)
+    def __init__(self, world_system_manager=None):
+        super().__init__("LIM", "HUMAN", world_system_manager=world_system_manager)
         self.relationship_map = {"GOD": 0.0}
         self.position.x = 4.0
         self.position.y = 4.0

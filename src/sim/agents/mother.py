@@ -1,4 +1,4 @@
-from sim.agent import Agent
+from sim.agents.agent import Agent
 
 class Mother(Agent):
     def __init__(self):

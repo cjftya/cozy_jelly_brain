@@ -1,31 +1,31 @@
 import json
 import re
-from sim.iris_prompt import IrisPrompt
-from sim.iris_memory import IrisMemory
-from sim.iris_search import IrisSearch
-from sim.iris_llm_api import IrisLlmApi
-from sim.iris_function import IrisFunction
+from sim.core.jelly_prompt import JellyPrompt
+from sim.core.jelly_memory import JellyMemory
+from sim.core.jelly_search import JellySearch
+from sim.core.jelly_llm_api import JellyLlmApi
+from sim.core.jelly_function import JellyFunction
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
-from sim.object_meta.object_manager import ObjectManager
+from sim.util.object_manager import ObjectManager
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sim.agent import Agent
 from log import Logger
 
-class IrisEngine:
-    def __init__(self, id, world_context_manager):
+class JellyEngine:
+    def __init__(self, id, world_system_manager):
         self.id = id
-        self.iris_llm_api = IrisLlmApi()
-        self.iris_memory = IrisMemory(db_path=f"../src/brain_db/[{self.id}]_brain")
-        self.iris_search = IrisSearch()
-        self.iris_function = IrisFunction(world_context_manager)
+        self.core_llm_api = JellyLlmApi()
+        self.core_memory = JellyMemory(db_path=f"../src/brain_db/[{self.id}]_brain")
+        self.core_search = JellySearch()
+        self.core_function = JellyFunction(world_system_manager)
 
     def start(self, llm_requester):
-        self.iris_memory.start()
-        self.iris_llm_api.set_llm_requester(llm_requester)
+        self.core_memory.start()
+        self.core_llm_api.set_llm_requester(llm_requester)
 
     def stop(self):
-        self.iris_memory.stop()
+        self.core_memory.stop()
 
     def event(self, agent, event_type, external_event, available_tools=["none"]):
         available_participants = ParticipantsDelegate().get_available_participants()
@@ -85,7 +85,7 @@ class IrisEngine:
 
     def _get_system_context(self, agent, available_participants, available_objects, available_tools, is_dialogue_mode, memories=None):
         raw_matrix = agent.get_personality_matrix()
-        return IrisPrompt.get_system_prompt(
+        return JellyPrompt.get_system_prompt(
             personality_matrix=raw_matrix,
             name=agent.name,
             persona_context=agent.get_persona_context(),
@@ -102,14 +102,14 @@ class IrisEngine:
             available_tools=available_tools,
             is_dialogue_mode=is_dialogue_mode,
             vital_context=agent.get_vital_state().get_context(),
-            world_state_context=agent.world_context_manager.get_state_context()
+            world_state_context=agent.world_system_manager.get_state_context()
         )
 
     def _run_llm_core(self, context, agent: "Agent"):
         # system_prompt = context[0]["content"]
         # print(system_prompt)
 
-        response = self.iris_llm_api.request(context=context)
+        response = self.core_llm_api.request(context=context)
 
         content = ""
         if isinstance(response, dict):
@@ -121,7 +121,7 @@ class IrisEngine:
             Logger.log_debug("Error", "LLM으로부터 유효한 응답 내용을 받지 못했습니다.")
             return "인지 프로세스 중단..."
         
-        result = self.iris_llm_api.parse_llm_response(content)
+        result = self.core_llm_api.parse_llm_response(content)
 
         print(result)
 
@@ -130,12 +130,12 @@ class IrisEngine:
             new_memories = result.get('memories_to_save', [])
             relationship_delta = result.get('relationship_delta', {})
         
-            self.iris_function.process_action_call(result.get('action_call', {}), agent)
+            self.core_function.process_action_call(result.get('action_call', {}), agent)
             
             self.update_personality_matrix(state_delta, agent)
             
             if new_memories:
-                self.iris_memory.add_memory(new_memories, state_delta)
+                self.core_memory.add_memory(new_memories, state_delta)
 
             if relationship_delta:
                 self.update_relationship_delta(relationship_delta, agent)
@@ -160,13 +160,13 @@ class IrisEngine:
 
         # 3. 최종 Valence 융합
         # 이성적일수록 감정을 감쇄시키되, 최소 0.3의 최소 감정선은 유지
-        base_resonance = self.iris_memory.emotional_resonance
+        base_resonance = self.core_memory.emotional_resonance
         damping_factor = max(base_resonance, 1.0 - matrix['logic_emotion'])
 
         combined_valence = (internal_valence * 0.4 + rel_valence * 0.6) * damping_factor
         current_valence = round(combined_valence, 2)
 
-        memories = self.iris_memory.retrieve_memory(user_input, current_valence, top_k=3)
+        memories = self.core_memory.retrieve_memory(user_input, current_valence, top_k=3)
         memories = memories if len(memories) > 0 else "연관된 기억 없음"
         return memories
 
@@ -198,7 +198,7 @@ class IrisEngine:
         Logger.log_debug("Relationship Delta Updated", agent.get_relationships())
 
     def perform_brain_cleanup(self):
-        self.iris_memory.perform_brain_cleanup()
+        self.core_memory.perform_brain_cleanup()
 
     def set_serper_api_key(self, api_key):
-        self.iris_search.set_serper_api_key(api_key)
+        self.core_search.set_serper_api_key(api_key)

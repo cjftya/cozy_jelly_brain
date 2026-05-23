@@ -1,4 +1,4 @@
-from sim.agent import Agent
+from sim.agents.agent import Agent
 
 class Rain(Agent):
     def __init__(self):

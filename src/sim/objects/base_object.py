@@ -1,5 +1,5 @@
 from sim.util.point import Point
-from sim.object_meta.object_manager import ObjectManager
+from sim.util.object_manager import ObjectManager
 from sim.object_meta.object_type import ObjectDetailType
 from sim.util.global_util import GlobalUtil
 
@@ -22,10 +22,9 @@ class BaseObject:
         # 기능적 속성
         self.is_interactive = False
 
-        # 위치 속성
-        self.location = None
-
     def use(self):
+        # detail_type
+        # is_consumed
         return self.detail_type, False
 
     def set_name(self, name):
@@ -37,15 +36,17 @@ class BaseObject:
     def set_detail(self, detail):
         self.detail = detail
 
+    def set_detail_type(self, detail_type):
+        self.detail_type = detail_type
+
     def set_interactive(self, interactive):
         self.is_interactive = interactive
 
-    def set_location(self, location):
-        self.location = location
+    def set_pos(self, x, y):
+        self.position.set_value(x, y)
 
     def set_size(self, w, h):
-        self.size.x = w
-        self.size.y = h
+        self.size.set_value(w, h)
 
     def set_weight(self, weight):
         self.weight = weight

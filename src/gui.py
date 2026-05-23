@@ -9,8 +9,8 @@ class ChatApp(ctk.CTk):
         self.engine = engine
         
         # Configure window
-        self.title("Iris Brain Agent")
-        self.geometry("1400x850")
+        self.title("CozyJelly Brain Simulator")
+        self.geometry("1300x850")
         
         # Set appearance
         ctk.set_appearance_mode("dark")
@@ -26,7 +26,7 @@ class ChatApp(ctk.CTk):
         self.sidebar_frame.grid(row=0, column=0, sticky="nsew")
         self.sidebar_frame.grid_rowconfigure(10, weight=1)
         
-        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="IRIS BRAIN AGENT", font=ctk.CTkFont(size=24, weight="bold"))
+        self.logo_label = ctk.CTkLabel(self.sidebar_frame, text="JELLY BRAIN", font=ctk.CTkFont(size=24, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(30, 20))
         
         # API Key Section
@@ -43,7 +43,7 @@ class ChatApp(ctk.CTk):
         # Web Search Support
         self.web_search_var = ctk.BooleanVar(value=False)
         self.web_search_check = ctk.CTkCheckBox(
-            self.sidebar_frame, 
+            self.sidebar_frame,
             text="Support Web Search", 
             variable=self.web_search_var, 
             command=self.toggle_serper_input,
@@ -272,7 +272,7 @@ class ChatApp(ctk.CTk):
         label = ctk.CTkLabel(
             frame, 
             text=title.upper(), 
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=13, weight="bold"),
             anchor="w",
             text_color="#3B82F6"
         )
@@ -281,10 +281,19 @@ class ChatApp(ctk.CTk):
         font_family = "Consolas" if any(x in title.lower() for x in ["map", "biometrics"]) else "Inter"
         textbox = ctk.CTkTextbox(
             frame, 
-            font=ctk.CTkFont(family=font_family, size=12),
+            font=ctk.CTkFont(family=font_family, size=14),
             wrap="none",
             height=height
         )
+        
+        # Adjust line spacing for better visibility and readability
+        if "map" in title.lower():
+            # For ASCII map, keep line spacing smaller to preserve grid aspect ratio
+            textbox._textbox.configure(spacing1=2, spacing2=2, spacing3=2)
+        else:
+            # For general text logs, increase line spacing to make it highly legible
+            textbox._textbox.configure(spacing1=5, spacing2=5, spacing3=5)
+
         textbox.grid(row=1, column=0, padx=5, pady=0, sticky="nsew")
         textbox.configure(state="disabled")
         

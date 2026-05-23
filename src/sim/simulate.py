@@ -1,6 +1,5 @@
 import time
-from sim.iris_llm_api import IrisLlmApi
-from sim.world.world_context_manager import WorldContextManager
+from sim.world.world_system_manager import WorldSystemManager
 from log import Logger
 
 class Simulator:
@@ -21,7 +20,7 @@ class Simulator:
         self.use_web_search = False
         self.serper_api_key = None
 
-        self.world_context_manager = WorldContextManager()
+        self.world_system_manager = WorldSystemManager()
 
     def start(self, llm_requester,
               refresh_biometrics=None,
@@ -39,7 +38,7 @@ class Simulator:
         self.refresh_ascii_map = refresh_ascii_map
         self.append_system_log = append_system_log
         
-        self.world_context_manager.start(self.llm_requester,
+        self.world_system_manager.start(self.llm_requester,
             refresh_biometrics=refresh_biometrics,
             refresh_world_detail=refresh_world_detail,
             append_agent_chat_log=append_agent_chat_log,
@@ -50,7 +49,7 @@ class Simulator:
 
     def stop(self):
         self._interupt = True
-        self.world_context_manager.stop()
+        self.world_system_manager.stop()
         self.llm_requester = None
         
         self.refresh_biometrics = None
@@ -77,7 +76,7 @@ class Simulator:
                 break
 
             #===============================
-            self.world_context_manager.tick()
+            self.world_system_manager.tick()
             #===============================
 
     def set_serper_api_key(self, api_key):

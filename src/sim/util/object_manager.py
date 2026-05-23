@@ -32,7 +32,14 @@ class ObjectManager:
     def get_object_context(self, id):
         obj = self.get_object(id)
         if obj:
-            return f"- [name: {obj.name}] - [object_id: {obj.id}]"
+            description = ""
+            if obj.type == ObjectType.ITEM:
+                state, detail = obj.get_current_state()
+                description = detail if detail is not None else obj.detail
+            else:
+                description = obj.detail
+
+            return f"- [name: {obj.name}] - [object_id: {obj.id}] - [detail: {description}]"
         return ""
 
     def get_objects_full_context(self):
@@ -71,3 +78,9 @@ class ObjectManager:
             if obj.parent and obj.parent.id == parent.id:
                 result.append(obj)
         return result
+
+    def has_object(self, obj):
+        for o in self.objects.values():
+            if o.id == obj.id:
+                return True
+        return False

@@ -1,7 +1,7 @@
 # UPDATE HISTORY
 Update: v6
 
-# UNIVERSAL ORGANIC COGNITIVE ENGINE (IRIS BRAIN AGENT)
+# UNIVERSAL ORGANIC COGNITIVE ENGINE (CozyJelly Brain)
 
 본 프로젝트는 주입된 페르소나를 생존 도구로 사용하는 유기적 자율 인지 지능 에이전트 시뮬레이션 프레임워크입니다. 에이전트는 외부 자극을 객관적으로 처리하지 않으며, 현재의 호르몬 상태(Matrix), 생체적 결핍(Desires), 그리고 성별 바이어스에 따라 세계를 주관적으로 왜곡(Refraction)하여 수용하고 자율적인 행동을 집행합니다.
 

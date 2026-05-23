@@ -1,4 +1,4 @@
-from sim.object_meta.base_object import BaseObject
+from sim.objects.base_object import BaseObject
 from sim.object_meta.object_type import ObjectType, ObjectDetailType
 
 class SpaceObject(BaseObject):

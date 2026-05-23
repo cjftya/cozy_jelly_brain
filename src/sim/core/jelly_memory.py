@@ -4,7 +4,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from log import Logger
 
-class IrisMemory:
+class JellyMemory:
     def __init__(self, db_path, load_embed_model=True):
         # 그래프 데이터베이스 및 연결 초기화
         self.db = kuzu.Database(db_path)
@@ -207,11 +207,11 @@ class IrisMemory:
         except Exception as e:
             return {"nodes": [], "links": []}
 
-    def inspect_iris_brain(self):
+    def inspect_jelly_brain(self):
         """뇌 내부 상태 정밀 진단 로그"""
         try:
             Logger.log("\n" + "═"*100)
-            Logger.log("🧠 [Project Iris] Neural Links Diagnostic")
+            Logger.log("🧠 [Project Jellry Brain] Neural Links Diagnostic")
             Logger.log("═"*100)
             
             res = self.conn.execute("""
