@@ -119,7 +119,7 @@ class Agent:
                     combined_signal += f"{think_event_message}\n"
 
             self.think_event_queue.clear()
-            res = self.engine.event(agent=self, event_type=None, external_event=combined_signal, available_tools=self.get_available_tools(False))
+            res = self.engine.event(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
             return res
 
         # find agent signal
@@ -162,7 +162,7 @@ class Agent:
             think_event_message = think_event.get("message", "")
             combined_signal += f"{think_event_message}\n"
         self.think_event_queue.clear()
-        res = self.engine.event(agent=self, event_type=None, external_event=combined_signal, available_tools=self.get_available_tools(False))
+        res = self.engine.event(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
         return res
 
     def move(self, target_location=None):

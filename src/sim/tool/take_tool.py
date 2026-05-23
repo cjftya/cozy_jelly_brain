@@ -16,6 +16,7 @@ class TakeTool(BaseTool):
         target_object = world_system_manager.object_manager.get_object(object_id)
         if target_object:
             agent.get_inventory().add_object(target_object)
+            target_object.parent = None
             world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 획득.")
         else:
             world_system_manager.log_world_event(f"{agent.name}가 {object_id}을 획득할 수 없음.")

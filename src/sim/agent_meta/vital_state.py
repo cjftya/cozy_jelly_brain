@@ -30,13 +30,13 @@ class VitalState:
         self.warning = ""
 
     def update_hunger(self, value):
-        self.hunger = min(self.max_hunger, self.hunger + value)
+        self.hunger = max(0.0, min(self.max_hunger, self.hunger + value))
 
     def update_fatigue(self, value):
-        self.fatigue = min(self.max_fatigue, self.fatigue + value)
+        self.fatigue = max(0.0, min(self.max_fatigue, self.fatigue + value))
 
     def update_health(self, value):
-        self.health = min(self.max_health, self.health + value)
+        self.health = max(0.0, min(self.max_health, self.health + value))
 
     def tick(self, time_scale=1.0):
         if not self.is_alive:
