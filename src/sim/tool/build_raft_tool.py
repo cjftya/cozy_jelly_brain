@@ -17,9 +17,8 @@ class BuildRaftTool(BaseTool):
         vines = inv.find_item("질긴 덩굴")
         
         if logs and vines:
-            world_system_manager.log_world_event(f"🔥 [역대급 엔딩: 능동적 생존 탈출] {agent.name}가 야생에서 수집한 통나무와 덩굴을 엮어 견고한 탈출용 뗏목을 조립해 냈습니다! 거친 집사광 파도를 뚫고 망망대해로 나아가 고향으로 복귀하는 데 대성공했습니다! 시뮬레이션을 중지합니다.")
+            world_system_manager.log_world_event(f"[능동적 생존 탈출] {agent.name}가 야생에서 수집한 통나무와 덩굴을 엮어 견고한 탈출용 뗏목을 조립해 냈습니다! 거친 집사광 파도를 뚫고 망망대해로 나아가 고향으로 복귀하는 데 성공함")
             world_system_manager.log_system_event("CRITICAL_END: SIMULATION_SUCCESS_RAFT_ESCAPE")
-            # 시뮬레이터를 멈추기 위해 인터럽트 플래그 강제 주입
             world_system_manager.event_trigger.stop()
         else:
-            world_system_manager.log_world_event(f"{agent.name}가 뗏목 조립을 시도했으나 자원(단단한 통나무 혹은 질긴 덩굴)이 가방에 부족합니다.")
+            world_system_manager.log_world_event(f"{agent.name}가 뗏목 조립을 시도했으나 자원(단단한 통나무 혹은 질긴 덩굴)이 가방에 부족함")

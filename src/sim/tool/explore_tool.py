@@ -27,6 +27,6 @@ class ExploreTool(BaseTool):
             discovered = random.choice(unknown_spaces)
             # 에이전트의 공간 가용 범위 동적 확장 (안개 걷히기 기믹)
             agent.location_delegate.add_location(discovered)
-            world_system_manager.log_world_event(f"🗺️ [미지 구역 개척] {agent.name}가 가혹한 수풀을 헤치며 정찰한 결과, 새로운 구역 [{discovered}]을 발견하여 인지 지도에 등록했습니다!")
+            world_system_manager.log_world_event(f"{agent.name}가 가혹한 수풀을 헤치며 정찰한 결과, 새로운 구역 [{discovered}]을 발견하여 인지 지도에 등록함.")
         else:
-            world_system_manager.log_world_event(f"{agent.name}가 섬 주위를 샅샅이 뒤졌으나 더 이상 발견할 미지의 영역이 없습니다.")
+            world_system_manager.log_world_event(f"{agent.name}가 섬 주위를 샅샅이 뒤졌으나 더 이상 발견할 미지의 영역이 없음.")

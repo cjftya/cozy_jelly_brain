@@ -64,13 +64,18 @@ class CastAwayWorldBuilder(WorldBuilder):
         # 생존용 기본 식료품 야생 자원 임시 배치
         sea_water = ItemObject(name="코코넛 열매", detail="나무에서 떨어져 뒹구는 즙이 가득한 열매. 수분과 허기를 채워준다.", detail_type=ObjectDetailType.DRINK, parent=camp)
         sea_water.set_pos(2, 2)
-        sea_water.set_nutri(15)
+        sea_water.set_nutri(20)
         self._add_object(sea_water)
 
         dried_fish = ItemObject(name="말린 생선 조각", detail="바위 위에 널어두어 수분이 완전히 날아간 훈제 생선 포.", detail_type=ObjectDetailType.FOOD, parent=camp)
         dried_fish.set_pos(5, 4)
-        dried_fish.set_nutri(25)
+        dried_fish.set_nutri(35)
         self._add_object(dried_fish)
+
+        snack = ItemObject(name="과자 뭉치", detail="습기를 흡수하여 부드러워진 달콤한 비상 식량.", detail_type=ObjectDetailType.FOOD, parent=camp)
+        snack.set_pos(5, 5)
+        snack.set_nutri(30)
+        self._add_object(snack)
 
 
         # =================================================================

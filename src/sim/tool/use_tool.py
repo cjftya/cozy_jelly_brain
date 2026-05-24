@@ -20,7 +20,7 @@ class UseTool(BaseTool):
             if is_consumed:
                 # 소모품 사용
                 if object_detail_type == ObjectDetailType.FOOD or object_detail_type == ObjectDetailType.DRINK:
-                    agent.vital_state.update_hunger(target_object.nutrition_value)
+                    agent.vital_state.update_hunger(-target_object.nutrition_value)
                 else:
                     # 음식 이외 다른 것들 (감기약 등)
                     pass

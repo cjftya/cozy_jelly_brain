@@ -24,37 +24,49 @@ class EventTrigger:
         self.move_timer = 0
         self.scan_timer = 0
         self.plan_timer = 0
+        self.hunger_alert_timer = 999.0
+        self.fatigue_alert_timer = 999.0
 
     def stop(self):
         self.move_timer = -99999
         self.scan_timer = -99999
         self.plan_timer = -99999
+        self.hunger_alert_timer = -99999.0
+        self.fatigue_alert_timer = -99999.0
     
     def check_triggers(self, agents, time_scale=1.0):
         self.move_timer += time_scale
         self.scan_timer += time_scale
         self.plan_timer += time_scale
+        self.hunger_alert_timer += time_scale
+        self.fatigue_alert_timer += time_scale
 
         event_pack = []
-        
-        # 신체적 결핍 신호
-        for agent in agents:
-            vital = agent.get_vital_state()
-            if vital.hunger >= 80.0:
-                event_pack.append([agent, EventType.HUNGER_TRIPPED, "[EXTERNAL_SIGNAL: 생체 위기] 배고픔이 한계에 달해 속이 쓰리고 고통스럽다."])
-
-            if vital.fatigue >= 80.0:
-                event_pack.append([agent, EventType.FATIGUE_TRIPPED, "[EXTERNAL_SIGNAL: 생체 위기] 극심한 피로로 인해 눈꺼풀이 무겁고 정신이 흐려진다."])
-
-        if len(event_pack) > 0:
-            self.plan_timer = 0
-            self.scan_timer = 0
-            self.move_timer = 0
-            return event_pack
 
         PLAN_INTERVAL = 20 / 60.0  # 인게임 기준 '20분' 마다 확실한 기획 제공
         MOVE_INTERVAL = 12 / 60.0  # 인게임 기준 최소 '12분' 정체 시 충동 검사
         SCAN_INTERVAL = 15 / 60.0  # 인게임 기준 '15분' 마다 스캔 검사
+        VITAL_ALERT_COOLDOWN = 10 / 60.0 # 인게임 기준 '10분' 재경고 가드
+
+        # 신체적 결핍 트리거
+        for agent in agents:
+            vital = agent.get_vital_state()
+            
+            if vital.hunger >= 80.0 and self.hunger_alert_timer >= VITAL_ALERT_COOLDOWN:
+                self.hunger_alert_timer = 0.0
+                self.plan_timer = 0.0
+                
+                msg = "[EXTERNAL_SIGNAL: 생체 위기] 에너지 결핍이 위험 수준(>=80%). 가용 자원 상황과 궁극적 목표의 시급성을 대조하여, 에너지 충전과 목표 강행 중 최선의 전략을 판단하고 결단할 것."
+                event_pack.append([agent, EventType.HUNGER_TRIPPED, msg])
+                return event_pack
+
+            if vital.fatigue >= 80.0 and self.fatigue_alert_timer >= VITAL_ALERT_COOLDOWN:
+                self.fatigue_alert_timer = 0.0
+                self.plan_timer = 0.0
+                
+                msg = "[EXTERNAL_SIGNAL: 생체 위기] 누적 피로도가 위험 수준(>=80%). 무리한 행동 지속은 자멸 위험이 있으나 필수 과제가 있다면 인내할 수 있음. 즉시 휴식할지, 위험을 무릅쓰고 강행할지 결단할 것."
+                event_pack.append([agent, EventType.FATIGUE_TRIPPED, msg])
+                return event_pack
 
         # 독립된 계획 신호
         if self.plan_timer >= PLAN_INTERVAL:
@@ -78,6 +90,3 @@ class EventTrigger:
 
         event_pack.append([None, EventType.NO_EVENT, "..."])
         return event_pack
-
-
-                
