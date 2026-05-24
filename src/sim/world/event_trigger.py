@@ -17,6 +17,7 @@ class ThinkEventType:
     FATIGUE = 5
     INSPECT = 6
     PLANNING = 7
+    WEB_SEARCH = 8
 
 
 class EventTrigger:

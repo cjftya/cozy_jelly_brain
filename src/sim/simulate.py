@@ -46,6 +46,7 @@ class Simulator:
             refresh_ascii_map=refresh_ascii_map,
             append_system_log=append_system_log
         )
+        self.world_system_manager.set_serper_api_key(self.serper_api_key)
 
     def stop(self):
         self._interupt = True

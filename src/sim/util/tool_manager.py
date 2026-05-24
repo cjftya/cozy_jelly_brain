@@ -10,6 +10,7 @@ from sim.tool.none_tool import NoneTool
 from sim.tool.explore_tool import ExploreTool
 from sim.tool.build_raft_tool import BuildRaftTool
 from sim.tool.light_signal_tool import LightSignalTool
+from sim.tool.web_search_tool import WebSearchTool
 
 class ToolManager:
     def __init__(self):
@@ -26,7 +27,9 @@ class ToolManager:
             # cast away sim specific tools
             ToolType.EXPLORE: ExploreTool(),
             ToolType.BUILD_RAFT: BuildRaftTool(),
-            ToolType.LIGHT_SIGNAL: LightSignalTool()
+            ToolType.LIGHT_SIGNAL: LightSignalTool(),
+
+            ToolType.WEB_SEARCH: WebSearchTool()
         }
 
     def add_tool(self, tool):

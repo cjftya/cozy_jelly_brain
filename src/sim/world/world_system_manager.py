@@ -14,6 +14,8 @@ class WorldSystemManager:
     def __init__(self):
         self.llm_requester = None
 
+        self.serper_api_key = None
+
         # 관리자
         self.agent_manager = AgentManager()
         self.object_manager = ObjectManager()
@@ -25,7 +27,6 @@ class WorldSystemManager:
         self.map_engine = MapEngine(self)
         self.world_view_manager = WorldViewManager(self)
         self.world_data_factory = WorldDataFactory()
-
         self.tool_manager = ToolManager()
 
         self.world_agents = []
@@ -36,7 +37,7 @@ class WorldSystemManager:
         self.append_world_log = None
         self.refresh_ascii_map = None
         self.append_system_log = None
-        
+
     def start(self, llm_requester, 
             refresh_biometrics=None,
             refresh_world_detail=None,
@@ -142,6 +143,9 @@ class WorldSystemManager:
         return f"""\
 {self.time_engine.get_context()}\n
 {self.weather_engine.get_context()}"""
+
+    def set_serper_api_key(self, serper_api_key):
+        self.serper_api_key = serper_api_key
 
 
         
