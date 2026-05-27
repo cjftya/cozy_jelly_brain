@@ -44,23 +44,15 @@ class WeatherEngine:
 
         self.weather_type = new_weather_type
 
-    def force_weather(self, weather_type, duration=None):
-        """
-        외부에서 날씨를 강제로 설정합니다.
-        
-        :param weather_type: 강제 설정할 날씨 이름 (WeatherType.CLEAR, WeatherType.CLOUDY, WeatherType.RAINY, WeatherType.SNOWY, WeatherType.THUNDERSTORM, WeatherType.LIGHTNING)
-        :param duration: 강제 설정한 날씨가 유지될 시간 (단위: 시간)
-                         None이면 기본 3~12시간 중 랜덤 설정됩니다.
-                         무한히 고정하고 싶다면 float('inf')를 넣으면 됩니다.
-        """
+    def force_weather(self, weather_type, duration_hours=None):
         if weather_type in self.weather_type_list:
             self.weather_type = weather_type
-            if duration is not None:
-                self.remaining_hours = duration
+            if duration_hours is not None:
+                self.remaining_hours = duration_hours
             else:
                 self.remaining_hours = random.randint(3, 12)
         else:
-            print(f"[경고] '{weather_type}'은(는) 등록되지 않은 날씨입니다.")
+            print(f"[ERROR] '{weather_type}'은(는) 등록되지 않은 날씨입니다.")
 
     def get_weather_description(self, weather_type):
         weather_description_dict = {

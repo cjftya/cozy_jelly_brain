@@ -3,6 +3,7 @@ import requests
 import json
 from sim.tool.base_tool import BaseTool
 from sim.tool.tool_type import ToolType
+from sim.world.event_trigger import ThinkEventType
 
 class WebSearchTool(BaseTool):
     def __init__(self):

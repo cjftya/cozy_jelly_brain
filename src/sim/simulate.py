@@ -83,8 +83,5 @@ class Simulator:
     def set_serper_api_key(self, api_key):
         self.serper_api_key = api_key
         
-    def set_autoloop(self, enabled):
-        self._auto_loop = enabled
-    
     def set_enabled_web_search(self, enabled):
         self.use_web_search = enabled

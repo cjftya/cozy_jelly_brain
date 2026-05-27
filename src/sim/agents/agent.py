@@ -89,35 +89,6 @@ class Agent:
 
     def stop(self):
         self.engine.stop()
-
-    def scan(self, external_event):
-        found_agents = self.perceive_agents()
-        found_objects = self.perceive_objects()
-        if len(found_agents) <= 0 and len(found_objects) <= 0:
-            return
-
-        # 40센트 확률로 대화 60퍼센트 확률로 사물탐색
-        if random.random() < 0.4:
-            if len(found_agents) > 0 and self.vital_state.fatigue < 70 and self.vital_state.health > 30:
-                ran_num = self.personality_matrix['defensive_open'] + random.random()
-                if ran_num >= 1.0:
-                    msg = " 주변에 다른 상대가 보인다. 너의 신체적 겹핍, 목적 달성에 따라 대상에게 말을 걸지 무시할지 판단하라. 대화가 의미 없다면 'move_to' 도구를 이용하여 장소를 이동하라."
-                    self.push_think_event(ThinkEventType.FIND_AGENT, external_event + msg, found_agents)
-                    return
-
-        if random.random() < 0.6:
-            if len(found_objects) > 0:
-                msg = " 주위에 관심있는 사물이 있다. 너의 신체적 겹핍, 목적 달성에 따라 사물을 조사하거나 획득할지 결정하라."
-                self.push_think_event(ThinkEventType.FIND_ITEM, external_event + msg, found_objects)
-                return
-
-    def push_think_event(self, think_event_type, message, data=None):
-        self.set_enable_thinking(True)
-        self.think_event_queue[think_event_type] = {"message":message, "data":data}
-
-    def clear_think_event(self):
-        self.set_enable_thinking(False)
-        self.think_event_queue.clear()
     
     def tick(self, time_scale):
         day_cycle = self.world_system_manager.time_engine.day_cycle
@@ -145,7 +116,7 @@ class Agent:
                     combined_signal += f"{think_event_message}\n"
 
             self.think_event_queue.clear()
-            res = self.engine.event(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
+            res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
             return res
 
         # find agent signal
@@ -155,7 +126,7 @@ class Agent:
             found_agents = think_event.get("data", None)
 
             self.think_event_queue.clear()
-            res = self.engine.speak(user_input=think_event_message, agent=self, available_agents=found_agents, from_scan=True, available_tool_types=self.get_available_tool_types(True))
+            res = self.engine.think_event_speak(user_input=think_event_message, agent=self, available_agents=found_agents, from_scan=True, available_tool_types=self.get_available_tool_types(True))
             return res
 
         # find item signal
@@ -165,7 +136,7 @@ class Agent:
             found_objects = think_event.get("data", None)
 
             self.think_event_queue.clear()
-            res = self.engine.search(agent=self, external_event=think_event_message, detected_objects=found_objects, available_tool_types=self.get_available_tool_types(False))
+            res = self.engine.think_event_detect_objects(agent=self, external_event=think_event_message, detected_objects=found_objects, available_tool_types=self.get_available_tool_types(False))
             return res
         
         # speak signal
@@ -177,7 +148,7 @@ class Agent:
             available_agent = self.world_system_manager.agent_manager.get_agent_by_name(found_agent_name)
 
             self.think_event_queue.clear()
-            res = self.engine.speak(user_input=user_input, agent=self, available_agents=[available_agent], from_scan=False, available_tool_types=self.get_available_tool_types(True))
+            res = self.engine.think_event_speak(user_input=user_input, agent=self, available_agents=[available_agent], from_scan=False, available_tool_types=self.get_available_tool_types(True))
             return res
 
         # event signal
@@ -186,28 +157,37 @@ class Agent:
             think_event_message = think_event.get("message", "")
             combined_signal += f"{think_event_message}\n"
         self.think_event_queue.clear()
-        res = self.engine.event(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
+        res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
         return res
 
-    def move(self, target_location=None):
-        current_location = self.location_delegate.get_current_location()
-        if current_location == target_location:
-            return False
+    def push_think_event(self, think_event_type, message, data=None):
+        self.set_enable_thinking(True)
+        self.think_event_queue[think_event_type] = {"message":message, "data":data}
 
-        if target_location is None:
-            available_locations = self.location_delegate.get_available_locations()
-            target_location = current_location
-            while target_location == current_location:
-                target_location = random.choice(available_locations)
-        move_json = {
-            "function": "move_to",
-            "parameters": {
-                "location": target_location
-            },
-            "reason": ""
-        }
-        self.engine.core_function.process_action_call(move_json, self)
-        return True
+    def clear_think_event(self):
+        self.set_enable_thinking(False)
+        self.think_event_queue.clear()
+
+    def scan(self, external_event):
+        found_agents = self.perceive_agents()
+        found_objects = self.perceive_objects()
+        if len(found_agents) <= 0 and len(found_objects) <= 0:
+            return
+
+        # 40센트 확률로 대화 60퍼센트 확률로 사물탐색
+        if random.random() < 0.4:
+            if len(found_agents) > 0 and self.vital_state.fatigue < 70 and self.vital_state.health > 30:
+                ran_num = self.personality_matrix['defensive_open'] + random.random()
+                if ran_num >= 1.0:
+                    msg = " 주변에 다른 상대가 보인다. 너의 신체적 겹핍, 목적 달성에 따라 대상에게 말을 걸지 무시할지 판단하라. 대화가 의미 없다면 'move_to' 도구를 이용하여 장소를 이동하라."
+                    self.push_think_event(ThinkEventType.FIND_AGENT, external_event + msg, found_agents)
+                    return
+
+        if random.random() < 0.6:
+            if len(found_objects) > 0:
+                msg = " 주위에 관심있는 사물이 있다. 너의 신체적 겹핍, 목적 달성에 따라 사물을 조사하거나 획득할지 결정하라."
+                self.push_think_event(ThinkEventType.FIND_ITEM, external_event + msg, found_objects)
+                return
 
     def _update_environmental_debuff(self, time_scale, day_cycle, weather_type):
         MAX_ENV_LIMIT = 0.15

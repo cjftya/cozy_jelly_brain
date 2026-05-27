@@ -55,19 +55,16 @@ class WorldSystemManager:
         self.append_system_log = append_system_log
 
         # 월드 데이터 초기화
-        self.world_agents, objects, time_engine, weather_engine = self.world_data_factory.get_world_data(WorldType.CAST_AWAY_SIM, self)
+        self.world_agents, objects, self.time_engine, self.weather_engine = self.world_data_factory.get_world_data(WorldType.CAST_AWAY_SIM, self)
 
-        self.time_engine = time_engine
-        self.weather_engine = weather_engine
-
+        # 월드 에이전트 초기화
         for agent in self.world_agents:
             self.agent_manager.add_agent(agent)
+            agent.start(self.llm_requester)
 
+        # 월드 오브젝트 초기화
         for obj in objects:
             self.object_manager.add_object(obj)
-
-        for agent in self.world_agents:
-            agent.start(llm_requester)
 
     def stop(self):
         for agent in self.world_agents:
@@ -79,23 +76,27 @@ class WorldSystemManager:
     def tick(self):
         time.sleep(1)
 
+        # 시간 및 날씨 업데이트
         self.time_engine.tick()
         self.weather_engine.tick(self.time_engine.time_scale, self.time_engine.season)
 
-        root_agent = self.world_agents[0]
+        # 포커스 에이전트
+        focused_agent = self.world_agents[0]
 
+        # 월드 에이전트 업데이트
         for agent in self.world_agents:
             agent.tick(self.time_engine.time_scale)
 
-        agent_details = self.world_view_manager.update_agent_details_view(root_agent)
+        agent_details = self.world_view_manager.update_agent_details_view(focused_agent)
         self.refresh_biometrics(agent_details)
 
         world_details = self.world_view_manager.update_world_details_view()
         self.refresh_world_detail(world_details)
 
-        map_details = self.world_view_manager.update_ascii_map_view(root_agent)
+        map_details = self.world_view_manager.update_ascii_map_view(focused_agent)
         self.refresh_ascii_map(map_details)
 
+        # 이벤트 트리거
         event_objects = self.event_trigger.check_triggers(self.world_agents, self.time_engine.time_scale)
         for obj in event_objects:
             event_agent = obj[0]
@@ -124,6 +125,7 @@ class WorldSystemManager:
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 고착 상황 탈출을 시도 함.")
 
+        # 월드 에이전트 행동 결과 처리
         for agent in self.world_agents:
             result = agent.think_tick()
             if result:

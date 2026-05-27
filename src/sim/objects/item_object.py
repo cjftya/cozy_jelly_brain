@@ -4,7 +4,6 @@ from sim.object_meta.object_type import ObjectType, ObjectDetailType
 class ItemObject(BaseObject):
     def __init__(self, name, detail=None, detail_type=ObjectDetailType.DEFAULT_ITEM, parent=None):
         super().__init__(name, detail, detail_type, ObjectType.ITEM, parent)
-        self.is_interactive = True
 
         # 상태 속성
         self.states = []
@@ -28,7 +27,6 @@ class ItemObject(BaseObject):
         self.nutrition_value = nutrition_value
 
     def set_state_machine(self, states, state_details):
-        """사물의 가용 상태 흐름과 상태별 세부 묘사를 정의합니다."""
         self.states = states
         self.state_details = state_details
         self.current_state_idx = 0

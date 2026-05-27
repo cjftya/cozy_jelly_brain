@@ -9,6 +9,7 @@ class ToolType:
     GIVE = 6
     REST = 7
     WEB_SEARCH = 8
+    RULE_MAKE = 9
 
     # cast away sim specific tools
     EXPLORE = 500

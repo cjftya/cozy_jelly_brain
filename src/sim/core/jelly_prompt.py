@@ -118,7 +118,7 @@ class JellyPrompt:
     "reason": "해당 액션을 선택한 핵심 이유 (생존 전략 및 매트릭스에 근거)"
   }},
   "state_delta": {{ "logic_emotion": 0.0, "defensive_open": 0.0, "fear_decisive": 0.0, "obedient_rebellious": 0.0, "curiosity_indifference": 0.0 }},
-  "relationship_delta": {{ "target_name": 0.0 }},
+  "relationship_delta": {{ "Available Participants에 없을시 이 필드는 비워둔다. 있을때 선정한 대상의 이름": "관계 점수" (0~100) }},
   "memories_to_save": [ {{ "subject": "", "relation": "", "object": "", "metadata": {{ "label": "", "importance": 0.0, "emotional_imprint": "" }} }} ]
 }}
 """

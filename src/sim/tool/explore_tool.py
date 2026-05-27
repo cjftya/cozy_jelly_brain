@@ -15,8 +15,8 @@ class ExploreTool(BaseTool):
 
     def execute(self, params, agent, world_system_manager):
         # 가혹한 정찰 피로도 패널티 적용
-        agent.vital_state.update_fatigue(75)
-        agent.vital_state.update_hunger(50)
+        agent.vital_state.update_fatigue(55)
+        agent.vital_state.update_hunger(30)
 
         # 월드 전체 공간 중, 에이전트 인지 지도에 없는 미지 구역 검색
         all_spaces = world_system_manager.object_manager.get_objects_by_type(ObjectType.SPACE)

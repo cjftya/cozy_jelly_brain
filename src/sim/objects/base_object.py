@@ -19,12 +19,7 @@ class BaseObject:
         self.size = Point()
         self.weight = 0
 
-        # 기능적 속성
-        self.is_interactive = False
-
     def use(self):
-        # detail_type
-        # is_consumed
         return self.detail_type, False
 
     def set_name(self, name):
@@ -38,9 +33,6 @@ class BaseObject:
 
     def set_detail_type(self, detail_type):
         self.detail_type = detail_type
-
-    def set_interactive(self, interactive):
-        self.is_interactive = interactive
 
     def set_pos(self, x, y):
         self.position.set_value(x, y)

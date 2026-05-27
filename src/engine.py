@@ -29,7 +29,7 @@ class Engine:
                 append_system_log=append_system_log
             )
 
-    def load(self, api_key, serper_api_key, use_web_search, auto_play):
+    def load(self, api_key, serper_api_key, use_web_search):
         if self.llm_requester:
             self.llm_requester.init_client()
             self.llm_requester.set_api_key(api_key)
@@ -37,7 +37,6 @@ class Engine:
         if self.simulator:
             self.simulator.set_serper_api_key(serper_api_key)
             self.simulator.set_enabled_web_search(use_web_search)
-            self.simulator.set_autoloop(auto_play)
 
     def stop(self):
         if self.llm_requester:

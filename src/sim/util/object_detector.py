@@ -68,16 +68,7 @@ class ObjectDetector:
             distance = math.sqrt(dx**2 + dy**2)
             if distance > current_range: 
                 continue
-
-            # 감지된 item의 종류당 3개 이상이면 detection list에 추가하지 않는다.
-            # if duplicate_map.get(entity.name) is None:
-            #     duplicate_map[entity.name] = 0
-            # else:
-            #     duplicate_map[entity.name] += 1
-            
-            # if duplicate_map[entity.name] < 4:
-            #     detected_list.append(entity)
-
+                
             detected_list.append(entity)
 
         return detected_list

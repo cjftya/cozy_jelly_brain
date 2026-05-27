@@ -45,22 +45,15 @@ class JellyLlmApi:
                 return res
             else:
                 error_msg = content
-                retriable_errors = ["503", "429", "500", "504", "overloaded", "rate limit"]
-
-                # 에러 메시지에 위 키워드 중 하나라도 포함되어 있는지 확인
                 if any(err in error_msg.lower() for err in retriable_errors):
-                    # 재시도 로직 실행 (지수 백오프)
                     delay = (base_delay * (2 ** i)) + (random.uniform(0, 1))
                     Logger.log("RETRY", f"일시적 장애 감지({error_msg}). {i+1}차 재시도 중...")
                     time.sleep(delay)
                     continue
 
-                # 안전 정책 차단 확인 (400 계열 중 특이 케이스)
                 if "safety" in error_msg.lower():
                     Logger.log("SAFETY_BLOCK", "안전 가이드라인에 의해 차단되었습니다.")
                     return {"final_response": "...... (규정에 의해 말문이 막혔습니다.)", "state_delta": {}}
-
-                # 그 외 치명적 에러는 즉시 중단
                 Logger.log("FATAL", f"중단된 인지 프로세스: {error_msg}")
                 raise res
 

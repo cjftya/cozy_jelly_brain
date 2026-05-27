@@ -82,6 +82,7 @@ class ObjectManager:
         return None
 
     def pop_pack(self, name):
+        # 오브젝트 큐에서 팩 제거 후 반환
         return self.objects.pop(name, None)
 
     def clear_objects(self):

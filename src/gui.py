@@ -51,27 +51,16 @@ class ChatApp(ctk.CTk):
         )
         self.web_search_check.grid(row=5, column=0, padx=20, pady=(5, 5), sticky="w")
         
-        # Auto Play Support
-        self.auto_play_var = ctk.BooleanVar(value=True)
-        self.auto_play_check = ctk.CTkCheckBox(
-            self.sidebar_frame,
-            text="Auto Play",
-            variable=self.auto_play_var,
-            command=self.toggle_auto_play,
-            font=ctk.CTkFont(size=12)
-        )
-        self.auto_play_check.grid(row=6, column=0, padx=20, pady=(5, 15), sticky="w")
-        
         # Model Selection Section
         self.model_label = ctk.CTkLabel(self.sidebar_frame, text="Select Model", font=ctk.CTkFont(size=13, weight="bold"))
-        self.model_label.grid(row=7, column=0, padx=20, pady=(10, 0), sticky="w")
+        self.model_label.grid(row=6, column=0, padx=20, pady=(10, 0), sticky="w")
         
         initial_models = self.engine.get_model_list()
         if not initial_models:
             initial_models = ["Select a model..."]
             
         self.model_spinner = ctk.CTkOptionMenu(self.sidebar_frame, values=initial_models)
-        self.model_spinner.grid(row=8, column=0, padx=20, pady=(5, 20), sticky="ew")
+        self.model_spinner.grid(row=7, column=0, padx=20, pady=(5, 20), sticky="ew")
         
         # System Start Button
         self.start_button = ctk.CTkButton(
@@ -81,11 +70,11 @@ class ChatApp(ctk.CTk):
             font=ctk.CTkFont(weight="bold"),
             height=40
         )
-        self.start_button.grid(row=9, column=0, padx=20, pady=10, sticky="ew")
+        self.start_button.grid(row=8, column=0, padx=20, pady=10, sticky="ew")
         
         # Divider or status
         self.status_label = ctk.CTkLabel(self.sidebar_frame, text="Ready", text_color="gray")
-        self.status_label.grid(row=11, column=0, padx=20, pady=20)
+        self.status_label.grid(row=10, column=0, padx=20, pady=20)
         
         # Left Views Frame (6 Views) - Scrollable to prevent squishing
         self.left_views_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -119,7 +108,8 @@ class ChatApp(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
         # Initialize state
-        self.toggle_auto_play()
+        self.user_input.configure(state="disabled", placeholder_text="Auto Play Mode - Input Disabled")
+        self.send_button.configure(state="disabled")
         
         # Initialize Engine
         self.engine.start(
@@ -136,7 +126,6 @@ class ChatApp(ctk.CTk):
         google_api_key = self.api_key_entry.get()
         serper_api_key = self.serper_key_entry.get()
         use_web_search = self.web_search_var.get()
-        auto_play = self.auto_play_var.get()
         
         # Validation
         if not google_api_key:
@@ -148,9 +137,9 @@ class ChatApp(ctk.CTk):
             return
         
         try:
-            self.engine.load(google_api_key, serper_api_key, use_web_search, auto_play)
+            self.engine.load(google_api_key, serper_api_key, use_web_search)
             self.status_label.configure(text="System Online", text_color="#4CAF50")
-            self.log_to_chat("System", f"Engine loaded (Web Search: {'ON' if use_web_search else 'OFF'}, Auto Play: {'ON' if auto_play else 'OFF'}). Ready to simulate.")
+            self.log_to_chat("System", f"Engine loaded (Web Search: {'ON' if use_web_search else 'OFF'}). Ready to simulate.")
             
             # Refresh model list
             models = self.engine.get_model_list()
@@ -158,14 +147,13 @@ class ChatApp(ctk.CTk):
                 self.model_spinner.configure(values=models)
                 self.model_spinner.set(models[0])
             
-            # If Auto Play is enabled, start simulation immediately
-            if auto_play:
-                model_name = self.model_spinner.get()
-                if model_name != "Select a model...":
-                    self.log_to_chat("System", "Auto Play sequence initiated...")
-                    threading.Thread(target=self.engine.run, args=(model_name, "Auto Start"), daemon=True).start()
-                else:
-                    self.log_to_chat("System", "Auto Play failed: No model selected.")
+            # Start simulation immediately
+            model_name = self.model_spinner.get()
+            if model_name != "Select a model...":
+                self.log_to_chat("System", "Auto Play sequence initiated...")
+                threading.Thread(target=self.engine.run, args=(model_name, "Auto Start"), daemon=True).start()
+            else:
+                self.log_to_chat("System", "Auto Play failed: No model selected.")
         except Exception as e:
             self.status_label.configure(text="Load Error", text_color="#F44336")
             self.log_to_chat("System", f"Error loading engine: {str(e)}")
@@ -178,16 +166,6 @@ class ChatApp(ctk.CTk):
             self.serper_key_entry.configure(state="disabled")
             self.serper_key_label.configure(text_color="gray")
 
-    def toggle_auto_play(self):
-        if self.auto_play_var.get():
-            self.user_input.configure(state="disabled")
-            self.send_button.configure(state="disabled")
-            self.user_input.configure(placeholder_text="Auto Play Mode - Input Disabled")
-        else:
-            self.user_input.configure(state="normal")
-            self.send_button.configure(state="normal")
-            self.user_input.configure(placeholder_text="Message AI...")
-            self.user_input.focus()
 
     def on_send(self):
         prompt = self.user_input.get().strip()
