@@ -56,7 +56,9 @@ class ObjectDetector:
 
         detected_list = []
         agent_pos = agent.position
-        current_range = self._calculate_dynamic_range(agent.personality_matrix, agent.vital_state)
+
+        raw_matrix = agent.get_personality_matrix().get_matrix()
+        current_range = self._calculate_dynamic_range(raw_matrix, agent.vital_state)
 
         duplicate_map = {}
         for entity in entities:

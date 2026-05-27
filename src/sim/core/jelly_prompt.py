@@ -1,11 +1,11 @@
 class JellyPrompt:
 
     @staticmethod
-    def get_social_context(available_participants, relationships):
+    def get_social_context(available_participants, relationship_scores):
         return f"""\
 # 다자간 사회적 인지 (Social Context)
 - **Available Participants**: {available_participants}
-- **Relationship Scores**: {relationships} (0~100)
+- **Relationship Scores**: {relationship_scores} (0~100)
 *규칙 1*: 관계 점수가 낮은 상대의 발언은 무시하거나, 가장 비관적인 방향으로 해석(Refraction)하라.
 *규칙 2*: 만약 대화가 무가치하거나, 상대가 위협적이거나, 본인의 결핍(Hunger/Fatigue) 또는 목적 달성이 더 시급하다면 대화를 계속하는 대신 `move_to` 도구를 사용하여 즉시 자리를 이탈하라.
 """
@@ -33,7 +33,7 @@ class JellyPrompt:
     def get_system_prompt(personality_matrix=None, name=None, persona_context=None,
                         intrinsic_desires=None, world_context=None,
                         retrieved_memories=None, response_style=None,
-                        available_participants=None, relationships=None,
+                        available_participants=None, relationship_score=None,
                         current_location=None, available_locations=None,
                         available_objects=None, available_tools=None,
                         available_agent_inventory=None,
@@ -42,7 +42,7 @@ class JellyPrompt:
                         vital_context=None,
                         world_state_context=None):
         m = personality_matrix
-        social_context = JellyPrompt.get_social_context(available_participants, relationships) if is_dialogue_mode else ""
+        social_context = JellyPrompt.get_social_context(available_participants, relationship_score) if is_dialogue_mode else ""
         neural_loop_prompt = JellyPrompt.get_neural_loop_prompt(is_dialogue_mode)
 
         subjective_desc = "상대(Target) 선정 이유와 Matrix에 의해 오염된 주관적 해석" if is_dialogue_mode else "Matrix에 의해 오염된 주변 환경 및 자극에 대한 주관적 해석"
@@ -117,8 +117,8 @@ class JellyPrompt:
     "parameters": {{ ... }},
     "reason": "해당 액션을 선택한 핵심 이유 (생존 전략 및 매트릭스에 근거)"
   }},
-  "state_delta": {{ "logic_emotion": 0.0, "defensive_open": 0.0, "fear_decisive": 0.0, "obedient_rebellious": 0.0, "curiosity_indifference": 0.0 }},
-  "relationship_delta": {{ "Available Participants에 없을시 이 필드는 비워둔다. 있을때 선정한 대상의 이름": "관계 점수" (0~100) }},
+  "updated_hormonal_state": {{ "logic_emotion": 0.0, "defensive_open": 0.0, "fear_decisive": 0.0, "obedient_rebellious": 0.0, "curiosity_indifference": 0.0 }},
+  "updated_relationship_score": {{ "Available Participants에 없을시 이 필드는 비워둔다. 있을때 선정한 대상의 이름": "관계 점수 값 (0~100)" }},
   "memories_to_save": [ {{ "subject": "", "relation": "", "object": "", "metadata": {{ "label": "", "importance": 0.0, "emotional_imprint": "" }} }} ]
 }}
 """

@@ -9,7 +9,7 @@ class WorldViewManager:
 
     def update_agent_details_view(self, agent):
         gender_context = "Female" if agent.vital_state.gender == GenderType.FEMALE else "Male"
-        personality_matrix = agent.get_personality_matrix()
+        personality_matrix = agent.get_personality_matrix().get_matrix()
         view_data = f"""
 [VITALS] Age: {agent.vital_state.age:05.2f} | Gender: {gender_context}
 • Health: [{agent.vital_state.health:06.2f}] {self._draw_gauge(agent.vital_state.health/100.0)}
@@ -18,11 +18,11 @@ class WorldViewManager:
 [WARNING] {agent.vital_state.warning}
 ----------------------------------------------------------------------
 [PERSONALITY]
-• LOG vs EMO: [{personality_matrix['logic_emotion']:.2f}] {self._draw_gauge(personality_matrix['logic_emotion'])} : Logic vs Emotion
-• DEF vs OPN: [{personality_matrix['defensive_open']:.2f}] {self._draw_gauge(personality_matrix['defensive_open'])} : Defensive vs Open
-• FEA vs DEC: [{personality_matrix['fear_decisive']:.2f}] {self._draw_gauge(personality_matrix['fear_decisive'])} : Fear vs Decisive
-• OBE vs REB: [{personality_matrix['obedient_rebellious']:.2f}] {self._draw_gauge(personality_matrix['obedient_rebellious'])} : Obedient vs Rebellious
-• CUR vs IND: [{personality_matrix['curiosity_indifference']:.2f}] {self._draw_gauge(personality_matrix['curiosity_indifference'])} : Curiosity vs Indifference
+• LOG vs EMO: [{personality_matrix['logic_emotion']:.2f}] {self._draw_gauge(personality_matrix['logic_emotion'])} : 이성적 vs 감성적
+• DEF vs OPN: [{personality_matrix['defensive_open']:.2f}] {self._draw_gauge(personality_matrix['defensive_open'])} : 방어적 vs 개방적
+• FEA vs DEC: [{personality_matrix['fear_decisive']:.2f}] {self._draw_gauge(personality_matrix['fear_decisive'])} : 공포심 vs 결단력
+• OBE vs REB: [{personality_matrix['obedient_rebellious']:.2f}] {self._draw_gauge(personality_matrix['obedient_rebellious'])} : 순종적 vs 반항적
+• CUR vs IND: [{personality_matrix['curiosity_indifference']:.2f}] {self._draw_gauge(personality_matrix['curiosity_indifference'])} : 호기심 vs 무관심
 """
         return view_data
 

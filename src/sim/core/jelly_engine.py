@@ -30,7 +30,6 @@ class JellyEngine:
         names = [d.name for d in detected_agents]
         participant_delegate = ParticipantsDelegate()
         participant_delegate.add_all_participants(names)
-        available_participants = participant_delegate.get_available_participants()
 
         detected_objects = agent.perceive_objects()
         object_manager = ObjectManager()
@@ -39,7 +38,7 @@ class JellyEngine:
 
         memories = self._retrieve_memory(agent, external_event, False)
 
-        system_prompt = self._get_system_context(agent, available_participants, available_objects, available_tool_types, False, memories)
+        system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, False, memories)
 
         return self._run_llm_core(agent, external_event, system_prompt)
 
@@ -48,7 +47,6 @@ class JellyEngine:
         names = [d.name for d in detected_agents]
         participant_delegate = ParticipantsDelegate()
         participant_delegate.add_all_participants(names)
-        available_participants = participant_delegate.get_available_participants()
 
         object_manager = ObjectManager()
         object_manager.add_objects(detected_objects)
@@ -56,7 +54,7 @@ class JellyEngine:
 
         memories = self._retrieve_memory(agent, external_event, False)
 
-        system_prompt = self._get_system_context(agent, available_participants, available_objects, available_tool_types, False, memories)
+        system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, False, memories)
 
         return self._run_llm_core(agent, external_event, system_prompt)
 
@@ -64,7 +62,6 @@ class JellyEngine:
         names = [d.name for d in available_agents]
         participant_delegate = ParticipantsDelegate()
         participant_delegate.add_all_participants(names)
-        available_participants = participant_delegate.get_available_participants()
 
         detected_objects = agent.perceive_objects()
         object_manager = ObjectManager()
@@ -73,12 +70,14 @@ class JellyEngine:
 
         memories = None if from_scan else self._retrieve_memory(agent, user_input, True)
 
-        system_prompt = self._get_system_context(agent, available_participants, available_objects, available_tool_types, True, memories)
+        system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, True, memories)
 
         return self._run_llm_core(agent, user_input, system_prompt)
 
-    def _get_system_context(self, agent, available_participants, available_objects, available_tool_types, is_dialogue_mode, memories=None):
-        raw_matrix = agent.get_personality_matrix()
+    def _get_system_context(self, agent, participant_delegate, available_objects, available_tool_types, is_dialogue_mode, memories=None):
+        raw_matrix = agent.get_personality_matrix().get_matrix()
+        relationship_matrix_context = agent.get_relationships().get_context(participant_delegate.get_available_participants())
+
         return JellyPrompt.get_system_prompt(
             personality_matrix=raw_matrix,
             name=agent.name,
@@ -86,9 +85,9 @@ class JellyEngine:
             world_context=agent.get_world_context(),
             retrieved_memories=memories,
             response_style=agent.get_response_style(),
-            available_participants=available_participants,
+            available_participants=participant_delegate.get_available_participants(context_format=True),
             intrinsic_desires=agent.get_intrinsic_desires(),
-            relationships=agent.get_relationships(),
+            relationship_score=relationship_matrix_context,
             current_location=agent.get_location_delegate().get_current_location(),
             available_locations=agent.get_location_delegate().get_available_locations(context_format=True),
             available_agent_inventory=agent.get_inventory().get_objects_full_context(),
@@ -125,19 +124,20 @@ class JellyEngine:
         print(result)
 
         if result:
-            state_delta = result.get('state_delta', {})
+            hormonal_state = result.get('updated_hormonal_state', {})
             new_memories = result.get('memories_to_save', [])
-            relationship_delta = result.get('relationship_delta', {})
+            relationship_score = result.get('updated_relationship_score', {})
         
             self.core_function.process_action_call(result.get('action_call', {}), agent)
             
-            self.update_personality_matrix(state_delta, agent)
+            if hormonal_state:
+                agent.get_personality_matrix().update_personality_matrix(hormonal_state)
             
             if new_memories:
-                self.core_memory.add_memory(new_memories, state_delta)
+                self.core_memory.add_memory(new_memories, hormonal_state)
 
-            if relationship_delta:
-                self.update_relationship_delta(relationship_delta, agent)
+            if relationship_score:
+                agent.get_relationships().update_relationship_score_matrix(relationship_score)
 
             return result
 
@@ -145,7 +145,7 @@ class JellyEngine:
 
     def _retrieve_memory(self, agent, user_input, is_dialogue_mode):
         # 1. 매트릭스 기반 내부 감정 계산
-        matrix = agent.get_personality_matrix()
+        matrix = agent.get_personality_matrix().get_matrix()
 
         # 개방성(Open)이 높고 호기심(Curiosity)이 높을수록 긍정, 반대면 부정
         # curiosity_indifference는 0.0이 호기심이므로 (1.0 - val)로 계산
@@ -156,7 +156,7 @@ class JellyEngine:
         rel_valence = 0.0
         if is_dialogue_mode:
             sender_name = self._extract_sender_name(user_input)
-            rel_score = agent.relationship_map.get(sender_name, 0.0)
+            rel_score = agent.get_relationships().get_value(sender_name)
             rel_valence = (rel_score - 50.0) / 50.0 # -1.0 ~ 1.0 범위로 변환
 
         # 3. 최종 Valence 융합
@@ -176,23 +176,6 @@ class JellyEngine:
         if match:
             return match.group(1).strip()
         return "UNKNOWN"
-
-    def update_personality_matrix(self, delta, agent):
-        for key, value in delta.items():
-            if key in agent.personality_matrix:
-                limited_delta = max(-0.3, min(0.3, value)) 
-                new_val = round(agent.personality_matrix[key] + limited_delta, 2)
-                agent.personality_matrix[key] = max(0.0, min(1.0, new_val))
-        
-        Logger.log("Matrix Updated", agent.get_personality_matrix())
-
-    def update_relationship_delta(self, delta_map, agent):
-        for name, delta in delta_map.items():
-            current_score = float(agent.relationship_map.get(name, 0.0))
-            new_score = float(max(0.0, min(100.0, current_score + delta)))
-            agent.relationship_map[name] = round(new_score, 1)
-        
-        Logger.log("Relationship Delta Updated", agent.get_relationships())
 
     def perform_brain_cleanup(self):
         self.core_memory.perform_brain_cleanup()

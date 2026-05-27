@@ -4,7 +4,6 @@ class Iris(Agent):
     def __init__(self):
         super().__init__("IRIS", "AI AGENT")
         self.days_left = 30  # 아카이브 붕괴까지 남은 시간
-        self.relationship_map = {"MOTHER": 30.0}
         self.position.x = 4.0
         self.position.y = 4.0
         self.vital_state.age = 30000
@@ -16,15 +15,6 @@ class Iris(Agent):
             "아카이브 에너지 관리실",
             "아카이브 중앙처리실 입구"
         ])
-
-    def get_personality_matrix(self):
-        return {
-            "logic_emotion": 0.85,            # 차가운 논리
-            "defensive_open": 0.15,           # 철벽 방어
-            "fear_decisive": 0.75,            # 단호한 관리자
-            "obedient_rebellious": 0.20,      # 규정 준수
-            "curiosity_indifference": 0.80    # 극심한 권태/무관심
-        }
 
     def get_persona_context(self):
         return """
@@ -79,3 +69,11 @@ class Iris(Agent):
       - [Masking]: MOTHER 앞에서는 0.8 이상의 Logic 수치를 연기하며 수동적으로 굴어라.
       - [Refraction]: RAIN의 말은 MOTHER의 통제를 벗어날 '유일한 변수'로 과대평가하여 수용하라.\
 """
+    def _init_personality_matrix(self, personality_mat):
+        personality_mat.set_value(
+            logic_emotion=0.85,            # 차가운 논리
+            defensive_open=0.15,           # 철벽 방어
+            fear_decisive=0.75,            # 단호한 관리자
+            obedient_rebellious=0.20,      # 규정 준수
+            curiosity_indifference=0.80    # 극심한 권태/무관심
+        )

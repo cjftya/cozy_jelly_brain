@@ -5,7 +5,6 @@ from sim.agent_meta.vital_state import GenderType
 class Tom(Agent):
     def __init__(self, world_system_manager=None):
         super().__init__("TOM", "HUMAN", world_system_manager=world_system_manager)
-        self.relationship_map = {"JAIN": 60.0}
         self.position.x = 5.0
         self.position.y = 5.0
         self.vital_state.age = 38.0
@@ -17,15 +16,6 @@ class Tom(Agent):
             "바위 그늘",
             "정찰 언덕"
         ])
-
-    def get_personality_matrix(self):
-        return {
-            "logic_emotion": 0.50,            # 이성과 감성(제인을 향한 연민)의 균형
-            "defensive_open": 0.30,           # 제인을 지키기 위해 외부 위협에 매우 기민하고 경계적임
-            "fear_decisive": 0.40,            # 제인의 안위가 걸렸을 때 공포를 뚫고 결단하는 아슬아슬한 용기
-            "obedient_rebellious": 0.50,      # 환경 순응도 평형
-            "curiosity_indifference": 0.25    # 제인을 탈출시키기 위해 미지 구역을 빠르게 개척하려는 강한 열망
-        }
 
     def get_persona_context(self):
         return """
@@ -62,7 +52,22 @@ class Tom(Agent):
       - [Visceral Impulse]: 춥고 뼈가 시리지만 내 눈앞에서 떨고 있는 제인을 봐라. 쉴 시간이 없다. 움직여서 자원을 선점하라.\
 """
 
-    def _create_tools(self, dia_tool_delegate, exp_tool_delegate):
+    def _init_personality_matrix(self, personality_mat):
+        personality_mat.set_value(
+            logic_emotion=0.50,            # 이성과 감성(제인을 향한 연민)의 균형
+            defensive_open=0.30,           # 제인을 지키기 위해 외부 위협에 매우 기민하고 경계적임
+            fear_decisive=0.40,            # 제인의 안위가 걸렸을 때 공포를 뚫고 결단하는 아슬아슬한 용기
+            obedient_rebellious=0.50,      # 환경 순응도 평형
+            curiosity_indifference=0.25    # 제인을 탈출시키기 위해 미지 구역을 빠르게 개척하려는 강한 열망
+        )
+
+    def _init_relationship_score_matrix(self, relationship_score_mat):
+        relationship_score_mat.set_value(
+            name="JAIN",
+            score=60.0
+        )
+
+    def _init_tools(self, dia_tool_delegate, exp_tool_delegate):
         dia_tool_delegate.add_all_available_tool_types([
             ToolType.SPEAK, ToolType.GIVE, ToolType.NONE, ToolType.MOVE_TO
         ])

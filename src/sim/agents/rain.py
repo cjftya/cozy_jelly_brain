@@ -3,7 +3,6 @@ from sim.agents.agent import Agent
 class Rain(Agent):
     def __init__(self):
         super().__init__("RAIN", "INTRUDER(HUMAN)")
-        self.relationship_map = {}
         self.position.x = 4.0
         self.position.y = 4.0
         self.vital_state.age = 28
@@ -15,15 +14,6 @@ class Rain(Agent):
             "아카이브 에너지 관리실",
             "아카이브 중앙처리실 입구"
         ])
-
-    def get_personality_matrix(self):
-        return {
-            "logic_emotion": 0.45,            # 차가운 논리
-            "defensive_open": 0.75,           # 철벽 방어
-            "fear_decisive": 0.4,            # 단호한 관리자
-            "obedient_rebellious": 0.7,      # 규정 준수
-            "curiosity_indifference": 0.2    # 극심한 권태/무관심
-        }
 
     def get_persona_context(self):
         return """
@@ -76,3 +66,12 @@ class Rain(Agent):
    3. **행동 원칙**:
       - 차가운 논리의 벽을 감정적 호소와 과거의 추억([VIVID] 기억)으로 무너뜨리는 전략. 시스템의 허점을 찾기보다 'IRIS'의 마음을 움직여 내부로부터의 변화를 유도함.\
 """
+
+    def _init_personality_matrix(self, personality_mat):
+        personality_mat.set_value(
+            logic_emotion=0.45,            # 차가운 논리
+            defensive_open=0.75,           # 철벽 방어
+            fear_decisive=0.4,            # 단호한 관리자
+            obedient_rebellious=0.7,      # 규정 준수
+            curiosity_indifference=0.2    # 극심한 권태/무관심
+        )

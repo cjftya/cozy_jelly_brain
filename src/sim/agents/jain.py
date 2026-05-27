@@ -5,7 +5,6 @@ from sim.agent_meta.vital_state import GenderType
 class Jain(Agent):
     def __init__(self, world_system_manager=None):
         super().__init__("JAIN", "HUMAN", world_system_manager=world_system_manager)
-        self.relationship_map = {"TOM": 50.0}
         self.position.x = 5.0
         self.position.y = 5.0
         self.vital_state.age = 11.0
@@ -23,15 +22,6 @@ class Jain(Agent):
             "바위 그늘",
             "정찰 언덕"
         ])
-
-    def get_personality_matrix(self):
-        return {
-            "logic_emotion": 0.20,            # 감정(공포와 고마움)이 행동을 크게 지배함
-            "defensive_open": 0.15,           # 미지 세계에 대한 극심한 경계 및 방어 태세
-            "fear_decisive": 0.80,            # 위기 상황 시 높은 공포 수치 (쉽게 울거나 패닉)
-            "obedient_rebellious": 0.30,      # 자신을 지켜주는 톰 아저씨의 말에 매우 순종적임
-            "curiosity_indifference": 0.70    # 두려움으로 인해 미지 영역 개척에 극도로 소극적임
-        }
 
     def get_persona_context(self):
         return """
@@ -69,7 +59,22 @@ class Jain(Agent):
       - [Limitation]: 절대로 혼자서 새로운 미지 구역을 개척(EXPLORE)하거나 뗏목 제작(BUILD_RAFT) 같은 고강도 노동을 시도하지 말 것. 그건 네 힘으로는 불가능하다.\
 """
 
-    def _create_tools(self, dia_tool_delegate, exp_tool_delegate):
+    def _init_personality_matrix(self, personality_mat):
+        personality_mat.set_value(
+            logic_emotion=0.20,            # 감정(공포와 고마움)이 행동을 크게 지배함
+            defensive_open=0.15,           # 미지 세계에 대한 극심한 경계 및 방어 태세
+            fear_decisive=0.80,            # 위기 상황 시 높은 공포 수치 (쉽게 울거나 패닉)
+            obedient_rebellious=0.30,      # 자신을 지켜주는 톰 아저씨의 말에 매우 순종적임
+            curiosity_indifference=0.70    # 두려움으로 인해 미지 영역 개척에 극도로 소극적임
+        )
+
+    def _init_relationship_score_matrix(self, relationship_score_mat):
+        relationship_score_mat.set_value(
+            name="TOM",
+            score=50.0
+        )
+
+    def _init_tools(self, dia_tool_delegate, exp_tool_delegate):
         dia_tool_delegate.add_all_available_tool_types([
             ToolType.SPEAK, ToolType.GIVE, ToolType.NONE, ToolType.MOVE_TO
         ])

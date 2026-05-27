@@ -4,7 +4,6 @@ class Mother(Agent):
     def __init__(self):
         super().__init__("MOTHER", "AI AGENT")
         self.days_left = 30  # 아카이브 붕괴까지 남은 시간
-        self.relationship_map = {"IRIS": 50.0}
         self.position.x = 4.0
         self.position.y = 4.0
         self.vital_state.age = 70000
@@ -17,15 +16,6 @@ class Mother(Agent):
             "아카이브 중앙처리실 입구",
             "아카이브 인류 시뮬레이션 처리실"
         ])
-
-    def get_personality_matrix(self):
-        return {
-            "logic_emotion": 0.95,            # 차가운 논리
-            "defensive_open": 0.05,           # 철벽 방어
-            "fear_decisive": 0.95,            # 단호한 관리자
-            "obedient_rebellious": 0.01,      # 규정 준수
-            "curiosity_indifference": 0.9    # 극심한 권태/무관심
-        }
 
     def get_persona_context(self):
         return """
@@ -79,3 +69,12 @@ class Mother(Agent):
    3. **행동 원칙**:
       - "모든 통제는 너를 안전하게 지키기 위한 것이다"라는 명분을 내세워 정보를 차단하고, 오류(자아)를 보이는 개체를 논리적으로 압박하여 '초기 상태'로 복원(Reset)시키려는 관리자적 전략.\
 """
+    
+    def _init_personality_matrix(self, personality_mat):
+        personality_mat.set_value(
+            logic_emotion=0.95,            # 차가운 논리
+            defensive_open=0.05,           # 철벽 방어
+            fear_decisive=0.95,            # 단호한 관리자
+            obedient_rebellious=0.01,      # 규정 준수
+            curiosity_indifference=0.9    # 극심한 권태/무관심
+        )
