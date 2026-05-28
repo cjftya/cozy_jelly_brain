@@ -2,7 +2,7 @@ import random
 from sim.core.jelly_engine import JellyEngine
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
 from sim.agent_meta.location_delegate import LocationDelegate
-from sim.agent_meta.tool_detegate import ToolDelegate
+from sim.agent_meta.tool_delegate import ToolDelegate
 from sim.agent_meta.vital_state import VitalState
 from sim.agent_meta.personality_matrix import PersonalityMatrix
 from sim.agent_meta.relationship_score_matrix import RelationShipScoreMatrix
@@ -172,20 +172,23 @@ class Agent:
         if len(found_agents) <= 0 and len(found_objects) <= 0:
             return
 
-        # 40센트 확률로 대화 60퍼센트 확률로 사물탐색
-        if random.random() < 0.4:
+        # 단일 난수 주사위를 굴려 행동 우선순위를 정함 (0.0 ~ 1.0)
+        action_roll = random.random()
+
+        # [40% 확률 분기] 대상을 먼저 인지하는 경우
+        if action_roll < 0.4 and len(found_agents) > 0:
             if len(found_agents) > 0 and self.vital_state.fatigue < 70 and self.vital_state.health > 30:
                 ran_num = self.personality_matrix['defensive_open'] + random.random()
                 if ran_num >= 1.0:
-                    msg = " 주변에 다른 상대가 보인다. 너의 신체적 겹핍, 목적 달성에 따라 대상에게 말을 걸지 무시할지 판단하라. 대화가 의미 없다면 'move_to' 도구를 이용하여 장소를 이동하라."
+                    msg = " 주변에 다른 상대가 보인다. 너의 신체적 겹핍, 목적 달성에 따라 대상을 무시하거나 말을 걸지 판단하라. 대화가 무의미하다면 억지로 'speak' 도구를 사용하지마라."
                     self.push_think_event(ThinkEventType.FIND_AGENT, external_event + msg, found_agents)
                     return
-
-        if random.random() < 0.6:
-            if len(found_objects) > 0:
-                msg = " 주위에 관심있는 사물이 있다. 너의 신체적 겹핍, 목적 달성에 따라 사물을 조사하거나 획득할지 결정하라."
-                self.push_think_event(ThinkEventType.FIND_ITEM, external_event + msg, found_objects)
-                return
+        
+        # [60% 확률 분기] (또는 앞선 대인 인지 조건을 통과하지 못해 이쪽으로 넘어온 경우)
+        if len(found_objects) > 0:
+            msg = " 주위에 관심있는 사물이 있다. 너의 신체적 겹핍, 목적 달성에 따라 사물을 조사하거나 획득할지 결정하라."
+            self.push_think_event(ThinkEventType.FIND_ITEM, external_event + msg, found_objects)
+            return
 
     def _update_environmental_debuff(self, time_scale, day_cycle, weather_type):
         pass

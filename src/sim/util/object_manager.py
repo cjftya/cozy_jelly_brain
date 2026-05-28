@@ -81,6 +81,19 @@ class ObjectManager:
             return obj
         return None
 
+    def pop_object_by_id(self, id):
+        # 특정 id로 오브젝트를 제거 후 반환
+        obj = self.get_object_by_id(id)
+        if obj:
+            pack = self.get_pack(obj.name)
+            if pack:
+                pack.remove(obj)
+                if len(pack) == 0:
+                    self.objects.pop(obj.name, None)
+                return obj
+                
+        return None
+
     def pop_pack(self, name):
         # 오브젝트 큐에서 팩 제거 후 반환
         return self.objects.pop(name, None)

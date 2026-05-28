@@ -69,7 +69,7 @@ class Tom(Agent):
 
     def _init_tools(self, dia_tool_delegate, exp_tool_delegate):
         dia_tool_delegate.add_all_available_tool_types([
-            ToolType.SPEAK, ToolType.GIVE, ToolType.NONE, ToolType.MOVE_TO
+            ToolType.SPEAK, ToolType.GIVE, ToolType.NONE, ToolType.MOVE_TO, ToolType.REST
         ])
 
         exp_tool_delegate.add_all_available_tool_types([

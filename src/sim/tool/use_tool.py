@@ -31,13 +31,12 @@ class UseTool(BaseTool):
                     pass
 
                 # 소모품 제거 (모든 곳에서 제거)
-                name_key = target_object.name
                 if is_my_inventory:
-                    agent.get_inventory().pop_object(name_key)
+                    agent.get_inventory().pop_object_by_id(target_object.id)
                 else:
-                    world_system_manager.object_manager.pop_object(name_key)
+                    world_system_manager.object_manager.pop_object_by_id(target_object.id)
 
-                world_system_manager.log_world_event(f"{agent.name}가 {name_key}을 사용.")
+                world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 사용.")
             else:
                 # 상태 변화가 일어나는 경우
                 state, state_detail = target_object.get_current_state()

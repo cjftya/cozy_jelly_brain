@@ -17,13 +17,33 @@ class PersonalityMatrix:
             'curiosity_indifference': 0.50
         }
 
-    def update_personality_matrix(self, new_matrix):
-        for key, value in new_matrix.items():
+    def apply_state_delta(self, state_delta, base_step=0.05, critical_step=0.20):
+        """ 
+        LLM이 뱉은 5단계 방향(-2, -1, 0, 1, 2)에 따라 수치를 조절합니다.
+        - 1 / -1 : 일상적인 자극 (0.05씩 서서히 변동)
+        - 2 / -2 : 생존이나 자아에 직결된 극단적 충격 (0.20씩 급격히 변동)
+        """
+        for key, direction in state_delta.items():
             if key not in self.matrix:
                 continue
-            self.matrix[key] = float(max(0.0, min(1.0, float(value))))
-
-        Logger.log("Personality Matrix Updated", self.matrix)
+            
+            try:
+                dir_val = int(direction)
+                
+                # 강한 증가/감소 (크리티컬)
+                if dir_val == 2:
+                    self.matrix[key] = min(1.0, self.matrix[key] + critical_step)
+                elif dir_val == -2:
+                    self.matrix[key] = max(0.0, self.matrix[key] - critical_step)
+                
+                # 일반 증가/감소
+                elif dir_val == 1:
+                    self.matrix[key] = min(1.0, self.matrix[key] + base_step)
+                elif dir_val == -1:
+                    self.matrix[key] = max(0.0, self.matrix[key] - base_step)
+                    
+            except ValueError:
+                pass
 
     def get_matrix(self):
         return self.matrix

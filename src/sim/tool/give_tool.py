@@ -20,16 +20,14 @@ class GiveTool(BaseTool):
             return
         
         object_id = params.get('object_id')
-        target_object = agent.get_inventory().get_object_by_id(object_id)
+        target_object = agent.get_inventory().pop_object_by_id(object_id)
         if not target_object:
             world_system_manager.log_system_event("skip function call: give, target object null or not found in inventory")
             return
 
-        name_key = target_object.name
-        gived_object = agent.get_inventory().pop_object(name_key)
-        target_agent.get_inventory().add_object(gived_object)
+        target_agent.get_inventory().add_object(target_object)
 
-        context = f"{agent.name}가 나에게 {name_key}를 주었음."
+        context = f"{agent.name}가 나에게 {target_object.name}를 주었음."
         target_agent.push_think_event(ThinkEventType.SPEAK, context, agent.name)
-        world_system_manager.log_world_event(f"{agent.name}가 {target_agent.name}에게 {name_key}를 전달.")
+        world_system_manager.log_world_event(f"{agent.name}가 {target_agent.name}에게 {target_object.name}를 전달.")
         

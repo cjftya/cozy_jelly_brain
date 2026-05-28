@@ -124,20 +124,20 @@ class JellyEngine:
         print(result)
 
         if result:
-            hormonal_state = result.get('updated_hormonal_state', {})
+            state_delta = result.get('state_delta', {})
             new_memories = result.get('memories_to_save', [])
-            relationship_score = result.get('updated_relationship_score', {})
+            relationship_delta = result.get('relationship_delta', {})
         
             self.core_function.process_action_call(result.get('action_call', {}), agent)
             
-            if hormonal_state:
-                agent.get_personality_matrix().update_personality_matrix(hormonal_state)
+            if state_delta:
+                agent.get_personality_matrix().apply_state_delta(state_delta)
             
             if new_memories:
-                self.core_memory.add_memory(new_memories, hormonal_state)
+                self.core_memory.add_memory(new_memories, state_delta)
 
-            if relationship_score:
-                agent.get_relationships().update_relationship_score_matrix(relationship_score)
+            if relationship_delta:
+                agent.get_relationships().apply_relationship_delta(relationship_delta)
 
             return result
 

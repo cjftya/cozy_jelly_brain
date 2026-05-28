@@ -56,26 +56,30 @@ class JellyMemory:
     def add_memory(self, triplets, state_delta):
         """새로운 대화 파편을 뇌(DB)에 새깁니다."""
         # 충격량 계산 (절대값 합산)
-        state_impact = sum(abs(v) for v in state_delta.values() if isinstance(v, (int, float)))
+        state_impact = sum(abs(v) for v in state_delta.values() if isinstance(v, (int, float))) * 0.05
         now = time.time()
 
         for t in triplets:
             subj, rel, obj = t['subject'], t['relation'], t['object']
             meta = t.get('metadata', {})
 
-            importance = float(meta.get('importance', 0.5))
-            valence = float(meta.get('valence', 0.0))
+            # LLM이 1.0을 초과하거나 음수 등 비정상적인 수치를 뱉지 못하도록 강제 클램핑(0.0 ~ 1.0)
+            importance = max(0.0, min(1.0, float(meta.get('importance', 0.5))))
+            
+            # valence 역시 -1.0 ~ 1.0 범위를 벗어나지 않도록 클램핑
+            valence = max(-1.0, min(1.0, float(meta.get('valence', 0.0))))
+            
             e_imprint = meta.get('emotional_imprint', 'None') # 정서적 낙인 추출
 
-            # 2. 각인 강도(Intensity) 결정
+            # 각인 강도(Intensity) 결정
             # 공식: $Intensity = (Importance \times 0.7) + (Impact \times 0.3)$
-            memory_intensity = (importance * self.imp_weight) + (state_impact * self.impact_weight)
-            
+            memory_intensity = (importance * self.imp_weight) + (state_impact * self.impact_weight) 
+
             # 임베딩 생성
             subj_emb = self.embed_model.encode(subj).tolist()
             obj_emb = self.embed_model.encode(obj).tolist()
             
-            # 3. 노드 MERGE (개체 등록)
+            # 노드 MERGE (개체 등록)
             self.conn.execute(
                 "MERGE (n:node {id: $id}) SET n.embedding = $emb", 
                 {"id": subj, "emb": subj_emb}
