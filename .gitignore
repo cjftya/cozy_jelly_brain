@@ -136,4 +136,5 @@ Thumbs.db
 # models
 models/
 
-brain_db/
+# world assets
+world_assets/

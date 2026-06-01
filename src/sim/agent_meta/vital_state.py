@@ -2,6 +2,22 @@ class GenderType:
     MALE = 0
     FEMALE = 1
 
+class VitalType:
+    HEALTH = 0
+    FATIGUE = 1
+    HUNGER = 2
+
+    @classmethod
+    def to_string(cls, value):
+        if value == cls.HEALTH:
+            return "health"
+        elif value == cls.FATIGUE:
+            return "fatigue"
+        elif value == cls.HUNGER:
+            return "hunger"
+        else:
+            raise ValueError(f"Invalid vital type: {value}")
+
 class VitalState:
     def __init__(self):
         # 나이 및 수명 (소수점으로 미세하게 증가)

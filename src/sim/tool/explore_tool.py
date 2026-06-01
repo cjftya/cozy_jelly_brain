@@ -26,8 +26,10 @@ class ExploreTool(BaseTool):
         
         if unknown_spaces:
             discovered = random.choice(unknown_spaces)
-            agent.location_delegate.add_location(discovered)
-            world_system_manager.log_world_event(f"{agent.name}가 가혹한 수풀을 헤치며 정찰한 결과, 새로운 구역 [{discovered}]을 발견하여 인지 지도에 등록함.")
+            all_agents = world_system_manager.agent_manager.get_agents()
+            for target_agent in all_agents:
+                target_agent.location_delegate.add_location(discovered)
+            world_system_manager.log_world_event(f"{agent.name}가 가혹한 수풀을 헤치며 정찰한 결과, 새로운 구역 [{discovered}]을 발견하여 모든 생존자들의 인지 지도에 등록함.")
         else:
             agent.exp_tool_delegate.remove_available_tool_type(ToolType.EXPLORE)
             world_system_manager.log_world_event(f"{agent.name}가 섬 주위를 샅샅이 뒤졌으나 더 이상 발견할 미지의 영역이 없음.")

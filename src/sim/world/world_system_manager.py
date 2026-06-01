@@ -4,11 +4,13 @@ from sim.core.jelly_llm_api import JellyLlmApi
 from sim.util.object_manager import ObjectManager
 from sim.util.agent_manager import AgentManager
 from sim.util.tool_manager import ToolManager
+from sim.util.dynamic_tool_manager import DynamicToolManager
 from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
 from sim.world.world_view_manager import WorldViewManager
 from sim.world.map_engine import MapEngine
 from sim.world.world_data_factory import WorldDataFactory
 from sim.world.world_data.world_type import WorldType
+from sim.world.world_mediator import WorldMediator
 from log import Logger
 
 class WorldSystemManager:
@@ -29,6 +31,8 @@ class WorldSystemManager:
         self.world_view_manager = WorldViewManager(self)
         self.world_data_factory = WorldDataFactory()
         self.tool_manager = ToolManager()
+        self.dynamic_tool_manager = DynamicToolManager()
+        self.world_mediator = WorldMediator()
 
         self.world_agents = []
         
@@ -55,7 +59,17 @@ class WorldSystemManager:
         self.append_system_log = append_system_log
 
         # 월드 데이터 초기화
-        self.world_agents, objects, self.time_engine, self.weather_engine = self.world_data_factory.get_world_data(WorldType.CAST_AWAY_SIM, self)
+        world_data = self.world_data_factory.get_world_data(WorldType.CAST_AWAY_SIM, self)
+        self.world_agents = world_data[0]
+        objects = world_data[1]
+        self.time_engine = world_data[2]
+        self.weather_engine = world_data[3]
+        self.world_assets_path = world_data[4]
+        self.world_agents_brain_db_path = world_data[5]
+        self.world_role = world_data[6]
+
+        # 동적 툴 매니저 초기화
+        self.dynamic_tool_manager.start(db_path=self.world_assets_path)
 
         # 월드 에이전트 초기화
         for agent in self.world_agents:
@@ -65,6 +79,9 @@ class WorldSystemManager:
         # 월드 오브젝트 초기화
         for obj in objects:
             self.object_manager.add_object(obj)
+
+        # 월드 미디에이터 초기화
+        self.world_mediator.start(self.llm_requester, self.world_role)
 
     def stop(self):
         for agent in self.world_agents:

@@ -1,15 +1,11 @@
 from sim.tool.tool_type import ToolType
 from sim.tool.move_tool import MoveTool
 from sim.tool.inspect_tool import InspectTool
-from sim.tool.use_tool import UseTool
 from sim.tool.speak_tool import SpeakTool
-from sim.tool.take_tool import TakeTool
-from sim.tool.give_tool import GiveTool
 from sim.tool.rest_tool import RestTool
 from sim.tool.none_tool import NoneTool
 from sim.tool.explore_tool import ExploreTool
-from sim.tool.build_raft_tool import BuildRaftTool
-from sim.tool.light_signal_tool import LightSignalTool
+from sim.tool.custom_rule_tool import CustomRuleTool
 from sim.tool.web_search_tool import WebSearchTool
 
 class ToolManager:
@@ -17,19 +13,14 @@ class ToolManager:
         self.tools = {
             ToolType.MOVE_TO: MoveTool(),
             ToolType.INSPECT: InspectTool(),
-            ToolType.USE: UseTool(),
             ToolType.SPEAK: SpeakTool(),
-            ToolType.TAKE: TakeTool(),
-            ToolType.GIVE: GiveTool(),
             ToolType.REST: RestTool(),
             ToolType.NONE: NoneTool(),
-
+            ToolType.CUSTOM_RULE_TOOL: CustomRuleTool(),
+            ToolType.WEB_SEARCH: WebSearchTool(),
+            
             # cast away sim specific tools
-            ToolType.EXPLORE: ExploreTool(),
-            ToolType.BUILD_RAFT: BuildRaftTool(),
-            ToolType.LIGHT_SIGNAL: LightSignalTool(),
-
-            ToolType.WEB_SEARCH: WebSearchTool()
+            ToolType.EXPLORE: ExploreTool()
         }
 
     def add_tool(self, tool):

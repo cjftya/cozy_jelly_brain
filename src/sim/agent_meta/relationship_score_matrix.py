@@ -38,6 +38,12 @@ class RelationShipScoreMatrix:
     def reset_value(self):
         self.matrix = {}
 
+    def add_value(self, name, score):
+        if name not in self.matrix:
+            self.matrix[name] = 0.0
+
+        self.matrix[name] = min(100.0, max(0.0, self.matrix[name] + score))
+
     def set_value(self, name, score):
         self.matrix[name] = score
 

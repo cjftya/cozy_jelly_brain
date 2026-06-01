@@ -1,8 +1,8 @@
 from sim.agents.agent import Agent
 
 class Iris(Agent):
-    def __init__(self):
-        super().__init__("IRIS", "AI AGENT")
+    def __init__(self, world_system_manager=None, brain_root_dir_path=None):
+        super().__init__("IRIS", "AI AGENT", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
         self.days_left = 30  # 아카이브 붕괴까지 남은 시간
         self.position.x = 4.0
         self.position.y = 4.0

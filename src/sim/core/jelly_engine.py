@@ -1,21 +1,28 @@
 import json
 import re
+import os
 from sim.core.jelly_prompt import JellyPrompt
 from sim.core.jelly_memory import JellyMemory
 from sim.core.jelly_llm_api import JellyLlmApi
 from sim.core.jelly_function import JellyFunction
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
 from sim.util.object_manager import ObjectManager
+from sim.tool.tool_type import ToolType
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sim.agent import Agent
 from log import Logger
 
 class JellyEngine:
-    def __init__(self, id, world_system_manager):
+    def __init__(self, id, world_system_manager, brain_root_dir_path=None):
         self.id = id
         self.core_llm_api = JellyLlmApi()
-        self.core_memory = JellyMemory(db_path=f"../src/brain_db/[{self.id}]_brain")
+        if brain_root_dir_path:
+            brain_path = f"{brain_root_dir_path}/{self.id}_brain"
+            self.core_memory = JellyMemory(db_path=brain_path)
+        else:
+            self.core_memory = JellyMemory(db_path=f"[{self.id}]_brain")
+            
         self.core_function = JellyFunction(world_system_manager)
 
     def start(self, llm_requester):
@@ -78,6 +85,25 @@ class JellyEngine:
         raw_matrix = agent.get_personality_matrix().get_matrix()
         relationship_matrix_context = agent.get_relationships().get_context(participant_delegate.get_available_participants())
 
+        if not is_dialogue_mode:
+            if ToolType.SPEAK in available_tool_types:
+                available_tool_types.remove(ToolType.SPEAK)
+        else:
+            if ToolType.SPEAK not in available_tool_types:
+                available_tool_types.append(ToolType.SPEAK)
+
+        fixed_manual = agent.world_system_manager.tool_manager.get_tools_manual(available_tool_types)
+        max_tool_count = 10
+        dynamic_max_slots = max_tool_count - len(available_tool_types)
+        if dynamic_max_slots < 0:
+            dynamic_max_slots = 0
+
+        dynamic_manual = agent.world_system_manager.dynamic_tool_manager.get_tools_manual(agent, max_slots=dynamic_max_slots)
+
+        final_tools_manual = fixed_manual
+        if dynamic_manual:
+            final_tools_manual += "\n" + dynamic_manual
+
         return JellyPrompt.get_system_prompt(
             personality_matrix=raw_matrix,
             name=agent.name,
@@ -94,7 +120,7 @@ class JellyEngine:
             before_action=agent.before_action,
             before_action_reason=agent.before_action_reason,
             available_objects=available_objects,
-            available_tools=agent.world_system_manager.tool_manager.get_tools_manual(available_tool_types),
+            available_tools=final_tools_manual,
             is_dialogue_mode=is_dialogue_mode,
             vital_context=agent.get_vital_state().get_context(),
             world_state_context=agent.world_system_manager.get_state_context()

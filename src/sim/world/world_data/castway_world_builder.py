@@ -14,6 +14,17 @@ class CastAwayWorldBuilder(WorldBuilder):
     def __init__(self):
         super().__init__(WorldType.CAST_AWAY_SIM)
 
+    def _create_world_role(self):
+        return """
+[세계관: 가혹한 무인도 생존]
+- 장르: 극사실주의 하드코어 생존 드라마. 마법, 초능력, SF적 요소, 기적은 절대 존재하지 않는다.
+- 물리 법칙: 모든 행동은 평범한 인간의 육체적 한계 내에서 물리적/생물학적으로 설명 가능해야 한다.
+- 환경과 자원: 거친 파도와 지독한 안개에 갇힌 절해고도이다. 가용한 자원은 오직 섬의 자연물(나무, 돌, 덩굴, 산딸기 등)과 해안가로 떠밀려온 난파선의 잔해(보급 궤짝, 찢어진 천, 부러진 철 조각 등)뿐이다.
+- 등장인물 제약: 성인 남성 'TOM'과 어린 소녀 'JAIN'만이 존재한다. TOM은 거친 물리적 노동과 사냥이 가능하지만, JAIN은 힘이 약해 무거운 통나무를 들거나 위험한 괴력을 발휘할 수 없다. JAIN이 완력으로 불가능한 고강도 물리 행동을 시도하면 기각하라.
+- 상호작용: 두 생존자 간의 교류는 대화, 위로, 원망, 물리적 상처 치료 등 지극히 인간적인 범주 내에서만 이루어진다. 텔레파시나 마법적 세뇌 같은 비현실적 정신 지배는 기각하라.
+- 목적: 이 세계의 궁극적인 목표는 미지 구역을 개척하여 자원을 엮고, 뗏목을 조립하거나 구조 연기를 피워 섬을 탈출하는 것이다.
+"""
+
     def _create_weather_engine(self):
         return WeatherEngine(weather_type=WeatherType.CLEAR, remaining_hours=3)
 
@@ -21,9 +32,9 @@ class CastAwayWorldBuilder(WorldBuilder):
         return TimeEngine(start_year=3045, start_month=6, start_day=24, start_hour=6)
 
     def _create_agents(self, world_system_manager):
-        tom = Tom(world_system_manager=world_system_manager)
+        tom = Tom(world_system_manager=world_system_manager, brain_root_dir_path=self._world_agents_brain_db_path)
         self._add_agent(tom)
-        jain = Jain(world_system_manager=world_system_manager)
+        jain = Jain(world_system_manager=world_system_manager, brain_root_dir_path=self._world_agents_brain_db_path)
         self._add_agent(jain)
 
     def _create_objects(self, world_system_manager):

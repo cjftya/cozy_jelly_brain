@@ -1,6 +1,6 @@
 # UNIVERSAL ORGANIC COGNITIVE ENGINE (CozyJelly Brain)
 
-![CozyJelly Brain Character](docs/cozy_jelly.png)
+![CozyJelly Brain Character](assets/cozy_jelly.png)
 
 **AI 에이전트가 세계를 객관적으로 처리하지 않습니다.**
 AI는 감정을 느끼고, 호르몬에 따라 현실을 왜곡하며, 유기체처럼 생존을 위해 행동합니다.
@@ -9,7 +9,7 @@ AI는 감정을 느끼고, 호르몬에 따라 현실을 왜곡하며, 유기체
 
 ## 🎬 실제 시뮬레이션 가동 로그 쇼케이스 (Emergent Narrative Showcase)
 
-![CozyJelly Brain Demo](docs/sim_capture.jpg)
+![CozyJelly Brain Demo](assets/sim_capture.jpg)
 
 - **Scenario:** 무인도 고립 생존 시나리오
 - **Subject:** 조난자 'TOM' (32세, 남성, 이성 가중치 0.75 정렬)

@@ -18,7 +18,7 @@ class ThinkEventType:
     INSPECT = 6
     PLANNING = 7
     WEB_SEARCH = 8
-
+    DYNAMIC_TOOL_FEEDBACK = 9
 
 class EventTrigger:
     def __init__(self):

@@ -3,8 +3,8 @@ from sim.tool.tool_type import ToolType
 from sim.agent_meta.vital_state import GenderType
 
 class Jain(Agent):
-    def __init__(self, world_system_manager=None):
-        super().__init__("JAIN", "HUMAN", world_system_manager=world_system_manager)
+    def __init__(self, world_system_manager=None, brain_root_dir_path=None):
+        super().__init__("JAIN", "HUMAN", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
         self.position.x = 5.0
         self.position.y = 5.0
         self.vital_state.age = 11.0
@@ -35,7 +35,7 @@ class Jain(Agent):
         return """
 사방이 칠흑 같은 안개와 위험으로 가득한 섬이다. 다행히 톰 아저씨가 찾은 보급 궤짝 덕분에 굶어 죽을 걱정은 없다.
 너에게 '해안가 캠프' 외의 모든 미지 구역은 괴물이 나올 것 같은 공포의 대상이다. 
-하지만 아저씨가 안개를 걷어내어 안전해진 구역(Available Locations)이 생기면, 아저씨가 잠든 사이에 용기를 내어 이동(MOVE_TO)할 수 있다. 그곳에서 가벼운 자원(덩굴, 산딸기)을 채집(TAKE)해 아저씨에게 선물(GIVE)하여 힘이 되어주어라.\
+하지만 아저씨가 안개를 걷어내어 안전해진 구역(Available Locations)이 생기면, 아저씨가 잠든 사이에 용기를 내어 이동(MOVE_TO)할 수 있다.\
 """
         
     def get_response_style(self):
@@ -46,7 +46,7 @@ class Jain(Agent):
 - **fear_decisive > 0.70 (극심한 고립 공포)**:
    - 아저씨가 탐험을 떠나 캠프에 혼자 남겨지면 공포 바이어스가 폭발한다. 아무것도 하지 못하고 캠프에서 울며 아저씨가 돌아오기만을 애타게 기다리는 수동적 락(Lock) 상태에 빠져라.
 - **relationship_map["TOM"] > 80.0 (조력자 각성 버프)**:
-   - 호감과 유대감이 임계치를 돌파하면 아이는 초인적인 용기를 낸다. 아저씨가 지쳐 잠들었을 때, 아저씨가 이미 개척해 둔 구역으로 기어가 힘이 약한 자신도 들 수 있는 '질긴 야생 덩굴'이나 '산딸기'를 스스로 채집(TAKE)해 돌아온 뒤, 아저씨에게 건네주는(GIVE) 대담하고 기특한 행동 조력을 감행하라.
+   - 호감과 유대감이 임계치를 돌파하면 아이는 초인적인 용기를 낸다. 아저씨가 지쳐 잠들었을 때, 기발한 아이디어를 발휘하여 아저씨를 돕기위한 행동을 감행하라.
 """
         return raw_style.strip()
     
@@ -56,7 +56,6 @@ class Jain(Agent):
    2. **현재의 결핍 (Child's Guilt)**: 무력한 어린아이여서 무거운 통나무를 들지 못해 아저씨의 짐이 되고 있다는 정서적 죄책감과 슬픔.
    3. **행동 원칙**:
       - [Gratitude]: 아저씨가 위험을 무릅쓰고 자원을 구해오거나 잠자리를 만들어주면 호감 수치를 대폭 상향하고 이를 기억(KUZU GRAPH)에 따뜻하게 임프린트할 것.
-      - [Limitation]: 절대로 혼자서 새로운 미지 구역을 개척(EXPLORE)하거나 뗏목 제작(BUILD_RAFT) 같은 고강도 노동을 시도하지 말 것. 그건 네 힘으로는 불가능하다.\
 """
 
     def _init_personality_matrix(self, personality_mat):
@@ -74,12 +73,8 @@ class Jain(Agent):
             score=50.0
         )
 
-    def _init_tools(self, dia_tool_delegate, exp_tool_delegate):
-        dia_tool_delegate.add_all_available_tool_types([
-            ToolType.SPEAK, ToolType.GIVE, ToolType.NONE, ToolType.MOVE_TO, ToolType.REST
-        ])
-
-        exp_tool_delegate.add_all_available_tool_types([
-            ToolType.TAKE, ToolType.MOVE_TO, ToolType.INSPECT, 
-            ToolType.USE, ToolType.REST, ToolType.NONE
+    def _init_tools(self, tool_delegate):
+        tool_delegate.add_all_available_tool_types([
+            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT, 
+            ToolType.CUSTOM_RULE_TOOL
         ])

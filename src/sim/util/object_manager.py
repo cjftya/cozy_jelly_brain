@@ -44,6 +44,15 @@ class ObjectManager:
                     result.append(obj)
         return result
 
+    def get_objects_by_parent_name(self, parent_name):
+        # 특정 부모이름을 가진 오브젝트 리스트 반환
+        result = []
+        for pack in self.objects.values():
+            for obj in pack:
+                if obj.parent and obj.parent.name == parent_name:
+                    result.append(obj)
+        return result
+
     def get_childs_by_parent(self, parent):
         # 부모 오브젝트를 가진 자식 오브젝트 리스트 반환
         result = []

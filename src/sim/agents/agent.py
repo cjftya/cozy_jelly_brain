@@ -19,7 +19,7 @@ from sim.util.point import Point
 from sim.tool.tool_type import ToolType
 
 class Agent:
-    def __init__(self, name="UNKNOWN", identifier="UNKNOWN", world_system_manager: "WorldSystemManager"=None):
+    def __init__(self, name="UNKNOWN", identifier="UNKNOWN", world_system_manager: "WorldSystemManager"=None, brain_root_dir_path=None):
         self.id = GlobalUtil.gen_agent_id()
         self.name = name
         self.identifier = identifier
@@ -38,7 +38,7 @@ class Agent:
         self.world_system_manager = world_system_manager
 
         # 인지 엔진
-        self.engine = JellyEngine(self.name, self.world_system_manager)
+        self.engine = JellyEngine(self.name, self.world_system_manager, brain_root_dir_path)
 
         # 생체 정보
         self.vital_state = VitalState()
@@ -55,11 +55,8 @@ class Agent:
         # 공간 정보
         self.location_delegate = LocationDelegate()
 
-        # 대화 모드 툴 정보
-        self.dia_tool_delegate = ToolDelegate()
-
-        # 탐색 모드 툴 정보
-        self.exp_tool_delegate = ToolDelegate()
+        # 툴 정보
+        self.tool_delegate = ToolDelegate()
 
         # 인벤토리
         self.inventory = ObjectManager()
@@ -80,7 +77,7 @@ class Agent:
         }
 
         self._init_personality_matrix(self.personality_matrix)
-        self._init_tools(self.dia_tool_delegate, self.exp_tool_delegate)
+        self._init_tools(self.tool_delegate)
 
     def start(self, llm_requester):
         self.engine.start(llm_requester)
@@ -114,7 +111,7 @@ class Agent:
                     combined_signal += f"{think_event_message}\n"
 
             self.think_event_queue.clear()
-            res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
+            res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types())
             return res
 
         # find agent signal
@@ -124,7 +121,7 @@ class Agent:
             found_agents = think_event.get("data", None)
 
             self.think_event_queue.clear()
-            res = self.engine.think_event_speak(user_input=think_event_message, agent=self, available_agents=found_agents, from_scan=True, available_tool_types=self.get_available_tool_types(True))
+            res = self.engine.think_event_speak(user_input=think_event_message, agent=self, available_agents=found_agents, from_scan=True, available_tool_types=self.get_available_tool_types())
             return res
 
         # find item signal
@@ -134,7 +131,7 @@ class Agent:
             found_objects = think_event.get("data", None)
 
             self.think_event_queue.clear()
-            res = self.engine.think_event_detect_objects(agent=self, external_event=think_event_message, detected_objects=found_objects, available_tool_types=self.get_available_tool_types(False))
+            res = self.engine.think_event_detect_objects(agent=self, external_event=think_event_message, detected_objects=found_objects, available_tool_types=self.get_available_tool_types())
             return res
         
         # speak signal
@@ -146,7 +143,7 @@ class Agent:
             available_agent = self.world_system_manager.agent_manager.get_agent_by_name(found_agent_name)
 
             self.think_event_queue.clear()
-            res = self.engine.think_event_speak(user_input=user_input, agent=self, available_agents=[available_agent], from_scan=False, available_tool_types=self.get_available_tool_types(True))
+            res = self.engine.think_event_speak(user_input=user_input, agent=self, available_agents=[available_agent], from_scan=False, available_tool_types=self.get_available_tool_types())
             return res
 
         # event signal
@@ -155,7 +152,7 @@ class Agent:
             think_event_message = think_event.get("message", "")
             combined_signal += f"{think_event_message}\n"
         self.think_event_queue.clear()
-        res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types(False))
+        res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types())
         return res
 
     def push_think_event(self, think_event_type, message, data=None):
@@ -230,20 +227,13 @@ class Agent:
     def get_inventory(self):
         return self.inventory
 
-    def get_available_tool_types(self, is_dialogue_mode):
-        if is_dialogue_mode:
-            return self.dia_tool_delegate.get_available_tool_types()
-        else:
-            return self.exp_tool_delegate.get_available_tool_types()
+    def get_available_tool_types(self):
+        return self.tool_delegate.get_available_tool_types()
 
-    def _init_tools(self, dia_tool_delegate, exp_tool_delegate):
-        dia_tool_delegate.add_all_available_tool_types(
-            [ToolType.SPEAK, ToolType.GIVE, ToolType.NONE]
-        )
-        
-        exp_tool_delegate.add_all_available_tool_types(
-            [ToolType.TAKE, ToolType.MOVE_TO, ToolType.INSPECT, ToolType.USE, ToolType.REST, ToolType.NONE]
-        )
+    def _init_tools(self, tool_delegate):
+        tool_delegate.add_all_available_tool_types([
+            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT, ToolType.CUSTOM_RULE_TOOL
+        ])
 
     def _init_personality_matrix(self, personality_mat):
         personality_mat.reset_value()

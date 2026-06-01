@@ -22,7 +22,7 @@ class MoveTool(BaseTool):
             target_space = None
             space_objects = world_system_manager.object_manager.get_objects_by_type(ObjectType.SPACE)
             for obj in space_objects:
-                if obj.name == location: 
+                if obj.name == location:
                     target_space = obj
                     break
             

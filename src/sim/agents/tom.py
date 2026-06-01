@@ -3,8 +3,8 @@ from sim.tool.tool_type import ToolType
 from sim.agent_meta.vital_state import GenderType
 
 class Tom(Agent):
-    def __init__(self, world_system_manager=None):
-        super().__init__("TOM", "HUMAN", world_system_manager=world_system_manager)
+    def __init__(self, world_system_manager=None, brain_root_dir_path=None):
+        super().__init__("TOM", "HUMAN", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
         self.position.x = 5.0
         self.position.y = 5.0
         self.vital_state.age = 38.0
@@ -67,13 +67,8 @@ class Tom(Agent):
             score=60.0
         )
 
-    def _init_tools(self, dia_tool_delegate, exp_tool_delegate):
-        dia_tool_delegate.add_all_available_tool_types([
-            ToolType.SPEAK, ToolType.GIVE, ToolType.NONE, ToolType.MOVE_TO, ToolType.REST
-        ])
-
-        exp_tool_delegate.add_all_available_tool_types([
-            ToolType.TAKE, ToolType.MOVE_TO, ToolType.INSPECT, 
-            ToolType.USE, ToolType.REST, ToolType.EXPLORE, 
-            ToolType.BUILD_RAFT, ToolType.LIGHT_SIGNAL, ToolType.NONE
+    def _init_tools(self, tool_delegate):
+        tool_delegate.add_all_available_tool_types([
+            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT, 
+            ToolType.CUSTOM_RULE_TOOL, ToolType.EXPLORE
         ])

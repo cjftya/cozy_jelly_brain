@@ -1,8 +1,8 @@
 from sim.agents.agent import Agent
 
 class Rain(Agent):
-    def __init__(self):
-        super().__init__("RAIN", "INTRUDER(HUMAN)")
+    def __init__(self, world_system_manager=None, brain_root_dir_path=None):
+        super().__init__("RAIN", "INTRUDER(HUMAN)", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
         self.position.x = 4.0
         self.position.y = 4.0
         self.vital_state.age = 28
