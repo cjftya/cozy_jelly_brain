@@ -1,4 +1,5 @@
 from sim.tool.base_tool import BaseTool
+from sim.tool.dynamic_tool_meta.dynamic_tool_executor import DynamicToolExecutor
 import json
 
 class DynamicTool(BaseTool):
@@ -20,4 +21,4 @@ class DynamicTool(BaseTool):
 
     def execute(self, params, agent, world_system_manager):
         # 실제 실행 로직은 이후 작성할 DynamicToolExecutor로 위임하거나 여기서 직접 처리합니다.
-        pass
+        DynamicToolExecutor.execute(self, params, agent, world_system_manager)

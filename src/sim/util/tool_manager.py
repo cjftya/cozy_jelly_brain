@@ -7,6 +7,7 @@ from sim.tool.none_tool import NoneTool
 from sim.tool.explore_tool import ExploreTool
 from sim.tool.custom_rule_tool import CustomRuleTool
 from sim.tool.web_search_tool import WebSearchTool
+from sim.tool.craft_tool import CraftTool
 
 class ToolManager:
     def __init__(self):
@@ -16,8 +17,9 @@ class ToolManager:
             ToolType.SPEAK: SpeakTool(),
             ToolType.REST: RestTool(),
             ToolType.NONE: NoneTool(),
-            ToolType.CUSTOM_RULE_TOOL: CustomRuleTool(),
+            ToolType.CUSTOM_RULE: CustomRuleTool(),
             ToolType.WEB_SEARCH: WebSearchTool(),
+            ToolType.CRAFT: CraftTool(),
             
             # cast away sim specific tools
             ToolType.EXPLORE: ExploreTool()

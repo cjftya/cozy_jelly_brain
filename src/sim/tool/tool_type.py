@@ -6,7 +6,8 @@ class ToolType:
     SPEAK = 3
     REST = 4
     WEB_SEARCH = 5
-    CUSTOM_RULE_TOOL = 6
+    CUSTOM_RULE = 6
+    CRAFT = 7
 
     # cast away sim specific tools
     EXPLORE = 500
