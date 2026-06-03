@@ -96,9 +96,8 @@ class ObjectManager:
         if obj:
             description = ""
             if obj.type == ObjectType.ITEM:
-                state, detail = obj.get_current_state()
                 count = len(pack)
-                description = detail if detail is not None else obj.detail
+                description = obj.detail
                 return f"- [name: {obj.name}] - [object_id: {obj.id}] - [count: {count}] - [detail: {description}]"
             else:
                 description = obj.detail

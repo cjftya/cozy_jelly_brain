@@ -1,16 +1,16 @@
+from sim.objects.atomic_object import AtomicObject
+from sim.object_meta.object_type import ObjectDetailType
 from sim.util.point import Point
 from sim.util.object_manager import ObjectManager
-from sim.object_meta.object_type import ObjectDetailType
 from sim.util.global_util import GlobalUtil
 
-class BaseObject:
-    def __init__(self, name=None, detail=None, detail_type=None, obj_type=None, parent=None):
-        self.id = GlobalUtil.gen_object_id()
-        self.name = name
+class BaseObject(AtomicObject):
+    def __init__(self, name=None, state=None, detail=None, detail_type=None, obj_type=None, parent=None):
+        super().__init__(name, GlobalUtil.gen_object_id(), parent)
+        self.state = state
         self.detail = detail
         self.detail_type = detail_type
         self.type = obj_type
-        self.parent = parent
 
         # 좌표
         self.position = Point()
@@ -18,9 +18,6 @@ class BaseObject:
         # 물리 속성
         self.size = Point()
         self.weight = 0
-
-    def use(self):
-        return self.detail_type, False
 
     def set_name(self, name):
         self.name = name
@@ -30,6 +27,9 @@ class BaseObject:
 
     def set_detail(self, detail):
         self.detail = detail
+
+    def get_detail(self):
+        return self.detail
 
     def set_detail_type(self, detail_type):
         self.detail_type = detail_type

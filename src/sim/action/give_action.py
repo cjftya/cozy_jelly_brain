@@ -23,4 +23,5 @@ class GiveAction(BaseAction):
             self.world_system_manager.log_system_event("skip function call: give, target object null or not found in inventory")
             return
 
+        target_object.parent = target_agent
         target_agent.get_inventory().add_object(target_object)

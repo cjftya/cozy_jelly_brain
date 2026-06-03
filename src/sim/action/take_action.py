@@ -22,5 +22,5 @@ class TakeAction(BaseAction):
             self.world_system_manager.log_system_event("skip function call: take, target object null")
             return
 
-        target_object.parent = None
+        target_object.parent = agent
         agent.get_inventory().add_object(target_object)

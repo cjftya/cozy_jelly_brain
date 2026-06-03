@@ -17,11 +17,11 @@ from sim.util.object_manager import ObjectManager, ObjectType
 from sim.util.global_util import GlobalUtil
 from sim.util.point import Point
 from sim.tool.tool_type import ToolType
+from sim.objects.atomic_object import AtomicObject
 
-class Agent:
+class Agent(AtomicObject):
     def __init__(self, name="UNKNOWN", identifier="UNKNOWN", world_system_manager: "WorldSystemManager"=None, brain_root_dir_path=None):
-        self.id = GlobalUtil.gen_agent_id()
-        self.name = name
+        super().__init__(name, GlobalUtil.gen_agent_id())
         self.identifier = identifier
 
         # LLM 트리거
