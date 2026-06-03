@@ -6,6 +6,8 @@ from sim.tool.rest_tool import RestTool
 from sim.tool.none_tool import NoneTool
 from sim.tool.explore_tool import ExploreTool
 from sim.tool.skill_tool import SkillTool
+from sim.tool.give_tool import GiveTool
+from sim.tool.take_tool import TakeTool
 from sim.tool.web_search_tool import WebSearchTool
 from sim.tool.use_tool import UseTool
 
@@ -19,6 +21,8 @@ class ToolManager:
             ToolType.REST: RestTool(),
             ToolType.NONE: NoneTool(),
             ToolType.USE: UseTool(),
+            ToolType.GIVE: GiveTool(),
+            ToolType.TAKE: TakeTool(),
             ToolType.WEB_SEARCH: WebSearchTool(),
 
             # dynamic tools

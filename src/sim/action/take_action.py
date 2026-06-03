@@ -24,3 +24,4 @@ class TakeAction(BaseAction):
 
         target_object.parent = agent
         agent.get_inventory().add_object(target_object)
+        self.world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 획득.")

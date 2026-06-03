@@ -62,7 +62,8 @@ class SkillTool(BaseTool):
         materials_context = inv_context + "\n" + env_context
 
         mediator_response = world_system_manager.world_mediator.request_object_craft(agent.name, invented_tool, execute_reason, materials_context)
-
+        print(mediator_response)
+        
         if not mediator_response or mediator_response.get("rejected", False):
             reason = mediator_response.get("reject_reason", "물리적으로 불가능한 조합임.")
             agent.push_think_event(ThinkEventType.PLANNING, f"'{invented_tool}' 제작에 실패함: {reason}")
@@ -107,6 +108,7 @@ class SkillTool(BaseTool):
             return
 
         mediator_response = world_system_manager.world_mediator.request_object_transform(agent.name, target_object.name, execute_reason)
+        print(mediator_response)
 
         if not mediator_response or mediator_response.get("rejected", False):
             reason = mediator_response.get("reject_reason", "상태변화가 불가능함.")
@@ -143,6 +145,7 @@ class SkillTool(BaseTool):
         mediator_response = world_system_manager.world_mediator.request_agent_skill(
             agent.name, invented_tool, execute_reason, target_agent_name
         )
+        print(mediator_response)
 
         if not mediator_response or mediator_response.get("rejected", False):
             reason = mediator_response.get("reject_reason", "우주의 인과율이 이 능력의 도약을 기각함.")

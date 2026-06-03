@@ -29,6 +29,7 @@ class WorldMediator:
 1. 주어진 세계관의 법칙을 기준으로, 이 세계선에서 해당 오브젝트가 인간의 한계 내에서 '물리적으로 존재 가능한가?'를 엄격히 심사하라.
 2. 통과 시, 해당 오브젝트의 고유 정체성을 대변하는 명사형 영어 타입(type_english)을 선정하라.
 3. 오브젝트를 만들기 위해 재료로 사용된 오브젝트가 있다면, 해당 대표 object_name과 실제 소비할 수량(consumed_count)을 used_objects 배열에 명시하라. (단, 목록의 count 한도를 초과하여 소비할 수 없다.)
+4. description에는 오로지 생성되는 사물의 설명만 기술하라. (에이전트의 행동에 대한 서술은 절대 금지)
 
 ## 출력 규칙 (Strict JSON Only)
 마크다운 태그 기호(```json) 없이 오직 순수 JSON 데이터만 반환하라.
@@ -65,6 +66,7 @@ class WorldMediator:
 ## 너의 임무 (Task)
 1. 이 세계의 물리 법칙 상, 대상 오브젝트가 이러한 상태 변화를 겪는 것이 인과율적으로 합당한가?
 2. 오브젝트를 완전히 부수거나 소멸시키는 행동이라면 APPROVED 처리하되, description에 "파괴됨" 혹은 "소멸됨" 상태가 되도록 기술하라.
+3. description에는 오로지 사물이 가지게 될 새로운 상태에 대해서만 설명하라. (에이전트의 행동에 대한 서술은 절대 금지)
 
 ## 출력 규칙 (Strict JSON Only)
 마크다운 태그 기호 없이 오직 순수 JSON 데이터만 반환하라.
@@ -72,7 +74,7 @@ class WorldMediator:
   "rejected": false,
   "reject_reason": "",
   "approved_skill": {{
-    "state_name": "{object_name}의 새로운 상태 이름 (명사형)",
+    "state_name": "{object_name}의 새로운 상태 이름 (명사형, 예: 차가운 물, 정리된 음식)",
     "type_english": "TransformerType",
     "description": "변형 후 사물이 가지게 될 새로운 상태(Description) 설명"
   }}
