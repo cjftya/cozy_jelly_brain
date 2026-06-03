@@ -14,9 +14,8 @@ class DynamicToolManager:
 
     def _load_tools(self):
         if not os.path.exists(self.db_path):
-            self._save_tools() # 빈 파일 생성
+            self._save_tools()
             return
-            
         try:
             with open(self.db_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
@@ -31,7 +30,9 @@ class DynamicToolManager:
         for tool in self.dynamic_tools:
             data["tools"].append({
                 "invented_tool": tool.name,
+                "skill_type": tool.skill_type,
                 "creator": tool.creator,
+                "creator_id": tool.creator_id,
                 "is_public": tool.is_public,
                 "description": tool.description,
                 "parameters": tool.parameters,
@@ -41,20 +42,45 @@ class DynamicToolManager:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def register_new_tool(self, tool_data):
-        """미디에이터의 승인을 받은 새로운 도구를 영구 등록합니다."""
-        # 중복 이름 방지
-        if any(t.name == tool_data["invented_tool"] for t in self.dynamic_tools):
+        # 중복 검사 프로토콜 (동일 에이전트가 만든 동일 이름의 스킬만 중복 컬링)
+        if any(t.name == tool_data["invented_tool"] and t.creator_id == tool_data.get("creator_id") for t in self.dynamic_tools):
             return False
             
         new_tool = DynamicTool(tool_data)
         self.dynamic_tools.append(new_tool)
+        
+        # 합산 최대 10개 한도 가드 및 FIFO 업데이트 규칙 적용
+        if len(self.dynamic_tools) > 10:
+            popped = self.dynamic_tools.pop(0)
+            Logger.log_debug(f"[FIFO 스킬 풀] 저장 한도 초과로 오래된 스킬 밀려남: {popped.name}")
+            
         self._save_tools()
         return True
 
     def get_tools_manual(self, agent, max_slots=5):
         prefix = "  "
-        # TODO: 추가예정
+        my_tools = [t for t in self.dynamic_tools if t.creator_id == agent.id]
+        if not my_tools:
+            return prefix + "- 사용 가능한 맞춤형 동적 스킬 없음"
+
+        scored_tools = []
+        vital = agent.get_vital_state()
+        is_vital_crisis = vital.hunger >= 80.0 or vital.fatigue >= 80.0 or vital.health <= 30.0
+
+        for tool in my_tools:
+            score = 10.0
+            # 생체 위기 시 VITAL 관리용 스킬 슬롯 점수 폭발
+            if tool.effects and is_vital_crisis:
+                for effect in tool.effects:
+                    if effect.get("meta_tag") == "VITAL_MODIFIER" and float(effect.get("intensity", 0)) > 0:
+                        score += 50.0
+            scored_tools.append((score, tool))
+
+        # 점수 정렬 후 상황기반 5개만 LLM에 최종 노출
+        scored_tools.sort(key=lambda x: x[0], reverse=True)
+        top_tools = [t[1] for t in scored_tools][:max_slots]
+
         tools_context = []
-        for tool in self.dynamic_tools:
+        for tool in top_tools:
             tools_context.append(prefix + tool.get_manual())
         return "\n".join(tools_context)

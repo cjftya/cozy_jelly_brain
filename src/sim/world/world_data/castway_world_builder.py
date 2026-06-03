@@ -54,11 +54,11 @@ class CastAwayWorldBuilder(WorldBuilder):
         for i in range(100):
             infinite_ration = ItemObject(
                 name="식량팩",
-                detail="여객선 잔해에서 떠밀려온 파손되지 않은 철제 식량보급상자에 들어있는 음식팩. 허기를 해결해 준다.",
+                state="지저분한 음식",
+                detail="여객선 잔해에서 떠밀려온 파손되지 않은 철제 식량보급상자에 들어있는 음식팩. 허기를 해결해 준다. 하지만 음식들이 여기저기 흩어져 있고 흙이 많이 묻어 먹기 힘들다.",
                 detail_type=ObjectDetailType.FOOD,
                 parent=camp
             )
-            infinite_ration.set_state(state="지저분한 음식", state_detail="음식들이 여기저기 흩어져 있고 흙이 많이 묻어 먹기 힘들다.")
             infinite_ration.set_pos(2, 2)
             infinite_ration.set_nutri(50)
             self._add_object(infinite_ration)

@@ -13,7 +13,4 @@ class ItemObject(BaseObject):
 
     def set_state(self, state, detail):
         self.state = state
-        self.state_map[state] = detail
-
-    def get_current_state(self):
-        return self.state
+        self.detail = detail

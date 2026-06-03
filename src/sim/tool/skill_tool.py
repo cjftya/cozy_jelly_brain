@@ -7,6 +7,8 @@ from sim.object_meta.object_type import ObjectType
 from sim.util.object_manager import ObjectManager
 from sim.action.remove_action import RemoveAction
 from sim.action.create_action import CreateAction
+from sim.tool.dynamic_tool_meta.dynamic_tool_executor import DynamicToolExecutor
+from sim.tool.dynamic_tool import DynamicTool
 
 class SkillTool(BaseTool):
     def __init__(self):
@@ -59,15 +61,15 @@ class SkillTool(BaseTool):
 
         materials_context = inv_context + "\n" + env_context
 
-        mediator_response = world_system_manager.world_mediator.request_craft_approval(agent.name, invented_tool, execute_reason, materials_context)
-        approved_skill = mediator_response.get("approved_skill", None)
-        is_rejected = approved_skill.get("rejected")
+        mediator_response = world_system_manager.world_mediator.request_object_craft(agent.name, invented_tool, execute_reason, materials_context)
 
-        if is_rejected:
-            reason = approved_skill.get("reject_reason", "물리적으로 불가능한 조합임.")
+        if not mediator_response or mediator_response.get("rejected", False):
+            reason = mediator_response.get("reject_reason", "물리적으로 불가능한 조합임.")
             agent.push_think_event(ThinkEventType.PLANNING, f"'{invented_tool}' 제작에 실패함: {reason}")
             world_system_manager.log_world_event(f"{agent.name}의 '{invented_tool}' 제작 시도가 실패로 돌아감.")
             return
+
+        approved_skill = mediator_response.get("approved_skill", {})
 
         # 승인 시: 재료 차감 (RemoveAction)
         consumed_objects = mediator_response.get("used_objects", [])
@@ -80,7 +82,7 @@ class SkillTool(BaseTool):
             # 대표 name를 통해 사물의 고유 이름(예: '단단한 야자나무 통나무')을 알아냄
             remove_count = 0
             rep_objs = self._find_objects_by_name(rep_name, agent, world_system_manager)
-            for obj in rep_objs:
+            for obj in list(rep_objs):
                 if obj.parent.name == current_location or obj.parent.name == agent.name:
                     remove_action.execute(obj.id)
                     remove_count += 1
@@ -88,10 +90,8 @@ class SkillTool(BaseTool):
                         break
 
         # 생성
-        name = approved_skill.get("name", None)
-        type_english = approved_skill.get("type_english","none")
-        description = approved_skill.get("description", None)
-        
+        name = approved_skill.get("name", invented_tool)
+        description = approved_skill.get("description", "설명 없음")
         create_action = CreateAction(world_system_manager)
         create_action.execute(name, agent.name, description)
 
@@ -107,20 +107,29 @@ class SkillTool(BaseTool):
             return
 
         mediator_response = world_system_manager.world_mediator.request_object_transform(agent.name, target_object.name, execute_reason)
-        approved_skill = mediator_response.get("approved_skill", None)
-        is_rejected = approved_skill.get("rejected")
 
-        if is_rejected:
-            reason = approved_skill.get("reject_reason", "상태변화가 불가능함.")
+        if not mediator_response or mediator_response.get("rejected", False):
+            reason = mediator_response.get("reject_reason", "상태변화가 불가능함.")
             agent.push_think_event(ThinkEventType.PLANNING, f"'{invented_tool}' 변형에 실패함: {reason}")
             world_system_manager.log_world_event(f"{agent.name}의 '{invented_tool}' 변형 시도가 실패로 돌아감.")
             return
 
-        state_name = approved_skill.get("state_name", "")
-        type_english = approved_skill.get("type_english", "")
-        description = approved_skill.get("description", "")
+        approved_skill = mediator_response.get("approved_skill", {})
+        state_name = approved_skill.get("state_name", "변형됨")
+        description = approved_skill.get("description", "설명 없음")
         
         target_object.set_state(state_name, description)
+
+        world_system_manager.dynamic_tool_manager.register_new_tool({
+            "invented_tool": invented_tool,
+            "skill_type": "object_transform",
+            "creator": agent.name,
+            "creator_id": agent.id,
+            "is_public": True,
+            "description": f"대상 [{target_object.name}]을(를) {state_name} 상태로 영구 변형.",
+            "parameters": {"target_object_id": target_object_id},
+            "effects": []
+        })
 
         # 성공 피드백
         success_msg = f"'{target_object.name}'의 상태를 '{state_name}'(으)로 변형함."
@@ -128,7 +137,39 @@ class SkillTool(BaseTool):
         world_system_manager.log_world_event(f"{agent.name}가 '{target_object.name}'의 상태를 '{state_name}'(으)로 변형함")
 
     def _execute_agent_skill(self, invented_tool, target_agent_name, agent, execute_reason, world_system_manager):
-        pass
+        if target_agent_name == "null" or target_agent_name == agent.name:
+            target_agent_name = agent.name
+
+        mediator_response = world_system_manager.world_mediator.request_agent_skill(
+            agent.name, invented_tool, execute_reason, target_agent_name
+        )
+
+        if not mediator_response or mediator_response.get("rejected", False):
+            reason = mediator_response.get("reject_reason", "우주의 인과율이 이 능력의 도약을 기각함.")
+            agent.push_think_event(ThinkEventType.PLANNING, f"'{invented_tool}' 능력 발현에 실패함: {reason}")
+            world_system_manager.log_world_event(f"{agent.name}의 스킬 생성 요청이 거부됨.")
+            return
+
+        effects = mediator_response.get("effects", [])
+        description = mediator_response.get("description", "정제된 스킬 설명")
+
+        # 스킬 풀 시스템 캐싱 연동 등록
+        tool_data = {
+            "invented_tool": invented_tool,
+            "skill_type": "agent_skill",
+            "creator": agent.name,
+            "creator_id": agent.id,
+            "is_public": True,
+            "description": description,
+            "parameters": {"target_agent_name": target_agent_name},
+            "effects": effects
+        }
+        world_system_manager.dynamic_tool_manager.register_new_tool(tool_data)
+
+        DynamicToolExecutor.execute(DynamicTool(tool_data), {"applied_target": target_agent_name}, agent, world_system_manager)
+
+        success_msg = f"새로운 스킬 [{invented_tool}] 발현 및 등록 완료."
+        agent.push_think_event(ThinkEventType.PLANNING, success_msg)
 
     def _find_objects_by_name(self, object_name, agent, world_system_manager):
         target_object = world_system_manager.object_manager.get_pack(object_name)
