@@ -11,7 +11,7 @@ class TakeAction(BaseAction):
             return
 
         agent_name = args[0]
-        object_id = int(args[1])
+        object_id = args[1]
         agent = self.world_system_manager.agent_manager.get_agent_by_name(agent_name)
         if not agent:
             self.world_system_manager.log_system_event("skip function call: take, agent null")

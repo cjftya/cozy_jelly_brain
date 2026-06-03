@@ -11,7 +11,7 @@ class GiveAction(BaseAction):
             return
         target_agent_name = args[0]
         source_agent_name = args[1]
-        object_id = int(args[2])
+        object_id = args[2]
         target_agent = self.world_system_manager.agent_manager.get_agent_by_name(target_agent_name)
         source_agent = self.world_system_manager.agent_manager.get_agent_by_name(source_agent_name)
         if not target_agent or not source_agent:

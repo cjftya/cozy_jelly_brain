@@ -88,21 +88,16 @@ class JellyEngine:
         if not is_dialogue_mode:
             if ToolType.SPEAK in available_tool_types:
                 available_tool_types.remove(ToolType.SPEAK)
+            if ToolType.GIVE in available_tool_types:
+                available_tool_types.remove(ToolType.GIVE)
         else:
             if ToolType.SPEAK not in available_tool_types:
                 available_tool_types.append(ToolType.SPEAK)
+            if ToolType.GIVE not in available_tool_types:
+                available_tool_types.append(ToolType.GIVE)
 
         fixed_manual = agent.world_system_manager.tool_manager.get_tools_manual(available_tool_types)
-        max_tool_count = 10
-        dynamic_max_slots = max_tool_count - len(available_tool_types)
-        if dynamic_max_slots < 0:
-            dynamic_max_slots = 0
-
-        dynamic_manual = agent.world_system_manager.dynamic_tool_manager.get_tools_manual(agent, max_slots=dynamic_max_slots)
-
-        final_tools_manual = fixed_manual
-        if dynamic_manual:
-            final_tools_manual += "\n" + dynamic_manual
+        dynamic_manual = agent.world_system_manager.dynamic_tool_manager.get_tools_manual(agent)
 
         return JellyPrompt.get_system_prompt(
             personality_matrix=raw_matrix,
@@ -120,7 +115,8 @@ class JellyEngine:
             before_action=agent.before_action,
             before_action_reason=agent.before_action_reason,
             available_objects=available_objects,
-            available_tools=final_tools_manual,
+            available_tools=fixed_manual,
+            available_dynamic_tools=dynamic_manual,
             is_dialogue_mode=is_dialogue_mode,
             vital_context=agent.get_vital_state().get_context(),
             world_state_context=agent.world_system_manager.get_state_context()

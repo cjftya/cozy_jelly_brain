@@ -52,51 +52,9 @@ class DynamicToolManager:
         return True
 
     def get_tools_manual(self, agent, max_slots=5):
-        """
-        현재 에이전트의 상태(결핍, 사회적 고립 등)를 분석하여
-        가장 시급한 Top N개의 동적 도구 매뉴얼을 기존 툴과 동일한 규격으로 반환합니다.
-        """
-        if not self.dynamic_tools:
-            return ""
-
-        scored_tools = []
-        
-        # 1. 에이전트의 현재 위기 상태 파악
-        is_vital_crisis = agent.vital_state.hunger >= 80.0 or agent.vital_state.fatigue >= 80.0 or agent.vital_state.health <= 20.0
-        available_participants = agent.participants_delegate.get_available_participants()
-        is_socially_isolated = isinstance(available_participants, str) or len(available_participants) == 0
-        
-        for tool in self.dynamic_tools:
-            # 2. 소유권 필터링 (내 것이 아니면서 공용이 아니면 제외)
-            if not tool.is_public and tool.creator != agent.name:
-                continue
-                
-            score = 10.0 # 기본 가중치
-            tags = [effect.get("meta_tag") for effect in tool.effects]
-
-            # 3. 생존 위기 (Vital Crisis) 필터 - 터널 비전 모사
-            if is_vital_crisis:
-                if "VITAL_MODIFIER" in tags or "ITEM_CONSUME" in tags:
-                    score += 50.0 # 생존 직결 툴은 무조건 1순위로 끌어올림
-                else:
-                    score -= 10.0 # 위기 상황에 불필요한 행동(예: 건축, 농담)은 후순위로 밀림
-
-            # 4. 사회적 고립 (Social Isolation) 필터 - 할루시네이션 방어
-            if is_socially_isolated:
-                if "BOND_MODIFIER" in tags or "MIND_MODIFIER" in tags:
-                    score = -999.0 # 주변에 아무도 없는데 타인 대상 툴을 쓰려는 시도 원천 차단
-            
-            scored_tools.append((score, tool))
-
-        # 5. 우선순위 점수(score) 기반 내림차순 정렬
-        scored_tools.sort(key=lambda x: x[0], reverse=True)
-        
-        # 6. 상위 max_slots 개수만큼 잘라내기 (-999점 받은 툴은 제외)
-        top_tools = [t[1] for t in scored_tools if t[0] > 0][:max_slots]
-
-        # 7. 기존 ToolManager와 100% 동일하게 .get_manual() 호출 후 조인
+        prefix = "  "
+        # TODO: 추가예정
         tools_context = []
-        for tool in top_tools:
-            tools_context.append(tool.get_manual())
-            
+        for tool in self.dynamic_tools:
+            tools_context.append(prefix + tool.get_manual())
         return "\n".join(tools_context)

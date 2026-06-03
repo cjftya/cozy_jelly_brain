@@ -53,11 +53,12 @@ class CastAwayWorldBuilder(WorldBuilder):
         # 풍족한 보급 궤짝
         for i in range(100):
             infinite_ration = ItemObject(
-                name="난파선 보급 궤짝", 
-                detail="여객선 잔해에서 떠밀려온 파손되지 않은 철제 식량보급상자. 음식이 가득 차 있어 허기를 해결해 준다.",
+                name="식량팩",
+                detail="여객선 잔해에서 떠밀려온 파손되지 않은 철제 식량보급상자에 들어있는 음식팩. 허기를 해결해 준다.",
                 detail_type=ObjectDetailType.FOOD,
                 parent=camp
             )
+            infinite_ration.set_state(state="지저분한 음식", state_detail="음식들이 여기저기 흩어져 있고 흙이 많이 묻어 먹기 힘들다.")
             infinite_ration.set_pos(2, 2)
             infinite_ration.set_nutri(50)
             self._add_object(infinite_ration)

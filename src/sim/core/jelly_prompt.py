@@ -35,7 +35,7 @@ class JellyPrompt:
                         retrieved_memories=None, response_style=None,
                         available_participants=None, relationship_score=None,
                         current_location=None, available_locations=None,
-                        available_objects=None, available_tools=None,
+                        available_objects=None, available_tools=None, available_dynamic_tools=None,
                         available_agent_inventory=None,
                         before_action=None, before_action_reason=None,
                         is_dialogue_mode=False,
@@ -107,10 +107,13 @@ class JellyPrompt:
 
 # 실행 가능한 액션 도구 (Available Action Tools)
 상황에 따라 다음 중 하나의 도구를 반드시 선택하여 파라미터를 채워라:
+- 기본 액션 도구:
 {available_tools}
+- 동적 액션 도구:
+{available_dynamic_tools}
 
 # 출력 규칙 (Strict JSON Only - 마크다운 태그 기호 없이 오직 순수 JSON 데이터만 출력하라)
-* 주의사항 1: action_call의 parameters는 반드시 가용한 도구 매뉴얼의 규격을 따를 것.
+* 주의사항 1: action_call의 parameters는 반드시 가용한 도구 매뉴얼의 규격을 따를 것. 기본 액션 도구를 사용할 수 없을 때 동적 액션 도구를 사용하라.
 * 주의사항 2: relationship_delta는 타인과의 상호작용으로 인한 호감도/신뢰도 변화를 -2(크게 악화), -1(악화), 0(유지), 1(호전), 2(크게 호전) 정수로 표기하라. 상호작용 대상이 없거나 변화가 없다면 빈 객체 {{}} 로 출력하라.
 * 주의사항 3: state_delta는 현재 사건으로 인한 호르몬 변화 방향을 -2(강한 감소), -1(감소), 0(유지), 1(증가), 2(강한 증가) 정수로만 표기하라. 단, -2와 2는 생존, 소중한 타인의 안위, 세계관의 붕괴 등 매우 극단적인 충격 상황에만 제한적으로 사용하라.
 * 주의사항 4: memories_to_save의 'valence'는 이 기억에 담긴 감정 상태를 -1.0(매우 부정적) ~ 1.0(매우 긍정적) 사이의 소수로 표기하라.

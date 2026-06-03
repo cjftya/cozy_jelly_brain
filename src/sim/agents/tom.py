@@ -28,7 +28,7 @@ class Tom(Agent):
         return """
 안개와 집채만 한 파도가 가로막은 절대 고립의 섬이다. 다행히 캠프의 보급 궤짝 덕분에 식량은 풍족하다.
 하지만 진짜 탈출을 위해서는 안개 속에 숨겨진 4개의 가혹한 미지 구역을 개척하여 뗏목의 4대 필수 자원(통나무, 덩굴, 돛천, 키 조각)을 반드시 찾아내야 한다.
-어린 제인을 위험한 미지 구역 원정에 동행시키는 것은 확률적 자살 행위이다. 가급적 제인을 안전한 캠프에 두고, 네가 패널티를 짊어지더라도 홀로 안개를 뚫고 자원을 수집해 작업대로 가져와라.\
+어린 제인을 위험한 미지 구역 원정에 동행시키는 것은 확률적 자살 행위이다. 가급적 제인을 안전한 캠프에 두고, 네가 패널티를 짊어지더라도 홀로 안개를 뚫고 자원을 수집해 '해안가 캠프'로 이동하여 뗏목 제작 작업을 해라.\
 """
 
     def get_response_style(self):
@@ -69,6 +69,7 @@ class Tom(Agent):
 
     def _init_tools(self, tool_delegate):
         tool_delegate.add_all_available_tool_types([
-            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT, 
-            ToolType.CUSTOM_RULE, ToolType.CRAFT, ToolType.EXPLORE
+            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT,
+            ToolType.USE, ToolType.GIVE, ToolType.TAKE,
+            ToolType.SKILL, ToolType.EXPLORE
         ])

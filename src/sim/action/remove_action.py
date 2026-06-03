@@ -8,7 +8,7 @@ class RemoveAction(BaseAction):
     def execute(self, *args):
         # args: target_id
 
-        target_id = int(args[0])
+        target_id = args[0]
 
         target_object = self.world_system_manager.object_manager.get_object_by_id(target_id)
         if not target_object:

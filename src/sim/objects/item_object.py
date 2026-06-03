@@ -6,33 +6,19 @@ class ItemObject(BaseObject):
         super().__init__(name, detail, detail_type, ObjectType.ITEM, parent)
 
         # 상태 속성
-        self.states = []
-        self.state_details = {}
-        self.current_state_idx = 0
+        self.state_map = {}
+        self.current_state = None
         self.nutrition_value = 0
 
     def use(self):
-        # 소모품
-        if self.detail_type in [ObjectDetailType.FOOD, ObjectDetailType.DRINK]:
-            return self.detail_type, True
-
-        # 상태가 있는 경우
-        if self.states:
-            self.current_state_idx = (self.current_state_idx + 1) % len(self.states)
-            return self.detail_type, False
-
         return self.detail_type, False
 
     def set_nutri(self, nutrition_value):
         self.nutrition_value = nutrition_value
 
-    def set_state_machine(self, states, state_details):
-        self.states = states
-        self.state_details = state_details
-        self.current_state_idx = 0
+    def set_state(self, state, state_detail):
+        self.current_state = state
+        self.state_map[state] = state_detail
 
     def get_current_state(self):
-        if self.states and self.state_details:
-            state_name = self.states[self.current_state_idx]
-            return state_name, self.state_details[state_name]
-        return None, None
+        return self.current_state

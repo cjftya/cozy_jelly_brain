@@ -5,22 +5,25 @@ from sim.tool.speak_tool import SpeakTool
 from sim.tool.rest_tool import RestTool
 from sim.tool.none_tool import NoneTool
 from sim.tool.explore_tool import ExploreTool
-from sim.tool.custom_rule_tool import CustomRuleTool
+from sim.tool.skill_tool import SkillTool
 from sim.tool.web_search_tool import WebSearchTool
-from sim.tool.craft_tool import CraftTool
+from sim.tool.use_tool import UseTool
 
 class ToolManager:
     def __init__(self):
         self.tools = {
+            # common tools
             ToolType.MOVE_TO: MoveTool(),
             ToolType.INSPECT: InspectTool(),
             ToolType.SPEAK: SpeakTool(),
             ToolType.REST: RestTool(),
             ToolType.NONE: NoneTool(),
-            ToolType.CUSTOM_RULE: CustomRuleTool(),
+            ToolType.USE: UseTool(),
             ToolType.WEB_SEARCH: WebSearchTool(),
-            ToolType.CRAFT: CraftTool(),
-            
+
+            # dynamic tools
+            ToolType.SKILL: SkillTool(),
+
             # cast away sim specific tools
             ToolType.EXPLORE: ExploreTool()
         }
@@ -54,10 +57,11 @@ class ToolManager:
 
     def get_tools_manual(self, available_tool_types):
         tools_context = []
+        prefix = "  "
         if available_tool_types is None:
-            return self.tools[ToolType.NONE].get_manual()
+            return prefix + self.tools[ToolType.NONE].get_manual()
 
         for tool_type in available_tool_types:
             if self.has_tool_by_type(tool_type):
-                tools_context.append(self.tools[tool_type].get_manual())
+                tools_context.append(prefix + self.tools[tool_type].get_manual())
         return "\n".join(tools_context)

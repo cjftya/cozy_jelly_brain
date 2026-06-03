@@ -43,7 +43,7 @@ class WorldBuilder:
         return TimeEngine()
 
     def _create_world_role(self):
-        pass
+        return ""
 
     def build(self, world_system_manager):
         time_engine = self._create_time_engine()

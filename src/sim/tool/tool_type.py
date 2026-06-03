@@ -5,9 +5,11 @@ class ToolType:
     INSPECT = 2
     SPEAK = 3
     REST = 4
-    WEB_SEARCH = 5
-    CUSTOM_RULE = 6
-    CRAFT = 7
+    USE = 5
+    GIVE = 6
+    TAKE = 7
+    SKILL = 8
+    WEB_SEARCH = 9
 
     # cast away sim specific tools
     EXPLORE = 500

@@ -29,7 +29,7 @@ class MapEngine:
             map_data_info.h = space.size.y
 
             # 해당 공간의 아이템 로드
-            objects = self.world_system_manager.object_manager.get_childs_by_parent(space)
+            objects = self.world_system_manager.object_manager.get_objects_by_parent_name(space)
             for obj in objects:
                 map_data_info.objects.append([item_key, obj.name, obj.detail, obj.position.x, obj.position.y])
                 item_key = chr(ord(item_key) + 1)

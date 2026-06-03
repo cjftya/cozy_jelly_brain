@@ -75,6 +75,7 @@ class Jain(Agent):
 
     def _init_tools(self, tool_delegate):
         tool_delegate.add_all_available_tool_types([
-            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT, 
-            ToolType.CUSTOM_RULE,ToolType.CRAFT
+            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT,
+            ToolType.USE, ToolType.GIVE, ToolType.TAKE,
+            ToolType.SKILL
         ])
