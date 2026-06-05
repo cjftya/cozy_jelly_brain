@@ -18,7 +18,7 @@ class RemoveAction(BaseAction):
         if target_object.type == ObjectType.ITEM:
             self.world_system_manager.object_manager.pop_object_by_id(target_id)
             self._remove_from_all_agents(target_id)
-            self.world_system_manager.log_world_event(f"{target_object.name}가 제거됨.")
+            # self.world_system_manager.log_world_event(f"{target_object.name}가 제거됨.")
         else:
             self.world_system_manager.log_system_event("skip function call: remove_action, object is not item")
             return

@@ -1,7 +1,7 @@
 import kuzu
 import time
 import numpy as np
-from sentence_transformers import SentenceTransformer
+from sim.core.embedding_service import EmbeddingService
 from log import Logger
 
 class JellyMemory:
@@ -10,9 +10,9 @@ class JellyMemory:
         self.db = kuzu.Database(db_path)
         self.conn = kuzu.Connection(self.db)
         
-        # 의미론적 검색을 위한 로컬 임베딩 모델 로드 (BGE-M3)
+        # 의미론적 검색을 위한 싱글톤 임베딩 서비스 연동 (BGE-M3)
         if load_embed_model:
-            self.embed_model = SentenceTransformer("./models/bge-m3") 
+            self.embed_model = EmbeddingService()
         else:
             self.embed_model = None
 
