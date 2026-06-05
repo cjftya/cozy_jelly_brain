@@ -11,6 +11,7 @@ from sim.world.map_engine import MapEngine
 from sim.world.world_data_factory import WorldDataFactory
 from sim.world.world_data.world_type import WorldType
 from sim.world.world_mediator import WorldMediator
+from sim.core.event_bus import EventBus, EventType as UIEventType
 from log import Logger
 
 class WorldSystemManager:
@@ -35,28 +36,9 @@ class WorldSystemManager:
         self.world_mediator = WorldMediator()
 
         self.world_agents = []
-        
-        self.refresh_biometrics = None
-        self.refresh_world_detail = None
-        self.append_agent_chat_log = None
-        self.append_world_log = None
-        self.refresh_ascii_map = None
-        self.append_system_log = None
 
-    def start(self, llm_requester, 
-            refresh_biometrics=None,
-            refresh_world_detail=None,
-            append_agent_chat_log=None,
-            append_world_log=None,
-            refresh_ascii_map=None,
-            append_system_log=None):
+    def start(self, llm_requester):
         self.llm_requester = llm_requester
-        self.refresh_biometrics = refresh_biometrics
-        self.refresh_world_detail = refresh_world_detail
-        self.append_agent_chat_log = append_agent_chat_log
-        self.append_world_log = append_world_log
-        self.refresh_ascii_map = refresh_ascii_map
-        self.append_system_log = append_system_log
 
         # 월드 데이터 초기화
         world_data = self.world_data_factory.get_world_data(WorldType.CAST_AWAY_SIM, self)
@@ -105,13 +87,13 @@ class WorldSystemManager:
             agent.tick(self.time_engine.time_scale)
 
         agent_details = self.world_view_manager.update_agent_details_view(focused_agent)
-        self.refresh_biometrics(agent_details)
+        EventBus().publish(UIEventType.BIOMETRICS_UPDATED, agent_details)
 
         world_details = self.world_view_manager.update_world_details_view()
-        self.refresh_world_detail(world_details)
+        EventBus().publish(UIEventType.WORLD_DETAIL_UPDATED, world_details)
 
         map_details = self.world_view_manager.update_ascii_map_view(focused_agent)
-        self.refresh_ascii_map(map_details)
+        EventBus().publish(UIEventType.ASCII_MAP_UPDATED, map_details)
 
         # 이벤트 트리거
         event_objects = self.event_trigger.check_triggers(self.world_agents, self.time_engine.time_scale)
@@ -151,14 +133,14 @@ class WorldSystemManager:
                 time.sleep(JellyLlmApi.get_loop_delay())
 
     def log_world_event(self, log):
-        self.append_world_log(f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
+        EventBus().publish(UIEventType.WORLD_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
 
     def log_system_event(self, log):
-        self.append_system_log(f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
+        EventBus().publish(UIEventType.SYSTEM_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
         Logger.log("[SYSTEM]", log)
 
     def log_agent_event(self, log):
-        self.append_agent_chat_log(f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}]\n{log}")
+        EventBus().publish(UIEventType.AGENT_CHAT_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}]\n{log}")
 
     def get_state_context(self):
         return f"""\

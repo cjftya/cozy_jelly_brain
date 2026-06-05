@@ -22,43 +22,16 @@ class Simulator:
 
         self.world_system_manager = WorldSystemManager()
 
-    def start(self, llm_requester,
-              refresh_biometrics=None,
-              refresh_world_detail=None,
-              append_agent_chat_log=None,
-              append_world_log=None,
-              refresh_ascii_map=None,
-              append_system_log=None):
+    def start(self, llm_requester):
         self.llm_requester = llm_requester
         
-        self.refresh_biometrics = refresh_biometrics
-        self.refresh_world_detail = refresh_world_detail
-        self.append_agent_chat_log = append_agent_chat_log
-        self.append_world_log = append_world_log
-        self.refresh_ascii_map = refresh_ascii_map
-        self.append_system_log = append_system_log
-        
-        self.world_system_manager.start(self.llm_requester,
-            refresh_biometrics=refresh_biometrics,
-            refresh_world_detail=refresh_world_detail,
-            append_agent_chat_log=append_agent_chat_log,
-            append_world_log=append_world_log,
-            refresh_ascii_map=refresh_ascii_map,
-            append_system_log=append_system_log
-        )
+        self.world_system_manager.start(self.llm_requester)
         self.world_system_manager.set_serper_api_key(self.serper_api_key)
 
     def stop(self):
         self._interupt = True
         self.world_system_manager.stop()
         self.llm_requester = None
-        
-        self.refresh_biometrics = None
-        self.refresh_world_detail = None
-        self.append_agent_chat_log = None
-        self.append_world_log = None
-        self.refresh_ascii_map = None
-        self.append_system_log = None
 
     def run(self, user_input):
         if self._auto_loop:

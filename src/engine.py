@@ -7,27 +7,13 @@ class Engine:
         self.model_name = None
         self.simulator = None
 
-    def start(self, 
-              refresh_biometrics=None,
-              refresh_world_detail=None,
-              append_agent_chat_log=None,
-              append_world_log=None,
-              refresh_ascii_map=None,
-              append_system_log=None):
+    def start(self):
         if self.llm_requester is None:
             self.llm_requester = LLMRequester()
             self.llm_requester.start_engine(full=True)
         if self.simulator is None:
             self.simulator = Simulator()
-            self.simulator.start(
-                self.llm_requester,
-                refresh_biometrics=refresh_biometrics,
-                refresh_world_detail=refresh_world_detail,
-                append_agent_chat_log=append_agent_chat_log,
-                append_world_log=append_world_log,
-                refresh_ascii_map=refresh_ascii_map,
-                append_system_log=append_system_log
-            )
+            self.simulator.start(self.llm_requester)
 
     def load(self, api_key, serper_api_key, use_web_search):
         if self.llm_requester:

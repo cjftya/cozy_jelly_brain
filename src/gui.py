@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import threading
 from engine import Engine
+from sim.core.event_bus import EventBus, EventType
 from log import Logger
 
 class ChatApp(ctk.CTk):
@@ -111,15 +112,17 @@ class ChatApp(ctk.CTk):
         self.user_input.configure(state="disabled", placeholder_text="Auto Play Mode - Input Disabled")
         self.send_button.configure(state="disabled")
         
+        # Subscribe to Event Bus for headless decoupling
+        self.event_bus = EventBus()
+        self.event_bus.subscribe(EventType.BIOMETRICS_UPDATED, self.refresh_biometrics)
+        self.event_bus.subscribe(EventType.WORLD_DETAIL_UPDATED, self.refresh_world_detail)
+        self.event_bus.subscribe(EventType.AGENT_CHAT_LOG_APPENDED, self.append_agent_chat_log)
+        self.event_bus.subscribe(EventType.WORLD_LOG_APPENDED, self.append_world_log)
+        self.event_bus.subscribe(EventType.ASCII_MAP_UPDATED, self.refresh_ascii_map)
+        self.event_bus.subscribe(EventType.SYSTEM_LOG_APPENDED, self.append_system_log)
+
         # Initialize Engine
-        self.engine.start(
-            refresh_biometrics=self.refresh_biometrics,
-            refresh_world_detail=self.refresh_world_detail,
-            append_agent_chat_log=self.append_agent_chat_log,
-            append_world_log=self.append_world_log,
-            refresh_ascii_map=self.refresh_ascii_map,
-            append_system_log=self.append_system_log
-        )
+        self.engine.start()
         self.last_ai_msg_index = None
 
     def on_system_start(self):
