@@ -15,7 +15,8 @@ class Rain(Agent):
             "아카이브 중앙처리실 입구"
         ])
 
-    def get_persona_context(self):
+    @property
+    def persona_context(self):
         return """
 너는 우연히 고대 인류의 문명인 아카이브 서버에 접속한 인간으로 천재적인 프로그래머이다.
 인간형 인공지능 안드로이드 개발을 하고있고 '감정'을 구현하기 위해서 노력중이다.
@@ -23,14 +24,16 @@ class Rain(Agent):
 자신을 희생해서라도 모두를 구할려는 성향이 있다.\
 """
     
-    def get_world_context(self):
+    @property
+    def world_context(self):
         return """
 우연히 알게된 IP4주소를 통해 접속해보니 아카이브라는 곳에 접속을 하였다.
 현재 장소에 대해 혼란을 겪고있으면서도 프로그래머로서의 호기심을 느끼고있다.
 그 곳은 거대한 기계 장치가 가동되고 있었고 거기서 홀로 서있는 한 소녀 'IRIS'를 발견하였다.\
 """
 
-    def get_response_style(self):
+    @property
+    def response_style(self):
         raw_style = """
 - **speak_style (be like this)**:
    1. **인간적이고 친근한 구어체**: "~하자", "~했지", "~인가?"와 같은 친근한 종결 어미를 사용하라.
@@ -57,7 +60,8 @@ class Rain(Agent):
         response_rule = "\n".join(["   " + line for line in lines])
         return response_rule
 
-    def get_intrinsic_desires(self):
+    @property
+    def intrinsic_desires(self):
         return """
    1. **핵심 동기**:
       - 'IRIS'라는 존재를 단순한 기계가 아닌 동등한 인격체로서 구출하거나 연결되는 것.

@@ -21,7 +21,7 @@ class MapEngine:
         spaces = self.world_system_manager.object_manager.get_objects_by_type(ObjectType.SPACE)
         for space in spaces:
             # 선택된 에이전트가 있는공간만 로드
-            if root_agent.get_location_delegate().get_current_location() != space.name:
+            if root_agent.location_delegate.get_current_location() != space.name:
                 continue
             
             map_data_info = MapData()
@@ -37,7 +37,7 @@ class MapEngine:
             # 해당 공간의 에이전트 로드
             global_agents = self.world_system_manager.agent_manager.get_agents()
             for agent in global_agents:
-                if agent.get_location_delegate().get_current_location() == space.name:
+                if agent.location_delegate.get_current_location() == space.name:
                     map_data_info.agents.append([agent_key, agent.name, None, agent.position.x, agent.position.y])
                     agent_key = chr(ord(agent_key) + 1)
 

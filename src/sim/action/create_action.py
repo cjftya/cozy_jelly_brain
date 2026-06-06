@@ -25,4 +25,4 @@ class CreateAction(BaseAction):
 
         new_obj = ItemObject(name=created_name, detail=detail, parent=agent)
 
-        agent.get_inventory().add_object(new_obj)
+        agent.inventory.add_object(new_obj)

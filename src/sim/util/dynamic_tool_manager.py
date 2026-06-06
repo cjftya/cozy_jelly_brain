@@ -64,7 +64,7 @@ class DynamicToolManager:
             return prefix + "- 사용 가능한 맞춤형 동적 스킬 없음"
 
         scored_tools = []
-        vital = agent.get_vital_state()
+        vital = agent.vital_state
         is_vital_crisis = vital.hunger >= 80.0 or vital.fatigue >= 80.0 or vital.health <= 30.0
 
         for tool in my_tools:

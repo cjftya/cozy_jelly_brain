@@ -49,7 +49,7 @@ class SkillTool(BaseTool):
 
     def _execute_object_craft(self, invented_tool, agent, execute_reason, world_system_manager):
         # 현재 주변 객체 및 인벤토리 정보 취합
-        current_location = agent.get_location_delegate().get_current_location()
+        current_location = agent.location_delegate.get_current_location()
         inv_context = agent.inventory.get_objects_full_context()
         
         # 공간 내 아이템 추출
@@ -179,7 +179,7 @@ class SkillTool(BaseTool):
         if target_object:
             return target_object
         
-        target_object = agent.get_inventory().get_pack(object_name)
+        target_object = agent.inventory.get_pack(object_name)
         if target_object:
             return target_object
         
@@ -190,7 +190,7 @@ class SkillTool(BaseTool):
         if target_object:
             return target_object
         
-        target_object = agent.get_inventory().get_object_by_id(object_id)
+        target_object = agent.inventory.get_object_by_id(object_id)
         if target_object:
             return target_object
         

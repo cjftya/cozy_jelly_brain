@@ -27,12 +27,12 @@ class ObjectDetector:
 
     def detect_agents(self, agent, all_agents):
         agents_list = []
-        curr_location = agent.get_location_delegate().get_current_location()
+        curr_location = agent.location_delegate.get_current_location()
         for entity in all_agents:
             if agent.id == entity.id:
                 continue
 
-            other_agent_location = entity.get_location_delegate().get_current_location()
+            other_agent_location = entity.location_delegate.get_current_location()
             if other_agent_location is None:
                 continue
 
@@ -57,7 +57,7 @@ class ObjectDetector:
         detected_list = []
         agent_pos = agent.position
 
-        raw_matrix = agent.get_personality_delegate().get_matrix()
+        raw_matrix = agent.personality_delegate.get_matrix()
         current_range = self._calculate_dynamic_range(raw_matrix, agent.vital_state)
 
         duplicate_map = {}

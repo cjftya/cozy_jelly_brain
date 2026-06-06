@@ -21,7 +21,7 @@ class UseAction(BaseAction):
 
         target_object = self.world_system_manager.object_manager.get_object_by_id(object_id)
         if not target_object:
-            target_object = agent.get_inventory().get_object_by_id(object_id)
+            target_object = agent.inventory.get_object_by_id(object_id)
 
         if target_object:
             object_detail_type = target_object.detail_type

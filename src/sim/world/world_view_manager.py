@@ -9,7 +9,7 @@ class WorldViewManager:
 
     def update_agent_details_view(self, agent):
         gender_context = "Female" if agent.vital_state.gender == GenderType.FEMALE else "Male"
-        personality_matrix = agent.get_personality_delegate().get_matrix()
+        personality_matrix = agent.personality_delegate.get_matrix()
         view_data = f"""
 [VITALS] Age: {agent.vital_state.age:05.2f} | Gender: {gender_context}
 • Health: [{agent.vital_state.health:06.2f}] {self._draw_gauge(agent.vital_state.health/100.0)}
@@ -46,7 +46,7 @@ class WorldViewManager:
 
     def update_ascii_map_view(self, root_agent):
         # 정보 수집
-        location = root_agent.get_location_delegate().get_current_location()
+        location = root_agent.location_delegate.get_current_location()
         space = self.world_system_manager.object_manager.get_object(location)
         location_detail = space.detail
 

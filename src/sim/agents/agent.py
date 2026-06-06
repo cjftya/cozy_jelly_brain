@@ -175,7 +175,7 @@ class Agent(AtomicObject):
 
         # 단일 난수 주사위를 굴려 행동 우선순위를 정함 (0.0 ~ 1.0)
         action_roll = random.random()
-        matrix = self.get_personality_delegate().get_matrix()
+        matrix = self.personality_delegate.get_matrix()
 
         # [40% 확률 분기] 대상을 먼저 인지하는 경우
         if action_roll < 0.4 and len(found_agents) > 0:
@@ -202,35 +202,25 @@ class Agent(AtomicObject):
     def support_web_search(self):
         return False
 
-    def get_personality_delegate(self):
-        return self.personality_delegate
-
-    def get_persona_context(self):
+    @property
+    def persona_context(self):
         return None
     
-    def get_world_context(self):
+    @property
+    def world_context(self):
         return None
 
-    def get_response_style(self):
+    @property
+    def response_style(self):
         return None
 
-    def get_intrinsic_desires(self):
+    @property
+    def intrinsic_desires(self):
         return None
 
-    def get_relationships(self):
+    @property
+    def relationships(self):
         return self.relationship_score_delegate
-
-    def get_location_delegate(self):
-        return self.location_delegate
-
-    def get_participant_delegate(self):
-        return self.participants_delegate
-
-    def get_vital_state(self):
-        return self.vital_state
-
-    def get_inventory(self):
-        return self.inventory
 
     def get_available_tool_types(self):
         return self.tool_delegate.get_available_tool_types()

@@ -18,10 +18,10 @@ class GiveAction(BaseAction):
             self.world_system_manager.log_system_event("skip function call: give, target or source agent null")
             return
         
-        target_object = source_agent.get_inventory().pop_object_by_id(object_id)
+        target_object = source_agent.inventory.pop_object_by_id(object_id)
         if not target_object:
             self.world_system_manager.log_system_event("skip function call: give, target object null or not found in inventory")
             return
 
         target_object.parent = target_agent
-        target_agent.get_inventory().add_object(target_object)
+        target_agent.inventory.add_object(target_object)

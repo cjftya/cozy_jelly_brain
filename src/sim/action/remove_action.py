@@ -25,6 +25,6 @@ class RemoveAction(BaseAction):
 
     def _remove_from_all_agents(self, target_id):
         for agent in self.world_system_manager.agent_manager.get_agents():
-            agent.get_inventory().pop_object_by_id(target_id)
+            agent.inventory.pop_object_by_id(target_id)
 
         

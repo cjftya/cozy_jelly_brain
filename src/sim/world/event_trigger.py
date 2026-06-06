@@ -54,7 +54,7 @@ class EventTrigger:
             if agent.is_thinking:
                 continue
 
-            vital = agent.get_vital_state()
+            vital = agent.vital_state
             
             if vital.hunger >= 80.0 and self.hunger_alert_timer >= VITAL_ALERT_COOLDOWN:
                 self.hunger_alert_timer = 0.0

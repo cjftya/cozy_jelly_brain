@@ -15,5 +15,5 @@ class ModifyRelationshipScoreAction(BaseAction):
             self.world_system_manager.log_system_event("skip function call: modify_relationship_score_action, agent or target_agent null")
             return
 
-        agent.get_relationships().add_value(target_agent.name, score)
+        agent.relationships.add_value(target_agent.name, score)
         
