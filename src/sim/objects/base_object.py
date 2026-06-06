@@ -42,3 +42,7 @@ class BaseObject(AtomicObject):
 
     def set_weight(self, weight):
         self.weight = weight
+
+    def set_state(self, state, detail):
+        self.state = state
+        self.detail = detail

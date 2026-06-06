@@ -12,7 +12,7 @@ class BuildRaftTool(BaseTool):
         return ''
 
     def execute(self, params, agent, world_system_manager):
-        inv = agent.get_inventory()
+        inv = agent.inventory
         part1 = inv.get_pack("단단한 야자나무 통나무")
         part2 = inv.get_pack("질긴 야생 덩굴")
         part3 = inv.get_pack("찢어진 난파선 돛천")

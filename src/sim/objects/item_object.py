@@ -10,7 +10,3 @@ class ItemObject(BaseObject):
 
     def set_nutri(self, nutrition_value):
         self.nutrition_value = nutrition_value
-
-    def set_state(self, state, detail):
-        self.state = state
-        self.detail = detail

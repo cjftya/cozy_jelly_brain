@@ -183,7 +183,7 @@ class SkillTool(BaseTool):
         if target_object:
             return target_object
         
-        return None
+        return []
 
     def _find_object_by_id(self, object_id, agent, world_system_manager):
         target_object = world_system_manager.object_manager.get_object_by_id(object_id)

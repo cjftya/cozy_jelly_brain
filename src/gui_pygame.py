@@ -48,6 +48,12 @@ class PygameApp:
         self.particles = []
         self.max_particles = 100
         
+        # New visual effects state
+        self.agent_visuals = {}  # agent_name -> {"x": float, "y": float}
+        self.click_ripples = []   # list of {"x", "y", "radius", "alpha"}
+        self.thinking_particles = [] # list of {"x", "y", "vx", "vy", "radius", "alpha", "color"}
+        self.lightning_flash = 0.0
+        
         self.lock = threading.Lock()
         self.agent_thinking_logs = {}
         
@@ -128,6 +134,14 @@ class PygameApp:
             if event.type == pygame.QUIT:
                 self.stop()
                 return
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mx, my = event.pos
+                self.click_ripples.append({
+                    "x": mx,
+                    "y": my,
+                    "radius": 5.0,
+                    "alpha": 255.0
+                })
         
         # Clear screen
         self.screen.fill(self.colors["bg"])
@@ -136,12 +150,65 @@ class PygameApp:
             # 1. Draw weather particles (background)
             self._update_and_draw_particles()
             
-            # 2. Draw UI components
+            # 2. Draw thinking particles (behind UI but on top of weather)
+            self._update_and_draw_thinking_particles()
+            
+            # 3. Draw UI components
             self._draw_header(self.screen)
             self._draw_map_board(self.screen)
+            
+            # 4. Draw click ripples
+            self._update_and_draw_ripples()
+            
+            # 5. Draw lightning flashes
+            self._update_and_draw_lightning()
         
         pygame.display.flip()
         self.pygame_clock.tick(30)
+
+    def _update_and_draw_thinking_particles(self):
+        alive_particles = []
+        for p in self.thinking_particles:
+            p["x"] += p["vx"]
+            p["y"] += p["vy"]
+            p["alpha"] -= 8
+            if p["alpha"] > 0:
+                surf = pygame.Surface((p["radius"] * 2, p["radius"] * 2), pygame.SRCALPHA)
+                pygame.draw.circle(surf, (p["color"][0], p["color"][1], p["color"][2], p["alpha"]), (p["radius"], p["radius"]), p["radius"])
+                self.screen.blit(surf, (int(p["x"] - p["radius"]), int(p["y"] - p["radius"])))
+                alive_particles.append(p)
+        self.thinking_particles = alive_particles
+
+    def _update_and_draw_ripples(self):
+        alive_ripples = []
+        for r in self.click_ripples:
+            r["radius"] += 2.5
+            r["alpha"] -= 12
+            if r["alpha"] > 0:
+                rad = int(r["radius"])
+                surf = pygame.Surface((rad * 2 + 4, rad * 2 + 4), pygame.SRCALPHA)
+                # Outer glowing ring
+                pygame.draw.circle(surf, (99, 137, 250, int(r["alpha"])), (rad + 2, rad + 2), rad, width=2)
+                # Inner subtle core
+                if rad > 4:
+                    pygame.draw.circle(surf, (99, 137, 250, int(r["alpha"] // 3)), (rad + 2, rad + 2), rad - 3)
+                self.screen.blit(surf, (int(r["x"] - r["radius"] - 2), int(r["y"] - r["radius"] - 2)))
+                alive_ripples.append(r)
+        self.click_ripples = alive_ripples
+
+    def _update_and_draw_lightning(self):
+        weather = self.world_info.get("weather", "SUNNY")
+        if weather == "STORM":
+            # 0.6% chance per frame to trigger lightning
+            if random.random() < 0.006:
+                self.lightning_flash = 1.0
+                
+        if self.lightning_flash > 0.0:
+            flash_surf = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+            alpha_val = int(self.lightning_flash * 150)
+            pygame.draw.rect(flash_surf, (255, 255, 255, alpha_val), flash_surf.get_rect())
+            self.screen.blit(flash_surf, (0, 0))
+            self.lightning_flash -= 0.08
 
     def stop(self):
         if self.running:
@@ -369,8 +436,30 @@ class PygameApp:
                 offset_x = 35 + (x % 4) * 48
                 offset_y = 50 + (y % 3) * 26
                 
-                pos_x = rx + offset_x
-                pos_y = ry + offset_y
+                target_x = rx + offset_x
+                target_y = ry + offset_y
+                
+                # Dynamic Lerp Position interpolation for smooth movement
+                if name not in self.agent_visuals:
+                    self.agent_visuals[name] = {"x": target_x, "y": target_y}
+                else:
+                    self.agent_visuals[name]["x"] += (target_x - self.agent_visuals[name]["x"]) * 0.15
+                    self.agent_visuals[name]["y"] += (target_y - self.agent_visuals[name]["y"]) * 0.15
+                    
+                pos_x = int(self.agent_visuals[name]["x"])
+                pos_y = int(self.agent_visuals[name]["y"])
+                
+                # Emit thinking particles upwards when agent is thinking
+                if is_thinking and random.random() < 0.25:
+                    self.thinking_particles.append({
+                        "x": pos_x + random.uniform(-10, 10),
+                        "y": pos_y - 12,
+                        "vx": random.uniform(-0.4, 0.4),
+                        "vy": random.uniform(-1.5, -0.6),
+                        "radius": random.randint(2, 4),
+                        "alpha": 255,
+                        "color": self.colors["glow_thinking"]
+                    })
                 
                 # Check mouse hover (agent bubble has radius 15, name pill is below)
                 if pos_x - 20 <= mx <= pos_x + 20 and pos_y - 18 <= my <= pos_y + 35:
@@ -478,9 +567,22 @@ class PygameApp:
             self._draw_agent_tooltip(screen, hovered_agent[0], hovered_agent[1], hovered_agent[2], hovered_agent[3])
 
     def _draw_agent_tooltip(self, screen, name, data, mx, my):
-        # Card size and positioning
+        # Analyze data to calculate dynamic height
+        relationships = data.get("relationships", {})
+        rel_count = len(relationships) if relationships else 1
+        
+        inventory = data.get("inventory", [])
+        from collections import Counter
+        item_counts = Counter(inventory)
+        item_list = [f"{item} x{cnt}" if cnt > 1 else item for item, cnt in item_counts.items()]
+        item_rows = max(1, (len(item_list) + 1) // 2)
+        
         card_w = 260
-        card_h = 370
+        # Dynamic height calculation:
+        # Base height (fixed elements & spacing) = ~390px
+        # Relationships = rel_count * 16px
+        # Inventory = item_rows * 18px
+        card_h = 390 + (rel_count * 16) + (item_rows * 18)
         
         # Keep tooltip inside screen boundaries
         tx = mx + 15
@@ -500,22 +602,27 @@ class PygameApp:
         agent_color = self.colors.get(name, self.colors["UNKNOWN"])
         pygame.draw.rect(screen, agent_color, card_rect, width=2, border_radius=12)
         
+        curr_y = ty + 16
+        
         # Header (Agent Name)
         title_surf = self.font_title.render(f"SURVIVOR: {name}", True, agent_color)
-        screen.blit(title_surf, (tx + 16, ty + 16))
+        screen.blit(title_surf, (tx + 16, curr_y))
+        curr_y += 24
         
         # Subtitle (Location)
         loc = data.get("location", "UNKNOWN")
         sub_surf = self.font_item.render(f"LOCATION: {loc}", True, self.colors["text_dark"])
-        screen.blit(sub_surf, (tx + 16, ty + 40))
+        screen.blit(sub_surf, (tx + 16, curr_y))
+        curr_y += 16
         
-        # Separator line
-        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 56), (tx + card_w - 16, ty + 56), 1)
+        # Separator line 1
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, curr_y), (tx + card_w - 16, curr_y), 1)
+        curr_y += 10
         
         # 1. Physical Vitals
-        vy = ty + 66
         section_p = self.font_body.render("신체 상태 (PHYSICAL)", True, self.colors["text_light"])
-        screen.blit(section_p, (tx + 16, vy))
+        screen.blit(section_p, (tx + 16, curr_y))
+        curr_y += 20
         
         health = data.get("health", 100.0)
         fatigue = data.get("fatigue", 0.0)
@@ -546,17 +653,21 @@ class PygameApp:
             if fill_w > 0:
                 pygame.draw.rect(screen, color, pygame.Rect(tx + 140, y + 4, fill_w, 6), border_radius=2)
                 
-        draw_vital_bar("체력 (Health)", health, vy + 20, False)
-        draw_vital_bar("피로 (Fatigue)", fatigue, vy + 38, True)
-        draw_vital_bar("허기 (Hunger)", hunger, vy + 56, True)
+        draw_vital_bar("체력 (Health)", health, curr_y, False)
+        curr_y += 18
+        draw_vital_bar("피로 (Fatigue)", fatigue, curr_y, True)
+        curr_y += 18
+        draw_vital_bar("허기 (Hunger)", hunger, curr_y, True)
+        curr_y += 26
         
-        # Separator line
-        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 148), (tx + card_w - 16, ty + 148), 1)
+        # Separator line 2
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, curr_y), (tx + card_w - 16, curr_y), 1)
+        curr_y += 10
         
         # 2. Mental State (Personality metrics)
-        my_sec = ty + 158
         section_m = self.font_body.render("정신 성향 (MENTAL)", True, self.colors["text_light"])
-        screen.blit(section_m, (tx + 16, my_sec))
+        screen.blit(section_m, (tx + 16, curr_y))
+        curr_y += 20
         
         personality = data.get("personality", {})
         logic = int(personality.get("logic_emotion", 0.5) * 100)
@@ -571,54 +682,55 @@ class PygameApp:
         lbl_p2 = self.font_item.render(p_text2, True, self.colors["text_dark"])
         lbl_p3 = self.font_item.render(p_text3, True, self.colors["text_dark"])
         
-        screen.blit(lbl_p1, (tx + 16, my_sec + 20))
-        screen.blit(lbl_p2, (tx + 16, my_sec + 36))
-        screen.blit(lbl_p3, (tx + 16, my_sec + 52))
+        screen.blit(lbl_p1, (tx + 16, curr_y))
+        curr_y += 16
+        screen.blit(lbl_p2, (tx + 16, curr_y))
+        curr_y += 16
+        screen.blit(lbl_p3, (tx + 16, curr_y))
+        curr_y += 26
         
-        # Separator line
-        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 236), (tx + card_w - 16, ty + 236), 1)
+        # Separator line 3
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, curr_y), (tx + card_w - 16, curr_y), 1)
+        curr_y += 10
         
         # 3. Relationships
-        ry_sec = ty + 246
         section_r = self.font_body.render("대인 관계 (RELATIONSHIP)", True, self.colors["text_light"])
-        screen.blit(section_r, (tx + 16, ry_sec))
+        screen.blit(section_r, (tx + 16, curr_y))
+        curr_y += 20
         
-        relationships = data.get("relationships", {})
-        r_y = ry_sec + 20
         if relationships:
             for rel_name, rel_score in relationships.items():
                 rel_text = f"호감도 [{rel_name}]: {int(rel_score)} / 100"
                 rel_surf = self.font_item.render(rel_text, True, self.colors["text_dark"])
-                screen.blit(rel_surf, (tx + 16, r_y))
-                r_y += 16
+                screen.blit(rel_surf, (tx + 16, curr_y))
+                curr_y += 16
         else:
             rel_surf = self.font_item.render("관계 정보 없음", True, self.colors["text_dark"])
-            screen.blit(rel_surf, (tx + 16, r_y))
-
-        # Separator line
-        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 286), (tx + card_w - 16, ty + 286), 1)
-
+            screen.blit(rel_surf, (tx + 16, curr_y))
+            curr_y += 16
+            
+        curr_y += 10
+        
+        # Separator line 4
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, curr_y), (tx + card_w - 16, curr_y), 1)
+        curr_y += 10
+        
         # 4. Inventory
-        inv_sec = ty + 296
         section_i = self.font_body.render("소지품 (INVENTORY)", True, self.colors["text_light"])
-        screen.blit(section_i, (tx + 16, inv_sec))
-
-        inventory = data.get("inventory", [])
-        if inventory:
-            # Group same items together for compact display
-            from collections import Counter
-            item_counts = Counter(inventory)
-            inv_text = "  ".join(
-                f"{item} x{cnt}" if cnt > 1 else item
-                for item, cnt in item_counts.items()
-            )
-            # Truncate if too long
-            if len(inv_text) > 30:
-                inv_text = inv_text[:27] + "..."
-            inv_surf = self.font_item.render(inv_text, True, (251, 191, 36))
+        screen.blit(section_i, (tx + 16, curr_y))
+        curr_y += 20
+        
+        if item_list:
+            for i, item_str in enumerate(item_list):
+                col = i % 2
+                row = i // 2
+                col_x = tx + 16 + col * 115
+                row_y = curr_y + row * 18
+                inv_surf = self.font_item.render(item_str, True, (251, 191, 36))
+                screen.blit(inv_surf, (col_x, row_y))
         else:
             inv_surf = self.font_item.render("없음", True, self.colors["text_dark"])
-        screen.blit(inv_surf, (tx + 16, inv_sec + 20))
+            screen.blit(inv_surf, (tx + 16, curr_y))
 
     def _draw_room_items(self, screen, loc_name, rx, ry, r_w, r_h):
         # Read directly from world simulator object manager

@@ -9,6 +9,7 @@ from sim.tool.skill_tool import SkillTool
 from sim.tool.give_tool import GiveTool
 from sim.tool.take_tool import TakeTool
 from sim.tool.web_search_tool import WebSearchTool
+from sim.tool.build_raft_tool import BuildRaftTool
 from sim.tool.use_tool import UseTool
 
 class ToolManager:
@@ -29,7 +30,8 @@ class ToolManager:
             ToolType.SKILL: SkillTool(),
 
             # cast away sim specific tools
-            ToolType.EXPLORE: ExploreTool()
+            ToolType.EXPLORE: ExploreTool(),
+            ToolType.BUILD_RAFT: BuildRaftTool()
         }
 
     def add_tool(self, tool):
