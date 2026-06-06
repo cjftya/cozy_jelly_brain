@@ -87,13 +87,11 @@ class ChatApp(ctk.CTk):
         self.left_views_frame.grid_columnconfigure(0, weight=1)
         self.left_views_frame.grid_columnconfigure(1, weight=1)
         
-        # Create the 6 text views with explicit heights for scroll container
-        self.biometrics_view = self.create_text_view(self.left_views_frame, "BIOMETRICS & MATRIX", 0, 0, height=220)
-        self.world_detail_view = self.create_text_view(self.left_views_frame, "World Detail", 0, 1, height=220)
-        self.agent_chat_log_view = self.create_text_view(self.left_views_frame, "agent chat log", 1, 0, height=250)
-        self.world_log_view = self.create_text_view(self.left_views_frame, "world log", 1, 1, height=250)
-        # ASCII map is removed as per request. Pygame visualizer handles 2D map rendering.
-        self.system_log_view = self.create_text_view(self.left_views_frame, "system log", 2, 0, columnspan=2, height=200)
+        # Layout: World Detail | World Log  /  Agent Chat Log | System Log
+        self.world_detail_view = self.create_text_view(self.left_views_frame, "World Detail", 0, 0, height=280)
+        self.world_log_view = self.create_text_view(self.left_views_frame, "World Log", 0, 1, height=280)
+        self.agent_chat_log_view = self.create_text_view(self.left_views_frame, "Agent Chat Log", 1, 0, height=300)
+        self.system_log_view = self.create_text_view(self.left_views_frame, "System Log", 1, 1, height=300)
 
         # Input Area
         self.input_container = ctk.CTkFrame(self, fg_color="transparent")
@@ -116,7 +114,6 @@ class ChatApp(ctk.CTk):
         
         # Subscribe to Event Bus for headless decoupling
         self.event_bus = EventBus()
-        self.event_bus.subscribe(EventType.BIOMETRICS_UPDATED, self.refresh_biometrics)
         self.event_bus.subscribe(EventType.WORLD_DETAIL_UPDATED, self.refresh_world_detail)
         self.event_bus.subscribe(EventType.AGENT_CHAT_LOG_APPENDED, self.append_agent_chat_log)
         self.event_bus.subscribe(EventType.WORLD_LOG_APPENDED, self.append_world_log)
@@ -266,7 +263,7 @@ class ChatApp(ctk.CTk):
         )
         label.grid(row=0, column=0, padx=10, pady=(5, 2), sticky="ew")
         
-        font_family = "Consolas" if any(x in title.lower() for x in ["map", "biometrics"]) else "Inter"
+        font_family = "Consolas" if "map" in title.lower() else "Inter"
         textbox = ctk.CTkTextbox(
             frame, 
             font=ctk.CTkFont(family=font_family, size=14),
@@ -357,8 +354,6 @@ class ChatApp(ctk.CTk):
         if is_at_bottom:
             textbox.see("end")
 
-    def refresh_biometrics(self, text):
-        self.after(0, lambda: self._update_text_view(self.biometrics_view, text))
 
     def refresh_world_detail(self, text):
         self.after(0, lambda: self._update_text_view(self.world_detail_view, text))

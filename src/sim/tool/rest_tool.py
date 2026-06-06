@@ -13,7 +13,7 @@ class RestTool(BaseTool):
 
     def execute(self, params, agent, world_system_manager):
         agent.perform_brain_cleanup()
-        agent.vital_state.update_fatigue(-70)
-        agent.vital_state.update_health(50)
+        agent.vital_state.update_fatigue(-90)
+        agent.vital_state.update_health(30)
         world_system_manager.log_world_event(f"{agent.name}가 휴식함.")
         

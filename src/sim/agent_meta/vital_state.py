@@ -47,10 +47,10 @@ class VitalState:
         self.warning = ""
 
         # 각 에이전트별로 변화 속도를 조절하기 위한 값
-        self.hunger_damp = 0.5
-        self.fatigue_damp = 0.5
+        self.hunger_damp = 0.3
+        self.fatigue_damp = 0.3
         self.health_damp = 1.0
-        self.auto_revise_value = 0.5
+        self.auto_revise_value = 0.3
         self.auto_revise_condition_value = 30.0
 
     def update_hunger(self, value):

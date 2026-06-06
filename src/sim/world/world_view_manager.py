@@ -74,6 +74,34 @@ class WorldViewManager:
 """
         return view_data
 
+    def update_agent_light_log_view(self, agent, result):
+        if isinstance(result, str):
+            try:
+                import json
+                result = json.loads(result)
+            except Exception:
+                return f"--- CRITICAL: LOG PARSE ERROR ---\nRaw: {result}"
+
+        subjective_perception = result.get('subjective_perception', '')
+        internal_strategy = result.get('internal_strategy', '')
+        
+        action_call = result.get('action_call', {}) or {} # None 방지
+        function = action_call.get('function', 'NONE')
+        reason = action_call.get('reason', 'No reason provided.')
+
+        agent_log = f"""
+<{agent.name}>
+--[Subjective Perception]--
+{subjective_perception}
+--[Internal Strategy]--
+{internal_strategy}
+--[System Action Execution]--
+• Tool : {str(function).upper()}
+• Reason : {reason}
+──────────────────
+"""
+        return agent_log
+
     def update_agent_log_view(self, agent, result):
         if not result or result == "None":
             return None

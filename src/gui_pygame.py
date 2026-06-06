@@ -480,7 +480,7 @@ class PygameApp:
     def _draw_agent_tooltip(self, screen, name, data, mx, my):
         # Card size and positioning
         card_w = 260
-        card_h = 320
+        card_h = 370
         
         # Keep tooltip inside screen boundaries
         tx = mx + 15
@@ -594,6 +594,31 @@ class PygameApp:
         else:
             rel_surf = self.font_item.render("관계 정보 없음", True, self.colors["text_dark"])
             screen.blit(rel_surf, (tx + 16, r_y))
+
+        # Separator line
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 286), (tx + card_w - 16, ty + 286), 1)
+
+        # 4. Inventory
+        inv_sec = ty + 296
+        section_i = self.font_body.render("소지품 (INVENTORY)", True, self.colors["text_light"])
+        screen.blit(section_i, (tx + 16, inv_sec))
+
+        inventory = data.get("inventory", [])
+        if inventory:
+            # Group same items together for compact display
+            from collections import Counter
+            item_counts = Counter(inventory)
+            inv_text = "  ".join(
+                f"{item} x{cnt}" if cnt > 1 else item
+                for item, cnt in item_counts.items()
+            )
+            # Truncate if too long
+            if len(inv_text) > 30:
+                inv_text = inv_text[:27] + "..."
+            inv_surf = self.font_item.render(inv_text, True, (251, 191, 36))
+        else:
+            inv_surf = self.font_item.render("없음", True, self.colors["text_dark"])
+        screen.blit(inv_surf, (tx + 16, inv_sec + 20))
 
     def _draw_room_items(self, screen, loc_name, rx, ry, r_w, r_h):
         # Read directly from world simulator object manager

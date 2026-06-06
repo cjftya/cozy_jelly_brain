@@ -38,7 +38,7 @@ class CognitiveWorker:
             try:
                 result = agent.think_tick()
                 if result:
-                    agent_log = self.world_system_manager.world_view_manager.update_agent_log_view(agent, result)
+                    agent_log = self.world_system_manager.world_view_manager.update_agent_light_log_view(agent, result)
                     self.world_system_manager.log_agent_event(agent_log)
                     
                     time.sleep(JellyLlmApi.get_loop_delay())

@@ -123,7 +123,8 @@ class WorldSystemManager:
                 "fatigue": agent.vital_state.fatigue,
                 "hunger": agent.vital_state.hunger,
                 "personality": agent.personality_delegate.get_matrix(),
-                "relationships": agent.relationship_score_delegate.get_matrix()
+                "relationships": agent.relationship_score_delegate.get_matrix(),
+                "inventory": [obj.name for obj in agent.inventory.get_objects()]
             })
 
         # 이벤트 트리거

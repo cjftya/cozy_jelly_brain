@@ -80,9 +80,3 @@ class Jain(Agent):
     def _init_vital_state(self, vital_state):
         vital_state.age = 11.0
         vital_state.gender = GenderType.FEMALE
-
-        vital_state.hunger_damp = 0.8
-        vital_state.fatigue_damp = 0.9
-        vital_state.health_damp = 2.0
-        vital_state.auto_revise_value = 1.0
-        vital_state.auto_revise_condition_value = 30.0
