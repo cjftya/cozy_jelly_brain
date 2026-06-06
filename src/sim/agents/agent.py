@@ -18,6 +18,7 @@ from sim.util.global_util import GlobalUtil
 from sim.util.point import Point
 from sim.tool.tool_type import ToolType
 from sim.objects.atomic_object import AtomicObject
+from sim.util.dynamic_tool_manager import DynamicToolManager
 
 class Agent(AtomicObject):
     def __init__(self, name="UNKNOWN", identifier="UNKNOWN", world_system_manager: "WorldSystemManager"=None, brain_root_dir_path=None):
@@ -25,7 +26,6 @@ class Agent(AtomicObject):
         self.identifier = identifier
 
         # LLM 트리거
-        self.enable_thinking = False
         self.is_thinking = False
 
         # Think Event 큐
@@ -59,6 +59,9 @@ class Agent(AtomicObject):
         # 툴 정보
         self.tool_delegate = ToolDelegate()
 
+        # 동적 툴 정보
+        self.dynamic_tool_manager = DynamicToolManager()
+
         # 인벤토리
         self.inventory = ObjectManager()
 
@@ -82,6 +85,8 @@ class Agent(AtomicObject):
 
     def start(self, llm_requester):
         self.engine.start(llm_requester)
+        if self.world_system_manager and hasattr(self.world_system_manager, 'world_assets_path'):
+            self.dynamic_tool_manager.start(db_path=self.world_system_manager.world_assets_path)
 
     def stop(self):
         self.engine.stop()
@@ -94,11 +99,8 @@ class Agent(AtomicObject):
         self._update_environmental_debuff(day_cycle=day_cycle, weather_type=weather_type, time_scale=time_scale)
 
     def think_tick(self):
-        if not self.enable_thinking:
+        if not self.think_event_queue:
             return None
-
-        # release think_state
-        self.set_enable_thinking(False)
 
         # body signal
         if any([event_type in self.think_event_queue.keys() for event_type in [ThinkEventType.FATIGUE, ThinkEventType.HUNGER]]):
@@ -157,11 +159,9 @@ class Agent(AtomicObject):
         return res
 
     def push_think_event(self, think_event_type, message, data=None):
-        self.set_enable_thinking(True)
         self.think_event_queue[think_event_type] = {"message":message, "data":data}
 
     def clear_think_event(self):
-        self.set_enable_thinking(False)
         self.think_event_queue.clear()
 
     def scan(self, external_event):
@@ -260,6 +260,3 @@ class Agent(AtomicObject):
     
     def perform_brain_cleanup(self):
         self.engine.perform_brain_cleanup()
-
-    def set_enable_thinking(self, enable):
-        self.enable_thinking = enable

@@ -122,7 +122,7 @@ class SkillTool(BaseTool):
         
         target_object.set_state(state_name, description)
 
-        world_system_manager.dynamic_tool_manager.register_new_tool({
+        agent.dynamic_tool_manager.register_new_tool({
             "invented_tool": invented_tool,
             "skill_type": "object_transform",
             "creator": agent.name,
@@ -167,7 +167,7 @@ class SkillTool(BaseTool):
             "parameters": {"target_agent_name": target_agent_name},
             "effects": effects
         }
-        world_system_manager.dynamic_tool_manager.register_new_tool(tool_data)
+        agent.dynamic_tool_manager.register_new_tool(tool_data)
 
         DynamicToolExecutor.execute(DynamicTool(tool_data), {"applied_target": target_agent_name}, agent, world_system_manager)
 

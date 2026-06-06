@@ -4,7 +4,6 @@ from sim.core.jelly_llm_api import JellyLlmApi
 from sim.util.object_manager import ObjectManager
 from sim.util.agent_manager import AgentManager
 from sim.util.tool_manager import ToolManager
-from sim.util.dynamic_tool_manager import DynamicToolManager
 from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
 from sim.world.world_view_manager import WorldViewManager
 from sim.world.map_engine import MapEngine
@@ -33,7 +32,6 @@ class WorldSystemManager:
         self.world_view_manager = WorldViewManager(self)
         self.world_data_factory = WorldDataFactory()
         self.tool_manager = ToolManager()
-        self.dynamic_tool_manager = DynamicToolManager()
         self.world_mediator = WorldMediator()
 
         self.world_agents = []
@@ -51,9 +49,6 @@ class WorldSystemManager:
         self.world_assets_path = world_data[4]
         self.world_agents_brain_db_path = world_data[5]
         self.world_role = world_data[6]
-
-        # 동적 툴 매니저 초기화
-        self.dynamic_tool_manager.start(db_path=self.world_assets_path)
 
         # 월드 에이전트 초기화
         for agent in self.world_agents:
@@ -151,7 +146,7 @@ class WorldSystemManager:
 
         # 월드 에이전트 행동 결과 처리
         for agent in self.world_agents:
-            if agent.enable_thinking and not agent.is_thinking:
+            if agent.think_event_queue and not agent.is_thinking:
                 agent.is_thinking = True
                 self.cognitive_worker.queue_agent(agent)
 

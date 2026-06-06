@@ -97,7 +97,7 @@ class JellyEngine:
                 available_tool_types.append(ToolType.GIVE)
 
         fixed_manual = agent.world_system_manager.tool_manager.get_tools_manual(available_tool_types)
-        dynamic_manual = agent.world_system_manager.dynamic_tool_manager.get_tools_manual(agent)
+        dynamic_manual = agent.dynamic_tool_manager.get_tools_manual(agent)
 
         return JellyPrompt.get_system_prompt(
             personality_matrix=raw_matrix,
