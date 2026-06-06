@@ -51,7 +51,7 @@ class EventTrigger:
 
         # 신체적 결핍 트리거
         for agent in agents:
-            if agent.is_thinking:
+            if agent.is_thinking or not agent.vital_state.is_alive:
                 continue
 
             vital = agent.vital_state
@@ -76,7 +76,7 @@ class EventTrigger:
         if self.plan_timer >= PLAN_INTERVAL:
             self.plan_timer = 0
             for agent in agents:
-                if agent.is_thinking:
+                if agent.is_thinking or not agent.vital_state.is_alive:
                     continue
 
                 # 모든 에이전트를 추가하면 안되고 랜덤하게 추가하도록
@@ -88,7 +88,7 @@ class EventTrigger:
         if self.move_timer >= MOVE_INTERVAL and random.random() < 0.1:
             self.move_timer = 0
             for agent in agents:
-                if agent.is_thinking:
+                if agent.is_thinking or not agent.vital_state.is_alive:
                     continue
                 
                 if random.random() < 0.3:

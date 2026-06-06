@@ -41,7 +41,7 @@ class WorldSystemManager:
         self.llm_requester = llm_requester
 
         # 월드 데이터 초기화
-        world_data = self.world_data_factory.get_world_data(WorldType.CAST_AWAY_SIM, self)
+        world_data = self.world_data_factory.get_world_data(WorldType.NEBULA_TOWER_SIM, self)
         self.world_agents = world_data[0]
         objects = world_data[1]
         self.time_engine = world_data[2]
@@ -135,14 +135,14 @@ class WorldSystemManager:
             event_message = obj[2]
 
             if event_type == EventType.FATIGUE_TRIPPED:
-                if event_agent.is_thinking:
+                if event_agent.is_thinking or not event_agent.vital_state.is_alive:
                     continue
 
                 event_agent.push_think_event(ThinkEventType.FATIGUE, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 피로를 느낌.")
             
             if event_type == EventType.HUNGER_TRIPPED:
-                if event_agent.is_thinking:
+                if event_agent.is_thinking or not event_agent.vital_state.is_alive:
                     continue
 
                 event_agent.push_think_event(ThinkEventType.HUNGER, event_message, None)
@@ -150,7 +150,7 @@ class WorldSystemManager:
 
             if event_type == EventType.RANDOM_SCAN:
                 for agent in self.world_agents:
-                    if agent.is_thinking:
+                    if agent.is_thinking or not agent.vital_state.is_alive:
                         continue
 
                     if random.random() < 0.5:
@@ -158,14 +158,14 @@ class WorldSystemManager:
                         agent.scan(event_message)
 
             if event_type == EventType.PROACTIVE_PULSE:
-                if event_agent.is_thinking:
+                if event_agent.is_thinking or not event_agent.vital_state.is_alive:
                     continue
 
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 계획 수립을 시도 함.")
 
             if event_type == EventType.CRITICAL_PULSE:
-                if event_agent.is_thinking:
+                if event_agent.is_thinking or not event_agent.vital_state.is_alive:
                     continue
 
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
@@ -333,7 +333,7 @@ class WorldSystemManager:
             return "계획 수립"
             
         if "고착 상황 탈출" in body:
-            return "탈출 시도"
+            return "고착 탈출 시도"
             
         if "완성함" in body or "제작" in body:
             try:

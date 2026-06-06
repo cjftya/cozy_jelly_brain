@@ -34,7 +34,12 @@ class JellyEngine:
 
     def think_event_normal(self, agent, event_type, external_event, available_tool_types):
         detected_agents = agent.perceive_agents()
-        names = [d.name for d in detected_agents]
+        names = []
+        for d in detected_agents:
+            if d.vital_state.is_alive:
+                names.append(d.name)
+            else:
+                names.append(f"{d.name}(죽음)")
         participant_delegate = ParticipantsDelegate()
         participant_delegate.add_all_participants(names)
 
@@ -51,7 +56,12 @@ class JellyEngine:
 
     def think_event_detect_objects(self, agent, external_event, detected_objects, available_tool_types):
         detected_agents = agent.perceive_agents()
-        names = [d.name for d in detected_agents]
+        names = []
+        for d in detected_agents:
+            if d.vital_state.is_alive:
+                names.append(d.name)
+            else:
+                names.append(f"{d.name}(죽음)")
         participant_delegate = ParticipantsDelegate()
         participant_delegate.add_all_participants(names)
 
@@ -66,7 +76,12 @@ class JellyEngine:
         return self._run_llm_core(agent, external_event, system_prompt)
 
     def think_event_speak(self, user_input, agent, available_agents, from_scan=False, available_tool_types=None):
-        names = [d.name for d in available_agents]
+        names = []
+        for d in available_agents:
+            if d.vital_state.is_alive:
+                names.append(d.name)
+            else:
+                names.append(f"{d.name}(죽음)")
         participant_delegate = ParticipantsDelegate()
         participant_delegate.add_all_participants(names)
 

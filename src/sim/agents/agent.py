@@ -94,7 +94,7 @@ class Agent(AtomicObject):
         self._update_environmental_debuff(day_cycle=day_cycle, weather_type=weather_type, time_scale=time_scale)
 
     def think_tick(self):
-        if not self.think_event_queue:
+        if not self.think_event_queue or not self.vital_state.is_alive:
             return None
 
         # body signal
@@ -160,7 +160,7 @@ class Agent(AtomicObject):
         self.think_event_queue.clear()
 
     def scan(self, external_event):
-        if self.is_thinking:
+        if self.is_thinking or not self.vital_state.is_alive:
             return
             
         found_agents = self.perceive_agents()

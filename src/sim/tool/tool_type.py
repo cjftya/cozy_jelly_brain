@@ -14,3 +14,6 @@ class ToolType:
     # cast away sim specific tools
     EXPLORE = 500
     BUILD_RAFT = 501
+
+    # nebula tower sim specific tools
+    RESURRECT = 600

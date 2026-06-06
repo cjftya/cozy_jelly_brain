@@ -1,4 +1,5 @@
 from sim.tool.tool_type import ToolType
+from sim.tool.use_tool import UseTool
 from sim.tool.move_tool import MoveTool
 from sim.tool.inspect_tool import InspectTool
 from sim.tool.speak_tool import SpeakTool
@@ -10,7 +11,7 @@ from sim.tool.give_tool import GiveTool
 from sim.tool.take_tool import TakeTool
 from sim.tool.web_search_tool import WebSearchTool
 from sim.tool.build_raft_tool import BuildRaftTool
-from sim.tool.use_tool import UseTool
+from sim.tool.resurrect_tool import ResurrectTool
 
 class ToolManager:
     def __init__(self):
@@ -31,7 +32,10 @@ class ToolManager:
 
             # cast away sim specific tools
             ToolType.EXPLORE: ExploreTool(),
-            ToolType.BUILD_RAFT: BuildRaftTool()
+            ToolType.BUILD_RAFT: BuildRaftTool(),
+
+            # rebula sim specific tools
+            ToolType.RESURRECT: ResurrectTool(),
         }
 
     def add_tool(self, tool):
