@@ -179,7 +179,7 @@ class Agent(AtomicObject):
 
         # [50% 확률 분기] 대상을 먼저 인지하는 경우
         if action_roll < 0.5 and len(found_agents) > 0:
-            if len(found_agents) > 0 and self.vital_state.fatigue < 70 and self.vital_state.health > 30:
+            if self.vital_state.fatigue < 80 and self.vital_state.health > 30:
                 ran_num = matrix["defensive_open"] + random.random()
                 if ran_num >= 1.0:
                     msg = " 주변에 다른 상대가 보인다. 너의 신체적 겹핍, 목적 달성에 따라 대상을 무시하거나 말을 걸지 판단하라. 대화가 무의미하다면 억지로 'speak' 도구를 사용하지마라."

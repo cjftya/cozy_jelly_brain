@@ -71,7 +71,13 @@ class PygameApp:
                 name = data.get("name")
                 log = data.get("log")
                 if name:
-                    self.agent_thinking_logs[name] = log
+                    if log is None or log == "":
+                        self.agent_thinking_logs.pop(name, None)
+                    else:
+                        self.agent_thinking_logs[name] = {
+                            "text": log,
+                            "time": time.time()
+                        }
 
     def setup_display(self):
         self.running = True
@@ -344,6 +350,9 @@ class PygameApp:
         # 4. Draw Agents with high fidelity elements
         pulse_alpha = int(127 + 127 * math.sin(time.time() * 8))  # Pulse speed
         
+        mx, my = pygame.mouse.get_pos()
+        hovered_agent = None
+
         for name, data in self.agent_positions.items():
             loc = data.get("location")
             x = data.get("x", 0)
@@ -363,6 +372,10 @@ class PygameApp:
                 pos_x = rx + offset_x
                 pos_y = ry + offset_y
                 
+                # Check mouse hover (agent bubble has radius 15, name pill is below)
+                if pos_x - 20 <= mx <= pos_x + 20 and pos_y - 18 <= my <= pos_y + 35:
+                    hovered_agent = (name, data, mx, my)
+
                 agent_color = self.colors.get(name, self.colors["UNKNOWN"])
                 
                 # Check for critical status (Vital Crisis)
@@ -432,10 +445,19 @@ class PygameApp:
                     warn_color = self.colors["glow_warning"]
                     pygame.draw.circle(screen, warn_color, (pos_x + 12, pos_y + 12), 4)
 
-                # Draw active thinking status text if thinking
-                if is_thinking and name in self.agent_thinking_logs:
-                    think_text = self.agent_thinking_logs[name]
-                    think_surf = self.font_agent.render(think_text, True, self.colors["glow_thinking"])
+                # Draw active thinking/action status text
+                status_data = self.agent_thinking_logs.get(name)
+                show_status = False
+                status_text = ""
+                if status_data:
+                    status_text = status_data["text"]
+                    elapsed = time.time() - status_data["time"]
+                    # If thinking, show indefinitely. If action completed, show for 3.0 seconds
+                    if is_thinking or elapsed < 3.0:
+                        show_status = True
+                        
+                if show_status and status_text:
+                    think_surf = self.font_agent.render(status_text, True, self.colors["glow_thinking"])
                     
                     # Determine vertical position based on agent row to avoid overlapping room header
                     if pos_y - 28 < ry + 34:
@@ -450,6 +472,128 @@ class PygameApp:
                     pygame.draw.rect(screen, (40, 100, 60), think_bg, width=1, border_radius=4)
                     
                     screen.blit(think_surf, think_rect)
+
+        # Draw tooltip on top if hovering an agent
+        if hovered_agent:
+            self._draw_agent_tooltip(screen, hovered_agent[0], hovered_agent[1], hovered_agent[2], hovered_agent[3])
+
+    def _draw_agent_tooltip(self, screen, name, data, mx, my):
+        # Card size and positioning
+        card_w = 260
+        card_h = 320
+        
+        # Keep tooltip inside screen boundaries
+        tx = mx + 15
+        ty = my + 15
+        if tx + card_w > self.width - 20:
+            tx = mx - card_w - 15
+        if ty + card_h > self.height - 20:
+            ty = my - card_h - 15
+            if ty < 20:
+                ty = 20
+                
+        # Card container with glassmorphic dark theme
+        card_rect = pygame.Rect(tx, ty, card_w, card_h)
+        pygame.draw.rect(screen, (21, 23, 29), card_rect, border_radius=12)
+        
+        # Active border in agent's accent color
+        agent_color = self.colors.get(name, self.colors["UNKNOWN"])
+        pygame.draw.rect(screen, agent_color, card_rect, width=2, border_radius=12)
+        
+        # Header (Agent Name)
+        title_surf = self.font_title.render(f"SURVIVOR: {name}", True, agent_color)
+        screen.blit(title_surf, (tx + 16, ty + 16))
+        
+        # Subtitle (Location)
+        loc = data.get("location", "UNKNOWN")
+        sub_surf = self.font_item.render(f"LOCATION: {loc}", True, self.colors["text_dark"])
+        screen.blit(sub_surf, (tx + 16, ty + 40))
+        
+        # Separator line
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 56), (tx + card_w - 16, ty + 56), 1)
+        
+        # 1. Physical Vitals
+        vy = ty + 66
+        section_p = self.font_body.render("신체 상태 (PHYSICAL)", True, self.colors["text_light"])
+        screen.blit(section_p, (tx + 16, vy))
+        
+        health = data.get("health", 100.0)
+        fatigue = data.get("fatigue", 0.0)
+        hunger = data.get("hunger", 0.0)
+        
+        # Helper to draw a small vital bar
+        def draw_vital_bar(label, val, y, is_inverse=False):
+            lbl_surf = self.font_item.render(label, True, self.colors["text_dark"])
+            screen.blit(lbl_surf, (tx + 16, y))
+            
+            val_surf = self.font_item.render(f"{int(val)}%", True, self.colors["text_light"])
+            screen.blit(val_surf, (tx + 100, y))
+            
+            # Bar bg
+            bar_rect_bg = pygame.Rect(tx + 140, y + 4, 100, 6)
+            pygame.draw.rect(screen, (34, 37, 48), bar_rect_bg, border_radius=2)
+            
+            # Bar fill
+            fill_w = int(100 * (val / 100.0))
+            fill_w = max(0, min(100, fill_w))
+            
+            # Color logic
+            if is_inverse:
+                color = (239, 68, 68) if val >= 70.0 else (52, 211, 153)
+            else:
+                color = (52, 211, 153) if val >= 50.0 else (239, 68, 68)
+                
+            if fill_w > 0:
+                pygame.draw.rect(screen, color, pygame.Rect(tx + 140, y + 4, fill_w, 6), border_radius=2)
+                
+        draw_vital_bar("체력 (Health)", health, vy + 20, False)
+        draw_vital_bar("피로 (Fatigue)", fatigue, vy + 38, True)
+        draw_vital_bar("허기 (Hunger)", hunger, vy + 56, True)
+        
+        # Separator line
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 148), (tx + card_w - 16, ty + 148), 1)
+        
+        # 2. Mental State (Personality metrics)
+        my_sec = ty + 158
+        section_m = self.font_body.render("정신 성향 (MENTAL)", True, self.colors["text_light"])
+        screen.blit(section_m, (tx + 16, my_sec))
+        
+        personality = data.get("personality", {})
+        logic = int(personality.get("logic_emotion", 0.5) * 100)
+        decisive = int(personality.get("fear_decisive", 0.5) * 100)
+        openness = int(personality.get("defensive_open", 0.5) * 100)
+        
+        p_text1 = f"이성향: {logic}% / 감성향: {100-logic}%"
+        p_text2 = f"결단력: {decisive}% / 불안도: {100-decisive}%"
+        p_text3 = f"개방성: {openness}% / 경계도: {100-openness}%"
+        
+        lbl_p1 = self.font_item.render(p_text1, True, self.colors["text_dark"])
+        lbl_p2 = self.font_item.render(p_text2, True, self.colors["text_dark"])
+        lbl_p3 = self.font_item.render(p_text3, True, self.colors["text_dark"])
+        
+        screen.blit(lbl_p1, (tx + 16, my_sec + 20))
+        screen.blit(lbl_p2, (tx + 16, my_sec + 36))
+        screen.blit(lbl_p3, (tx + 16, my_sec + 52))
+        
+        # Separator line
+        pygame.draw.line(screen, (45, 48, 62), (tx + 16, ty + 236), (tx + card_w - 16, ty + 236), 1)
+        
+        # 3. Relationships
+        ry_sec = ty + 246
+        section_r = self.font_body.render("대인 관계 (RELATIONSHIP)", True, self.colors["text_light"])
+        screen.blit(section_r, (tx + 16, ry_sec))
+        
+        relationships = data.get("relationships", {})
+        r_y = ry_sec + 20
+        if relationships:
+            for rel_name, rel_score in relationships.items():
+                rel_text = f"호감도 [{rel_name}]: {int(rel_score)} / 100"
+                rel_surf = self.font_item.render(rel_text, True, self.colors["text_dark"])
+                screen.blit(rel_surf, (tx + 16, r_y))
+                r_y += 16
+        else:
+            rel_surf = self.font_item.render("관계 정보 없음", True, self.colors["text_dark"])
+            screen.blit(rel_surf, (tx + 16, r_y))
 
     def _draw_room_items(self, screen, loc_name, rx, ry, r_w, r_h):
         # Read directly from world simulator object manager

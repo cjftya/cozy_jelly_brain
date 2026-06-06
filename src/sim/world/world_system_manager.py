@@ -121,7 +121,9 @@ class WorldSystemManager:
                 "is_thinking": agent.is_thinking,
                 "health": agent.vital_state.health,
                 "fatigue": agent.vital_state.fatigue,
-                "hunger": agent.vital_state.hunger
+                "hunger": agent.vital_state.hunger,
+                "personality": agent.personality_delegate.get_matrix(),
+                "relationships": agent.relationship_score_delegate.get_matrix()
             })
 
         # 이벤트 트리거
@@ -152,7 +154,6 @@ class WorldSystemManager:
 
                     if random.random() < 0.5:
                         self.log_world_event(f"{agent.name}가 주변 탐색을 시도 함.")
-                        self.log_agent_thinking_event(agent.name, "주변 탐색을 시도 함.")
                         agent.scan(event_message)
 
             if event_type == EventType.PROACTIVE_PULSE:
@@ -161,7 +162,6 @@ class WorldSystemManager:
 
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 계획 수립을 시도 함.")
-                self.log_agent_thinking_event(event_agent.name, "계획 수립을 시도 함.")
 
             if event_type == EventType.CRITICAL_PULSE:
                 if event_agent.is_thinking:
@@ -169,7 +169,6 @@ class WorldSystemManager:
 
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 고착 상황 탈출을 시도 함.")
-                self.log_agent_thinking_event(event_agent.name, "고착 상황 탈출을 시도 함.")
 
         # 월드 에이전트 행동 결과 처리
         for agent in self.world_agents:
@@ -179,6 +178,122 @@ class WorldSystemManager:
 
     def log_world_event(self, log):
         EventBus().publish(UIEventType.WORLD_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
+        
+        for agent in self.world_agents:
+            if log.startswith(agent.name):
+                short_log = self._get_short_action_label(log, agent.name)
+                if short_log:
+                    self.log_agent_thinking_event(agent.name, short_log)
+                break
+
+    def _get_short_action_label(self, log, agent_name):
+        body = log.replace(agent_name, "").strip()
+        
+        if "공간으로 이동" in body:
+            try:
+                parts = body.split("공간으로 이동")
+                if len(parts) > 0:
+                    loc = parts[0].replace("가", "").replace("의", "").strip()
+                    if len(loc) > 6:
+                        loc = loc[:5] + ".."
+                    return f"이동: {loc}"
+            except Exception:
+                pass
+            return "공간 이동"
+            
+        if "이동할 수 없음" in body:
+            return "이동 실패"
+            
+        if "휴식함" in body or "휴식 중" in body:
+            return "휴식 중"
+            
+        if "획득" in body:
+            try:
+                parts = body.split("을 획득")
+                if len(parts) > 0:
+                    item = parts[0].replace("가", "").strip()
+                    if len(item) > 6:
+                        item = item[:5] + ".."
+                    return f"획득: {item}"
+            except Exception:
+                pass
+            return "아이템 획득"
+            
+        if "사용" in body:
+            try:
+                parts = body.split("을 사용")
+                if len(parts) > 0:
+                    item = parts[0].replace("가", "").strip()
+                    if len(item) > 6:
+                        item = item[:5] + ".."
+                    return f"사용: {item}"
+            except Exception:
+                pass
+            return "아이템 사용"
+
+        if "관찰" in body:
+            try:
+                parts = body.split("을 관찰")
+                if len(parts) > 0:
+                    item = parts[0].replace("가", "").strip()
+                    if len(item) > 6:
+                        item = item[:5] + ".."
+                    return f"관찰: {item}"
+            except Exception:
+                pass
+            return "아이템 관찰"
+            
+        if "말을 걸었음" in body or "말을 걸어" in body:
+            return "대화 시도"
+            
+        if "대화가 종료" in body:
+            return "대화 종료"
+            
+        if "웹 검색" in body:
+            return "웹 검색"
+            
+        if "피로를 느낌" in body or "피로" in body:
+            return "피로함"
+            
+        if "허기를 느낌" in body or "허기" in body:
+            return "배고픔"
+            
+        if "주변 탐색" in body or "정찰" in body or "탐색" in body:
+            return "주변 정찰"
+            
+        if "계획 수립" in body:
+            return "계획 수립"
+            
+        if "고착 상황 탈출" in body:
+            return "탈출 시도"
+            
+        if "완성함" in body or "제작" in body:
+            try:
+                if "완성함" in body:
+                    parts = body.split("완성함")
+                    if "'" in parts[0]:
+                        item = parts[0].split("'")[-2]
+                        if len(item) > 6:
+                            item = item[:5] + ".."
+                        return f"제작: {item}"
+            except Exception:
+                pass
+            return "아이템 제작"
+            
+        if "변형함" in body:
+            return "상태 변형"
+
+        if "실패" in body:
+            return "행동 실패"
+            
+        if "행동을 하지 않음" in body or "대기" in body:
+            return "대기 중"
+            
+        clean_body = body.replace("가 ", "").replace("의 ", "").strip()
+        if len(clean_body) <= 10:
+            return clean_body
+            
+        return None
 
     def log_agent_thinking_event(self, agent_name, log):
         EventBus().publish(UIEventType.AGENT_THINKING_LOG_APPENDED, {

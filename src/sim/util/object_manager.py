@@ -4,6 +4,8 @@ class ObjectManager:
     def __init__(self):
         # key: object_name (str), value: list of objects (list)
         self.objects = {}
+        # key: object_id (str), value: dict of metadata
+        self.popped_metadata = {}
 
     def get_pack(self, name):
         # 오브젝트의 큐 전체 반환
@@ -35,6 +37,7 @@ class ObjectManager:
                     return obj
 
         # 숫자만 넘어온 경우 보정 (예: 5 또는 "5" -> "OBJECT_5")
+        target_prefixed_id = None
         if str_id.isdigit():
             target_prefixed_id = f"OBJECT_{str_id}"
             for pack in self.objects.values():
@@ -48,6 +51,26 @@ class ObjectManager:
         pack = self.get_pack(str_id)
         if pack:
             return pack[0]
+
+        # 4단계: 이미 삭제(pop)된 객체 ID에 대한 동일 이름의 다른 활성 객체 대체 매칭 (Fallback)
+        # 예: OBJECT_3가 이미 수집되었으나, 같은 이름("과일")의 다른 객체가 여전히 맵에 존재하는 경우
+        if id in self.popped_metadata:
+            meta = self.popped_metadata[id]
+            name = meta.get("name")
+            if name:
+                fallback_pack = self.get_pack(name)
+                if fallback_pack:
+                    return fallback_pack[0]
+
+        # 정규화된 ID로도 popped_metadata 조회 시도
+        norm_id = target_prefixed_id if target_prefixed_id else str_id
+        for popped_id, meta in list(self.popped_metadata.items()):
+            if popped_id.upper() == norm_id.upper():
+                name = meta.get("name")
+                if name:
+                    fallback_pack = self.get_pack(name)
+                    if fallback_pack:
+                        return fallback_pack[0]
 
         return None
 
@@ -94,6 +117,8 @@ class ObjectManager:
             obj = pack.pop(0)
             if len(pack) == 0:
                 self.objects.pop(name, None)
+            if obj:
+                self.popped_metadata[obj.id] = {"name": obj.name}
             return obj
         return None
 
@@ -106,6 +131,7 @@ class ObjectManager:
                 pack.remove(obj)
                 if len(pack) == 0:
                     self.objects.pop(obj.name, None)
+                self.popped_metadata[obj.id] = {"name": obj.name}
                 return obj
         return None
 
@@ -116,6 +142,7 @@ class ObjectManager:
     def clear_objects(self):
         # 모든 오브젝트 제거
         self.objects.clear()
+        self.popped_metadata.clear()
 
     def get_object_context(self, pack):
         if not pack:

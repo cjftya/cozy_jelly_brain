@@ -27,13 +27,11 @@ class UseAction(BaseAction):
             object_detail_type = target_object.detail_type
             if object_detail_type == ObjectDetailType.FOOD or object_detail_type == ObjectDetailType.DRINK:
                 agent.vital_state.update_hunger(-target_object.nutrition_value)
+                remove_action = RemoveAction(self.world_system_manager)
+                remove_action.execute(object_id)
             else:
-                # 음식 이외 다른 것들 (감기약 등)
+                # 소모되지 않는 도구들
                 pass
-
-            # 소모품 제거 (모든 곳에서 제거)
-            remove_action = RemoveAction(self.world_system_manager)
-            remove_action.execute(object_id)
 
             self.world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 사용.")
         else:

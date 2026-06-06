@@ -46,4 +46,5 @@ class CognitiveWorker:
                 self.world_system_manager.log_system_event(f"Error in cognitive worker for {agent.name}: {e}")
             finally:
                 agent.is_thinking = False
+                self.world_system_manager.log_agent_thinking_event(agent.name, None)
                 self.queue.task_done()
