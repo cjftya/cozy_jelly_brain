@@ -44,10 +44,10 @@ class Agent(AtomicObject):
         # 생체 정보
         self.vital_state = VitalState()
 
-        # 성격 매트릭스
+        # 성격 정보
         self.personality_delegate = PersonalityDelegate()
 
-        # 관계 점수 매트릭스
+        # 관계 점수
         self.relationship_score_delegate = RelationShipScoreDelegate()
 
         # 주변 에이전트 정보
@@ -71,17 +71,12 @@ class Agent(AtomicObject):
         # 시야 감지 엔진
         self.object_detector = ObjectDetector()
 
-        # 환경적 요인으로 인한 누적 변동치 (-0.15 ~ +0.15) 외부에서 사용되지않고 내부에서만 연동
-        self.env_deltas = {
-            'logic_emotion': 0.0,
-            'defensive_open': 0.0,
-            'fear_decisive': 0.0,
-            'curiosity_indifference': 0.0,
-            'obedient_rebellious': 0.0
-        }
-
-        self._init_personality_delegate(self.personality_delegate)
+        # 초기화
         self._init_tools(self.tool_delegate)
+        self._init_vital_state(self.vital_state)
+        self._init_location_delegate(self.location_delegate)
+        self._init_relationship_score_delegate(self.relationship_score_delegate)
+        self._init_personality_delegate(self.personality_delegate)
 
     def start(self, llm_requester):
         self.engine.start(llm_requester)
@@ -229,7 +224,7 @@ class Agent(AtomicObject):
         tool_delegate.add_all_available_tool_types([
             ToolType.USE, ToolType.MOVE_TO, ToolType.INSPECT, 
             ToolType.REST, ToolType.TAKE, ToolType.GIVE,
-            ToolType.SPEAK
+            ToolType.SPEAK, ToolType.SKILL
         ])
 
     def _init_personality_delegate(self, personality_delegate):
@@ -237,6 +232,12 @@ class Agent(AtomicObject):
 
     def _init_relationship_score_delegate(self, relationship_score_delegate):
         relationship_score_delegate.reset_value()
+
+    def _init_location_delegate(self, location_delegate):
+        location_delegate.clear_locations()
+
+    def _init_vital_state(self, vital_state):
+        pass
 
     def perceive_agents(self):
         all_agents = self.world_system_manager.agent_manager.get_agents()

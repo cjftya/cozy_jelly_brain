@@ -7,15 +7,6 @@ class Tom(Agent):
         super().__init__("TOM", "HUMAN", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
         self.position.x = 5.0
         self.position.y = 5.0
-        self.vital_state.age = 38.0
-        self.vital_state.gender = GenderType.MALE
-
-        self.location_delegate.set_current_location("해안가 캠프")
-        self.location_delegate.add_all_locations([
-            "해안가 캠프",
-            "바위 그늘",
-            "정찰 언덕"
-        ])
 
     @property
     def persona_context(self):
@@ -75,5 +66,17 @@ class Tom(Agent):
         tool_delegate.add_all_available_tool_types([
             ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT,
             ToolType.USE, ToolType.GIVE, ToolType.TAKE,
-            ToolType.SKILL, ToolType.EXPLORE, ToolType.REST
+            ToolType.EXPLORE, ToolType.REST, ToolType.BUILD_RAFT
         ])
+
+    def _init_location_delegate(self, location_delegate):
+        location_delegate.set_current_location("해안가 캠프")
+        location_delegate.add_all_locations([
+            "해안가 캠프",
+            "바위 그늘",
+            "정찰 언덕"
+        ])
+
+    def _init_vital_state(self, vital_state):
+        vital_state.age = 38
+        vital_state.gender = GenderType.MALE

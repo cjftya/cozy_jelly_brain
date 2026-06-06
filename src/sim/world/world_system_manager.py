@@ -186,6 +186,73 @@ class WorldSystemManager:
                     self.log_agent_thinking_event(agent.name, short_log)
                 break
 
+    def log_agent_thinking_event(self, agent_name, log):
+        EventBus().publish(UIEventType.AGENT_THINKING_LOG_APPENDED, {
+            "name": agent_name,
+            "log": log
+        })
+
+    def log_system_event(self, log):
+        EventBus().publish(UIEventType.SYSTEM_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
+        Logger.log("[SYSTEM]", log)
+
+    def log_agent_event(self, log):
+        EventBus().publish(UIEventType.AGENT_CHAT_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}]\n{log}")
+
+    def get_state_context(self):
+        return f"""\
+{self.time_engine.get_context()}\n
+{self.weather_engine.get_context()}"""
+
+    def set_serper_api_key(self, serper_api_key):
+        self.serper_api_key = serper_api_key
+
+    def resolve_agent_overlaps(self):
+        # Group agents by location
+        location_agents = {}
+        for agent in self.world_agents:
+            loc = agent.location_delegate.get_current_location()
+            if loc:
+                location_agents.setdefault(loc, []).append(agent)
+
+        # For each location, arrange agents to prevent overlap
+        for loc_name, agents in location_agents.items():
+            if not agents:
+                continue
+
+            # Query the room size to find the center
+            cx, cy = 4.0, 4.0
+            space_obj = self.object_manager.get_object(loc_name)
+            if space_obj and hasattr(space_obj, 'size'):
+                cx = float(space_obj.size.x // 2)
+                cy = float(space_obj.size.y // 2)
+
+            if len(agents) == 1:
+                agents[0].position.set_value(cx, cy)
+            else:
+                # Arrange agents in a cross/star offset pattern to prevent overlaps on integer grids.
+                # Slots: Center, Left, Right, Up, Down, Diagonals
+                offsets = [
+                    (0.0, 0.0),
+                    (-2.0, 0.0),
+                    (2.0, 0.0),
+                    (0.0, -2.0),
+                    (0.0, 2.0),
+                    (-2.0, -2.0),
+                    (2.0, 2.0),
+                    (-2.0, 2.0),
+                    (2.0, -2.0)
+                ]
+                for i, agent in enumerate(agents):
+                    ox, oy = offsets[i % len(offsets)]
+                    ax = cx + ox
+                    ay = cy + oy
+                    if space_obj and hasattr(space_obj, 'size'):
+                        # Keep it inside the boundary [1, size-2] to avoid touching walls
+                        ax = max(1.0, min(float(space_obj.size.x - 2), ax))
+                        ay = max(1.0, min(float(space_obj.size.y - 2), ay))
+                    agent.position.set_value(ax, ay)
+
     def _get_short_action_label(self, log, agent_name):
         body = log.replace(agent_name, "").strip()
         
@@ -294,73 +361,6 @@ class WorldSystemManager:
             return clean_body
             
         return None
-
-    def log_agent_thinking_event(self, agent_name, log):
-        EventBus().publish(UIEventType.AGENT_THINKING_LOG_APPENDED, {
-            "name": agent_name,
-            "log": log
-        })
-
-    def log_system_event(self, log):
-        EventBus().publish(UIEventType.SYSTEM_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
-        Logger.log("[SYSTEM]", log)
-
-    def log_agent_event(self, log):
-        EventBus().publish(UIEventType.AGENT_CHAT_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}]\n{log}")
-
-    def get_state_context(self):
-        return f"""\
-{self.time_engine.get_context()}\n
-{self.weather_engine.get_context()}"""
-
-    def set_serper_api_key(self, serper_api_key):
-        self.serper_api_key = serper_api_key
-
-    def resolve_agent_overlaps(self):
-        # Group agents by location
-        location_agents = {}
-        for agent in self.world_agents:
-            loc = agent.location_delegate.get_current_location()
-            if loc:
-                location_agents.setdefault(loc, []).append(agent)
-
-        # For each location, arrange agents to prevent overlap
-        for loc_name, agents in location_agents.items():
-            if not agents:
-                continue
-
-            # Query the room size to find the center
-            cx, cy = 4.0, 4.0
-            space_obj = self.object_manager.get_object(loc_name)
-            if space_obj and hasattr(space_obj, 'size'):
-                cx = float(space_obj.size.x // 2)
-                cy = float(space_obj.size.y // 2)
-
-            if len(agents) == 1:
-                agents[0].position.set_value(cx, cy)
-            else:
-                # Arrange agents in a cross/star offset pattern to prevent overlaps on integer grids.
-                # Slots: Center, Left, Right, Up, Down, Diagonals
-                offsets = [
-                    (0.0, 0.0),
-                    (-2.0, 0.0),
-                    (2.0, 0.0),
-                    (0.0, -2.0),
-                    (0.0, 2.0),
-                    (-2.0, -2.0),
-                    (2.0, 2.0),
-                    (-2.0, 2.0),
-                    (2.0, -2.0)
-                ]
-                for i, agent in enumerate(agents):
-                    ox, oy = offsets[i % len(offsets)]
-                    ax = cx + ox
-                    ay = cy + oy
-                    if space_obj and hasattr(space_obj, 'size'):
-                        # Keep it inside the boundary [1, size-2] to avoid touching walls
-                        ax = max(1.0, min(float(space_obj.size.x - 2), ax))
-                        ay = max(1.0, min(float(space_obj.size.y - 2), ay))
-                    agent.position.set_value(ax, ay)
 
 
         

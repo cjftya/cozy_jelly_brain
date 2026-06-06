@@ -22,6 +22,7 @@ class LocationDelegate:
         self.available_locations.remove(location)
 
     def clear_locations(self):
+        self.current_location = None
         self.available_locations.clear()
 
     def add_all_locations(self, locations):

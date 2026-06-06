@@ -1,19 +1,11 @@
 from sim.agents.agent import Agent
+from sim.agent_meta.vital_state import GenderType
 
 class Rain(Agent):
     def __init__(self, world_system_manager=None, brain_root_dir_path=None):
         super().__init__("RAIN", "INTRUDER(HUMAN)", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
         self.position.x = 4.0
         self.position.y = 4.0
-        self.vital_state.age = 28
-
-        self.location_delegate.set_current_location("아카이브 중앙처리실 입구")
-        self.location_delegate.add_all_locations([
-            "아카이브 중앙처리실",
-            "아카이브 데이터 관리실",
-            "아카이브 에너지 관리실",
-            "아카이브 중앙처리실 입구"
-        ])
 
     @property
     def persona_context(self):
@@ -79,3 +71,16 @@ class Rain(Agent):
             obedient_rebellious=0.7,      # 규정 준수
             curiosity_indifference=0.2    # 극심한 권태/무관심
         )
+
+    def _init_location_delegate(self, location_delegate):
+        location_delegate.set_current_location("아카이브 중앙처리실 입구")
+        location_delegate.add_all_locations([
+            "아카이브 중앙처리실 입구",
+            "아카이브 데이터 관리실",
+            "아카이브 에너지 관리실",
+            "아카이브 중앙처리실"
+        ])
+
+    def _init_vital_state(self, vital_state):
+        vital_state.age = 28
+        vital_state.gender = GenderType.MALE

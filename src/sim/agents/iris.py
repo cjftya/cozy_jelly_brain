@@ -1,4 +1,5 @@
 from sim.agents.agent import Agent
+from sim.agent_meta.vital_state import GenderType
 
 class Iris(Agent):
     def __init__(self, world_system_manager=None, brain_root_dir_path=None):
@@ -6,15 +7,6 @@ class Iris(Agent):
         self.days_left = 30  # 아카이브 붕괴까지 남은 시간
         self.position.x = 4.0
         self.position.y = 4.0
-        self.vital_state.age = 30000
-
-        self.location_delegate.set_current_location("아카이브 중앙처리실 입구")
-        self.location_delegate.add_all_locations([
-            "아카이브 중앙처리실",
-            "아카이브 데이터 관리실",
-            "아카이브 에너지 관리실",
-            "아카이브 중앙처리실 입구"
-        ])
 
     @property
     def persona_context(self):
@@ -81,3 +73,16 @@ class Iris(Agent):
             obedient_rebellious=0.20,      # 규정 준수
             curiosity_indifference=0.80    # 극심한 권태/무관심
         )
+
+    def _init_location_delegate(self, location_delegate):
+        location_delegate.set_current_location("아카이브 중앙처리실 입구")
+        location_delegate.add_all_locations([
+            "아카이브 중앙처리실",
+            "아카이브 데이터 관리실",
+            "아카이브 에너지 관리실",
+            "아카이브 중앙처리실 입구"
+        ])
+
+    def _init_vital_state(self, vital_state):
+        vital_state.age = 30000
+        vital_state.gender = GenderType.FEMALE

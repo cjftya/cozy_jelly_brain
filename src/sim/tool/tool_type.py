@@ -13,3 +13,4 @@ class ToolType:
 
     # cast away sim specific tools
     EXPLORE = 500
+    BUILD_RAFT = 501

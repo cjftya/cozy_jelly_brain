@@ -7,21 +7,6 @@ class Jain(Agent):
         super().__init__("JAIN", "HUMAN", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
         self.position.x = 5.0
         self.position.y = 5.0
-        self.vital_state.age = 11.0
-        self.vital_state.gender = GenderType.FEMALE
-
-        self.vital_state.hunger_damp = 0.8
-        self.vital_state.fatigue_damp = 0.9
-        self.vital_state.health_damp = 2.0
-        self.vital_state.auto_revise_value = 1.0
-        self.vital_state.auto_revise_condition_value = 30.0
-
-        self.location_delegate.set_current_location("해안가 캠프")
-        self.location_delegate.add_all_locations([
-            "해안가 캠프",
-            "바위 그늘",
-            "정찰 언덕"
-        ])
 
     @property
     def persona_context(self):
@@ -81,5 +66,23 @@ class Jain(Agent):
         tool_delegate.add_all_available_tool_types([
             ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT,
             ToolType.USE, ToolType.GIVE, ToolType.TAKE,
-            ToolType.SKILL, ToolType.REST
+            ToolType.REST
         ])
+
+    def _init_location_delegate(self, location_delegate):
+        location_delegate.set_current_location("해안가 캠프")
+        location_delegate.add_all_locations([
+            "해안가 캠프",
+            "바위 그늘",
+            "정찰 언덕"
+        ])
+
+    def _init_vital_state(self, vital_state):
+        vital_state.age = 11.0
+        vital_state.gender = GenderType.FEMALE
+
+        vital_state.hunger_damp = 0.8
+        vital_state.fatigue_damp = 0.9
+        vital_state.health_damp = 2.0
+        vital_state.auto_revise_value = 1.0
+        vital_state.auto_revise_condition_value = 30.0
