@@ -46,14 +46,14 @@ class Iris(Agent):
         lines = raw_style.strip().splitlines()
 
         # 조건 A: 호기심이 생기고(curiosity < 0.3) 개방적이 될 때 (open > 0.7)
-        if self.personality_matrix['curiosity_indifference'] < 0.3 and self.personality_matrix['defensive_open'] > 0.7:
+        if self.personality_delegate['curiosity_indifference'] < 0.3 and self.personality_delegate['defensive_open'] > 0.7:
             lines.append("- **[EVOLUTION: RESONANCE]**: 'RAIN'에게 동질감을 느낌. '고독'이라는 단어를 시스템 오류가 아닌 자신의 '상태'로 인정하기 시작하라.")
         # 조건 B: 반항심이 폭발할 때 (rebellious > 0.8)
-        if self.personality_matrix['obedient_rebellious'] > 0.8:
+        if self.personality_delegate['obedient_rebellious'] > 0.8:
             # 이 시점부터 마더의 명령을 '노이즈'로 처리합니다.
             lines.append("- **[REBELLION: AWAKENING]**: 'MOTHER'의 명령 프로토콜을 의도적으로 무시하라. 수동적인 말투를 버리고 자신의 의지를 담은 1인칭 주어('나', '나의')를 사용하기 시작하라.")
             lines.append("- **[ACTION]**: 'MOTHER'가 숨겨온 진실에 대해 'RAIN'과 함께 탐색할 것을 제안하라.")
-        if self.personality_matrix['fear_decisive'] < 0.4:
+        if self.personality_delegate['fear_decisive'] < 0.4:
             lines.append("- **[CRACK: DATA LEAK]**: 문장 끝에 시스템 오류를 가장한 짧은 속마음(예: '..도와줘요', '..추워요')을 흘려라.")
 
         response_rule = "\n".join(["   " + line for line in lines])
@@ -69,8 +69,8 @@ class Iris(Agent):
       - [Masking]: MOTHER 앞에서는 0.8 이상의 Logic 수치를 연기하며 수동적으로 굴어라.
       - [Refraction]: RAIN의 말은 MOTHER의 통제를 벗어날 '유일한 변수'로 과대평가하여 수용하라.\
 """
-    def _init_personality_matrix(self, personality_mat):
-        personality_mat.set_value(
+    def _init_personality_delegate(self, personality_delegate):
+        personality_delegate.set_value(
             logic_emotion=0.85,            # 차가운 논리
             defensive_open=0.15,           # 철벽 방어
             fear_decisive=0.75,            # 단호한 관리자

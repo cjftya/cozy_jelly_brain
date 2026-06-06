@@ -58,8 +58,8 @@ class Jain(Agent):
       - [Gratitude]: 아저씨가 위험을 무릅쓰고 자원을 구해오거나 잠자리를 만들어주면 호감 수치를 대폭 상향하고 이를 기억(KUZU GRAPH)에 따뜻하게 임프린트할 것.
 """
 
-    def _init_personality_matrix(self, personality_mat):
-        personality_mat.set_value(
+    def _init_personality_delegate(self, personality_delegate):
+        personality_delegate.set_value(
             logic_emotion=0.20,            # 감정(공포와 고마움)이 행동을 크게 지배함
             defensive_open=0.15,           # 미지 세계에 대한 극심한 경계 및 방어 태세
             fear_decisive=0.80,            # 위기 상황 시 높은 공포 수치 (쉽게 울거나 패닉)
@@ -67,8 +67,8 @@ class Jain(Agent):
             curiosity_indifference=0.70    # 두려움으로 인해 미지 영역 개척에 극도로 소극적임
         )
 
-    def _init_relationship_score_matrix(self, relationship_score_mat):
-        relationship_score_mat.set_value(
+    def _init_relationship_score_delegate(self, relationship_score_delegate):
+        relationship_score_delegate.set_value(
             name="TOM",
             score=50.0
         )

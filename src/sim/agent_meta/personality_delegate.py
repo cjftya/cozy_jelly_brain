@@ -1,6 +1,6 @@
 from log import Logger
 
-class PersonalityMatrix:
+class PersonalityDelegate:
 
     def __init__(self):
         # 성격 매트릭스 (0 ~ 1.0)
@@ -16,6 +16,9 @@ class PersonalityMatrix:
             'obedient_rebellious': 0.50,
             'curiosity_indifference': 0.50
         }
+
+    def __getitem__(self, key):
+        return self.matrix[key]
 
     def apply_state_delta(self, state_delta, base_step=0.05, critical_step=0.20):
         """ 

@@ -9,7 +9,7 @@ class WorldViewManager:
 
     def update_agent_details_view(self, agent):
         gender_context = "Female" if agent.vital_state.gender == GenderType.FEMALE else "Male"
-        personality_matrix = agent.get_personality_matrix().get_matrix()
+        personality_matrix = agent.get_personality_delegate().get_matrix()
         view_data = f"""
 [VITALS] Age: {agent.vital_state.age:05.2f} | Gender: {gender_context}
 • Health: [{agent.vital_state.health:06.2f}] {self._draw_gauge(agent.vital_state.health/100.0)}

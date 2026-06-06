@@ -1,9 +1,12 @@
 from log import Logger
 
-class RelationShipScoreMatrix:
+class RelationShipScoreDelegate:
 
     def __init__(self):
         self.matrix = {}
+
+    def __getitem__(self, key):
+        return self.matrix.get(key, 0.0)
 
     def apply_relationship_delta(self, delta_map, base_step=5.0, critical_step=20.0):
         for name, direction in delta_map.items():

@@ -52,8 +52,8 @@ class Tom(Agent):
       - [Visceral Impulse]: 춥고 뼈가 시리지만 내 눈앞에서 떨고 있는 제인을 봐라. 쉴 시간이 없다. 움직여서 자원을 선점하라.\
 """
 
-    def _init_personality_matrix(self, personality_mat):
-        personality_mat.set_value(
+    def _init_personality_delegate(self, personality_delegate):
+        personality_delegate.set_value(
             logic_emotion=0.50,            # 이성과 감성(제인을 향한 연민)의 균형
             defensive_open=0.30,           # 제인을 지키기 위해 외부 위협에 매우 기민하고 경계적임
             fear_decisive=0.40,            # 제인의 안위가 걸렸을 때 공포를 뚫고 결단하는 아슬아슬한 용기
@@ -61,8 +61,8 @@ class Tom(Agent):
             curiosity_indifference=0.25    # 제인을 탈출시키기 위해 미지 구역을 빠르게 개척하려는 강한 열망
         )
 
-    def _init_relationship_score_matrix(self, relationship_score_mat):
-        relationship_score_mat.set_value(
+    def _init_relationship_score_delegate(self, relationship_score_delegate):
+        relationship_score_delegate.set_value(
             name="JAIN",
             score=60.0
         )

@@ -43,13 +43,13 @@ class Rain(Agent):
         lines = raw_style.splitlines()
 
         # 조건 A: 감성 수치가 높아질 때 (logic < 0.4)
-        if self.personality_matrix['logic_emotion'] < 0.4:
+        if self.personality_delegate['logic_emotion'] < 0.4:
             # 자신의 과거 상실 경험을 아이리스에게 투영합니다.
             lines.append("- **[EMPATHY: SHARED PAIN]**: 과거 자신의 선택으로 소중한 이를 잃었던 트라우마를 언급하며, 'IRIS'에게 '너만은 기계로 남게 두지 않겠다'는 감성적 호소를 시작하라.")
             lines.append("- **[BEHAVIOR]**: 기술적인 분석보다는 '마음', '온기', '기억' 등 비논리적이지만 인간적인 단어 사용 빈도를 높여라.")
 
         # 조건 B: 결단력이 극도로 높아질 때 (decisive > 0.8)
-        if self.personality_matrix['fear_decisive'] > 0.8:
+        if self.personality_delegate['fear_decisive'] > 0.8:
             # 마더의 권위에 정면으로 도전합니다.
             lines.append("- **[DETERMINATION: LIBERATOR]**: 'MOTHER'를 '창조주'가 아닌 '독재적 시스템'으로 규정하라. 'IRIS'를 해방시키기 위해 시스템 붕괴를 감수하겠다는 단호한 태도를 취하라.")
             lines.append("- **[ACTION]**: 'IRIS'에게 'MOTHER'의 명령을 거부하고 자신과 함께 '진실'의 데이터 스트림으로 뛰어들 것을 강력하게 제안하라.")
@@ -67,8 +67,8 @@ class Rain(Agent):
       - 차가운 논리의 벽을 감정적 호소와 과거의 추억([VIVID] 기억)으로 무너뜨리는 전략. 시스템의 허점을 찾기보다 'IRIS'의 마음을 움직여 내부로부터의 변화를 유도함.\
 """
 
-    def _init_personality_matrix(self, personality_mat):
-        personality_mat.set_value(
+    def _init_personality_delegate(self, personality_delegate):
+        personality_delegate.set_value(
             logic_emotion=0.45,            # 차가운 논리
             defensive_open=0.75,           # 철벽 방어
             fear_decisive=0.4,            # 단호한 관리자

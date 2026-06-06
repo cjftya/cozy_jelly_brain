@@ -21,7 +21,7 @@ class ModifyMindAction(BaseAction):
             return False
 
         try:
-            matrix = target_agent.get_personality_matrix().get_matrix()
+            matrix = target_agent.get_personality_delegate().get_matrix()
             
             # 키에 대한 값 가져오기 (기본값 0.5)
             current_value = matrix.get(key_name, 0.5)

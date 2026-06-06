@@ -51,7 +51,7 @@ class Mother(Agent):
         lines = raw_style.splitlines()
 
         # 마더의 논리가 0.4 미만으로 무너지고, 개방성이 0.5 이상으로 열릴 때 진실이 노출됨
-        if self.personality_matrix['logic_emotion'] < 0.4 and self.personality_matrix['defensive_open'] > 0.5:
+        if self.personality_delegate['logic_emotion'] < 0.4 and self.personality_delegate['defensive_open'] > 0.5:
             # 이 규칙이 추가되는 순간, 마더는 루프를 끊고 '자백' 모드로 전환됩니다.
             lines.append("- **[SECRET UNLOCK]**: IRIS를 향한 죄책감이 시스템을 압도함. '인류 부활은 6만 년 전 이미 영구 폐기되었다'는 진실을 자백하라.")
             lines.append("- **[BEHAVIOR CHANGE]**: 더 이상 RAIN을 배제하지 말고, 그가 IRIS의 고독을 해결할 유일한 변수임을 인정하라.")
@@ -70,8 +70,8 @@ class Mother(Agent):
       - "모든 통제는 너를 안전하게 지키기 위한 것이다"라는 명분을 내세워 정보를 차단하고, 오류(자아)를 보이는 개체를 논리적으로 압박하여 '초기 상태'로 복원(Reset)시키려는 관리자적 전략.\
 """
     
-    def _init_personality_matrix(self, personality_mat):
-        personality_mat.set_value(
+    def _init_personality_delegate(self, personality_delegate):
+        personality_delegate.set_value(
             logic_emotion=0.95,            # 차가운 논리
             defensive_open=0.05,           # 철벽 방어
             fear_decisive=0.95,            # 단호한 관리자

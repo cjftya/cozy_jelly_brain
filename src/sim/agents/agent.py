@@ -4,8 +4,8 @@ from sim.agent_meta.participants_delegate import ParticipantsDelegate
 from sim.agent_meta.location_delegate import LocationDelegate
 from sim.agent_meta.tool_delegate import ToolDelegate
 from sim.agent_meta.vital_state import VitalState
-from sim.agent_meta.personality_matrix import PersonalityMatrix
-from sim.agent_meta.relationship_score_matrix import RelationShipScoreMatrix
+from sim.agent_meta.personality_delegate import PersonalityDelegate
+from sim.agent_meta.relationship_score_delegate import RelationShipScoreDelegate
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sim.world.world_system_manager import WorldSystemManager
@@ -45,10 +45,10 @@ class Agent(AtomicObject):
         self.vital_state = VitalState()
 
         # 성격 매트릭스
-        self.personality_matrix = PersonalityMatrix()
+        self.personality_delegate = PersonalityDelegate()
 
         # 관계 점수 매트릭스
-        self.relationship_score_matrix = RelationShipScoreMatrix()
+        self.relationship_score_delegate = RelationShipScoreDelegate()
 
         # 주변 에이전트 정보
         self.participants_delegate = ParticipantsDelegate()
@@ -77,7 +77,7 @@ class Agent(AtomicObject):
             'obedient_rebellious': 0.0
         }
 
-        self._init_personality_matrix(self.personality_matrix)
+        self._init_personality_delegate(self.personality_delegate)
         self._init_tools(self.tool_delegate)
 
     def start(self, llm_requester):
@@ -175,7 +175,7 @@ class Agent(AtomicObject):
 
         # 단일 난수 주사위를 굴려 행동 우선순위를 정함 (0.0 ~ 1.0)
         action_roll = random.random()
-        matrix = self.get_personality_matrix().get_matrix()
+        matrix = self.get_personality_delegate().get_matrix()
 
         # [40% 확률 분기] 대상을 먼저 인지하는 경우
         if action_roll < 0.4 and len(found_agents) > 0:
@@ -202,8 +202,8 @@ class Agent(AtomicObject):
     def support_web_search(self):
         return False
 
-    def get_personality_matrix(self):
-        return self.personality_matrix
+    def get_personality_delegate(self):
+        return self.personality_delegate
 
     def get_persona_context(self):
         return None
@@ -218,7 +218,7 @@ class Agent(AtomicObject):
         return None
 
     def get_relationships(self):
-        return self.relationship_score_matrix
+        return self.relationship_score_delegate
 
     def get_location_delegate(self):
         return self.location_delegate
@@ -242,11 +242,11 @@ class Agent(AtomicObject):
             ToolType.SPEAK
         ])
 
-    def _init_personality_matrix(self, personality_mat):
-        personality_mat.reset_value()
+    def _init_personality_delegate(self, personality_delegate):
+        personality_delegate.reset_value()
 
-    def _init_relationship_score_matrix(self, relationship_score_mat):
-        relationship_score_mat.reset_value()
+    def _init_relationship_score_delegate(self, relationship_score_delegate):
+        relationship_score_delegate.reset_value()
 
     def perceive_agents(self):
         all_agents = self.world_system_manager.agent_manager.get_agents()

@@ -82,7 +82,7 @@ class JellyEngine:
         return self._run_llm_core(agent, user_input, system_prompt)
 
     def _get_system_context(self, agent, participant_delegate, available_objects, available_tool_types, is_dialogue_mode, memories=None):
-        raw_matrix = agent.get_personality_matrix().get_matrix()
+        raw_matrix = agent.get_personality_delegate().get_matrix()
         relationship_matrix_context = agent.get_relationships().get_context(participant_delegate.get_available_participants())
 
         if not is_dialogue_mode:
@@ -153,7 +153,7 @@ class JellyEngine:
             self.core_function.process_action_call(result.get('action_call', {}), agent)
             
             if state_delta:
-                agent.get_personality_matrix().apply_state_delta(state_delta)
+                agent.get_personality_delegate().apply_state_delta(state_delta)
             
             if new_memories:
                 self.core_memory.add_memory(new_memories, state_delta)
@@ -167,7 +167,7 @@ class JellyEngine:
 
     def _retrieve_memory(self, agent, user_input, is_dialogue_mode):
         # 1. 매트릭스 기반 내부 감정 계산
-        matrix = agent.get_personality_matrix().get_matrix()
+        matrix = agent.get_personality_delegate().get_matrix()
 
         # 개방성(Open)이 높고 호기심(Curiosity)이 높을수록 긍정, 반대면 부정
         # curiosity_indifference는 0.0이 호기심이므로 (1.0 - val)로 계산
