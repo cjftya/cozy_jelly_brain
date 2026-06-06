@@ -55,7 +55,7 @@ class JellyLlmApi:
                     Logger.log("SAFETY_BLOCK", "안전 가이드라인에 의해 차단되었습니다.")
                     return {"final_response": "...... (규정에 의해 말문이 막혔습니다.)", "state_delta": {}}
                 Logger.log("FATAL", f"중단된 인지 프로세스: {error_msg}")
-                raise res
+                raise RuntimeError(error_msg)
 
     def _wait_for_rate_limit(self):
         """호출 전 최소 간격을 보장함"""

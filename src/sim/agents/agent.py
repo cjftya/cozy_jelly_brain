@@ -26,6 +26,7 @@ class Agent(AtomicObject):
 
         # LLM 트리거
         self.enable_thinking = False
+        self.is_thinking = False
 
         # Think Event 큐
         self.think_event_queue = {}
@@ -164,6 +165,9 @@ class Agent(AtomicObject):
         self.think_event_queue.clear()
 
     def scan(self, external_event):
+        if self.is_thinking:
+            return
+            
         found_agents = self.perceive_agents()
         found_objects = self.perceive_objects()
         if len(found_agents) <= 0 and len(found_objects) <= 0:

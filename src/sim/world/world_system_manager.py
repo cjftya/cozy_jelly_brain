@@ -12,6 +12,7 @@ from sim.world.world_data_factory import WorldDataFactory
 from sim.world.world_data.world_type import WorldType
 from sim.world.world_mediator import WorldMediator
 from sim.core.event_bus import EventBus, EventType as UIEventType
+from sim.core.cognitive_worker import CognitiveWorker
 from log import Logger
 
 class WorldSystemManager:
@@ -36,6 +37,7 @@ class WorldSystemManager:
         self.world_mediator = WorldMediator()
 
         self.world_agents = []
+        self.cognitive_worker = None
 
     def start(self, llm_requester):
         self.llm_requester = llm_requester
@@ -65,7 +67,15 @@ class WorldSystemManager:
         # 월드 미디에이터 초기화
         self.world_mediator.start(self.llm_requester, self.world_role)
 
+        # 인지 작업 워커 시작
+        self.cognitive_worker = CognitiveWorker(self)
+        self.cognitive_worker.start()
+
     def stop(self):
+        if self.cognitive_worker:
+            self.cognitive_worker.stop()
+            self.cognitive_worker = None
+
         for agent in self.world_agents:
             agent.stop()
 
@@ -103,34 +113,47 @@ class WorldSystemManager:
             event_message = obj[2]
 
             if event_type == EventType.FATIGUE_TRIPPED:
+                if event_agent.is_thinking:
+                    continue
+
                 event_agent.push_think_event(ThinkEventType.FATIGUE, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 피로를 느낌.")
             
             if event_type == EventType.HUNGER_TRIPPED:
+                if event_agent.is_thinking:
+                    continue
+
                 event_agent.push_think_event(ThinkEventType.HUNGER, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 허기를 느낌.")
 
             if event_type == EventType.RANDOM_SCAN:
                 for agent in self.world_agents:
+                    if agent.is_thinking:
+                        continue
+
                     if random.random() < 0.5:
                         self.log_world_event(f"{agent.name}가 주변 탐색을 시도 함.")
                         agent.scan(event_message)
 
             if event_type == EventType.PROACTIVE_PULSE:
+                if event_agent.is_thinking:
+                    continue
+
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 계획 수립을 시도 함.")
 
             if event_type == EventType.CRITICAL_PULSE:
+                if event_agent.is_thinking:
+                    continue
+
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 고착 상황 탈출을 시도 함.")
 
         # 월드 에이전트 행동 결과 처리
         for agent in self.world_agents:
-            result = agent.think_tick()
-            if result:
-                agent_log = self.world_view_manager.update_agent_log_view(agent, result)
-                self.log_agent_event(agent_log)
-                time.sleep(JellyLlmApi.get_loop_delay())
+            if agent.enable_thinking and not agent.is_thinking:
+                agent.is_thinking = True
+                self.cognitive_worker.queue_agent(agent)
 
     def log_world_event(self, log):
         EventBus().publish(UIEventType.WORLD_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")

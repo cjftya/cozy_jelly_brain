@@ -51,6 +51,9 @@ class EventTrigger:
 
         # 신체적 결핍 트리거
         for agent in agents:
+            if agent.is_thinking:
+                continue
+
             vital = agent.get_vital_state()
             
             if vital.hunger >= 80.0 and self.hunger_alert_timer >= VITAL_ALERT_COOLDOWN:
@@ -73,6 +76,9 @@ class EventTrigger:
         if self.plan_timer >= PLAN_INTERVAL:
             self.plan_timer = 0
             for agent in agents:
+                if agent.is_thinking:
+                    continue
+
                 # 모든 에이전트를 추가하면 안되고 랜덤하게 추가하도록
                 if random.random() < 0.4:
                     event_pack.append([agent, EventType.PROACTIVE_PULSE, "[EXTERNAL_SIGNAL: 자율 계획] 현재 상황을 종합적으로 분석하고, 당신의 궁극적인 목표를 달성하기 위한 단계별 행동 전략을 수립하라."])
@@ -82,6 +88,9 @@ class EventTrigger:
         if self.move_timer >= MOVE_INTERVAL and random.random() < 0.1:
             self.move_timer = 0
             for agent in agents:
+                if agent.is_thinking:
+                    continue
+                
                 if random.random() < 0.3:
                     event_pack.append([agent, EventType.CRITICAL_PULSE, "[EXTERNAL_SIGNAL: 위기 탈출] 현재 상황이나 행동 루틴에서 더 이상 새로운 진전이 없는 것 같다. 고착된 상태를 깨고, 다음 단계나 새로운 돌파구를 모색해야겠다는 생각이 든다."])
             return event_pack
@@ -92,5 +101,4 @@ class EventTrigger:
             event_pack.append([None, EventType.RANDOM_SCAN, "[EXTERNAL_SIGNAL: 환경 스캔] 주변 환경을 확인하라."])
             return event_pack
 
-        event_pack.append([None, EventType.NO_EVENT, "..."])
         return event_pack

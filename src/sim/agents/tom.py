@@ -71,5 +71,5 @@ class Tom(Agent):
         tool_delegate.add_all_available_tool_types([
             ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT,
             ToolType.USE, ToolType.GIVE, ToolType.TAKE,
-            ToolType.SKILL, ToolType.EXPLORE
+            ToolType.SKILL, ToolType.EXPLORE, ToolType.REST
         ])

@@ -2,7 +2,7 @@ from sim.object_meta.object_type import ObjectType
 
 class ObjectManager:
     def __init__(self):
-        # key: object_id, value: queue
+        # key: object_name (str), value: list of objects (list)
         self.objects = {}
 
     def get_pack(self, name):
@@ -11,14 +11,44 @@ class ObjectManager:
 
     def get_object(self, name):
         # 오브젝트 하나 리턴
-        return self.get_pack(name)[0] if self.get_pack(name) else None
+        pack = self.get_pack(name)
+        return pack[0] if pack else None
 
     def get_object_by_id(self, id):
-        # 특정 id로 오브젝트 반환
+        if id is None:
+            return None
+
+        # 1단계: 정밀 일치 (Exact Match)
         for pack in self.objects.values():
             for obj in pack:
                 if obj.id == id:
                     return obj
+
+        # 2단계: 타입 변환 및 정규화 (int -> str, 대소문자 무시, 접두사 보정)
+        # 예: 5 -> "5" -> "OBJECT_5"
+        str_id = str(id).strip()
+        
+        # 대소문자 무시 비교
+        for pack in self.objects.values():
+            for obj in pack:
+                if obj.id.upper() == str_id.upper():
+                    return obj
+
+        # 숫자만 넘어온 경우 보정 (예: 5 또는 "5" -> "OBJECT_5")
+        if str_id.isdigit():
+            target_prefixed_id = f"OBJECT_{str_id}"
+            for pack in self.objects.values():
+                for obj in pack:
+                    if obj.id.upper() == target_prefixed_id.upper():
+                        return obj
+
+        # 3단계: 이름 매칭 백업
+        # LLM이 ID 대신 사물 이름을 그대로 보낸 경우 처리
+        # 해당 이름의 팩이 존재하면 첫 번째 객체를 반환
+        pack = self.get_pack(str_id)
+        if pack:
+            return pack[0]
+
         return None
 
     def get_objects(self):
@@ -39,7 +69,7 @@ class ObjectManager:
         result = []
         for pack in self.objects.values():
             for obj in pack:
-                if obj.parent and obj.parent.name == parent_name:
+                if obj.parent and getattr(obj.parent, 'name', None) == parent_name:
                     result.append(obj)
         return result
 
@@ -49,11 +79,8 @@ class ObjectManager:
 
     def add_object(self, obj):
         # 오브젝트를 큐에 추가
-        pack = self.get_pack(obj.name)
-        if not pack:
-            self.objects[obj.name] = [obj]
-        else:
-            pack.append(obj)
+        if obj and getattr(obj, 'name', None):
+            self.objects.setdefault(obj.name, []).append(obj)
 
     def add_objects(self, objs):
         # 오브젝트들을 큐에 추가
@@ -75,12 +102,11 @@ class ObjectManager:
         obj = self.get_object_by_id(id)
         if obj:
             pack = self.get_pack(obj.name)
-            if pack:
+            if pack and obj in pack:
                 pack.remove(obj)
                 if len(pack) == 0:
                     self.objects.pop(obj.name, None)
                 return obj
-                
         return None
 
     def pop_pack(self, name):
@@ -92,19 +118,27 @@ class ObjectManager:
         self.objects.clear()
 
     def get_object_context(self, pack):
-        obj = pack[0] if pack else None
-        if obj:
-            description = ""
-            if obj.type == ObjectType.ITEM:
-                count = len(pack)
-                state_str = f" - [state: {obj.state}]" if obj.state else ""
-                description = obj.detail
-                return f"- [name: {obj.name}] - [object_id: {obj.id}] - [count: {count}]{state_str} - [detail: {description}]"
-            else:
-                description = obj.detail
-
+        if not pack:
+            return ""
+        
+        obj = pack[0]
+        # 아이템인 경우 동일 이름 내에서도 상태(state)별로 그룹화하여 컨텍스트에 표시
+        if obj.type == ObjectType.ITEM:
+            state_groups = {}
+            for o in pack:
+                state_groups.setdefault(o.state or "기본", []).append(o)
+            
+            lines = []
+            for state_val, items in state_groups.items():
+                count = len(items)
+                representative = items[0]
+                state_str = f" - [state: {state_val}]" if representative.state else ""
+                description = representative.detail or ""
+                lines.append(f"- [name: {representative.name}] - [object_id: {representative.id}] - [count: {count}]{state_str} - [detail: {description}]")
+            return "\n".join(lines)
+        else:
+            description = obj.detail or ""
             return f"- [name: {obj.name}] - [object_id: {obj.id}] - [detail: {description}]"
-        return ""
 
     def get_objects_full_context(self):
         if not self.objects:
@@ -112,5 +146,7 @@ class ObjectManager:
 
         description_list = []
         for obj_name in self.objects.keys():
-            description_list.append(self.get_object_context(self.get_pack(obj_name)))
+            context = self.get_object_context(self.get_pack(obj_name))
+            if context:
+                description_list.append(context)
         return "\n".join(description_list)
