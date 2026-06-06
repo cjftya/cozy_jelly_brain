@@ -66,6 +66,9 @@ class WorldSystemManager:
         self.cognitive_worker = CognitiveWorker(self)
         self.cognitive_worker.start()
 
+        # 에이전트 간 초기 겹침 해소
+        self.resolve_agent_overlaps()
+
     def stop(self):
         if self.cognitive_worker:
             self.cognitive_worker.stop()
@@ -91,14 +94,35 @@ class WorldSystemManager:
         for agent in self.world_agents:
             agent.tick(self.time_engine.time_scale)
 
+        # 에이전트 간 겹침 해소 (동일한 방에 있을 때 좌표 충돌 방지)
+        self.resolve_agent_overlaps()
+
         agent_details = self.world_view_manager.update_agent_details_view(focused_agent)
         EventBus().publish(UIEventType.BIOMETRICS_UPDATED, agent_details)
 
         world_details = self.world_view_manager.update_world_details_view()
         EventBus().publish(UIEventType.WORLD_DETAIL_UPDATED, world_details)
 
-        map_details = self.world_view_manager.update_ascii_map_view(focused_agent)
-        EventBus().publish(UIEventType.ASCII_MAP_UPDATED, map_details)
+        # Pygame 시각화용 이벤트 발행
+        EventBus().publish(UIEventType.WORLD_TICKED, {
+            "date": self.time_engine.get_date(),
+            "clock": self.time_engine.get_clock(),
+            "day_cycle": self.time_engine.day_cycle,
+            "season": self.time_engine.season,
+            "weather": self.weather_engine.weather_type
+        })
+
+        for agent in self.world_agents:
+            EventBus().publish(UIEventType.AGENT_POSITION_UPDATED, {
+                "name": agent.name,
+                "x": agent.position.x,
+                "y": agent.position.y,
+                "location": agent.location_delegate.get_current_location(),
+                "is_thinking": agent.is_thinking,
+                "health": agent.vital_state.health,
+                "fatigue": agent.vital_state.fatigue,
+                "hunger": agent.vital_state.hunger
+            })
 
         # 이벤트 트리거
         event_objects = self.event_trigger.check_triggers(self.world_agents, self.time_engine.time_scale)
@@ -128,6 +152,7 @@ class WorldSystemManager:
 
                     if random.random() < 0.5:
                         self.log_world_event(f"{agent.name}가 주변 탐색을 시도 함.")
+                        self.log_agent_thinking_event(agent.name, "주변 탐색을 시도 함.")
                         agent.scan(event_message)
 
             if event_type == EventType.PROACTIVE_PULSE:
@@ -136,6 +161,7 @@ class WorldSystemManager:
 
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 계획 수립을 시도 함.")
+                self.log_agent_thinking_event(event_agent.name, "계획 수립을 시도 함.")
 
             if event_type == EventType.CRITICAL_PULSE:
                 if event_agent.is_thinking:
@@ -143,6 +169,7 @@ class WorldSystemManager:
 
                 event_agent.push_think_event(ThinkEventType.PLANNING, event_message, None)
                 self.log_world_event(f"{event_agent.name}가 고착 상황 탈출을 시도 함.")
+                self.log_agent_thinking_event(event_agent.name, "고착 상황 탈출을 시도 함.")
 
         # 월드 에이전트 행동 결과 처리
         for agent in self.world_agents:
@@ -152,6 +179,12 @@ class WorldSystemManager:
 
     def log_world_event(self, log):
         EventBus().publish(UIEventType.WORLD_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
+
+    def log_agent_thinking_event(self, agent_name, log):
+        EventBus().publish(UIEventType.AGENT_THINKING_LOG_APPENDED, {
+            "name": agent_name,
+            "log": log
+        })
 
     def log_system_event(self, log):
         EventBus().publish(UIEventType.SYSTEM_LOG_APPENDED, f"[{self.time_engine.get_date()} {self.time_engine.get_clock()}] {log}")
@@ -167,6 +200,52 @@ class WorldSystemManager:
 
     def set_serper_api_key(self, serper_api_key):
         self.serper_api_key = serper_api_key
+
+    def resolve_agent_overlaps(self):
+        # Group agents by location
+        location_agents = {}
+        for agent in self.world_agents:
+            loc = agent.location_delegate.get_current_location()
+            if loc:
+                location_agents.setdefault(loc, []).append(agent)
+
+        # For each location, arrange agents to prevent overlap
+        for loc_name, agents in location_agents.items():
+            if not agents:
+                continue
+
+            # Query the room size to find the center
+            cx, cy = 4.0, 4.0
+            space_obj = self.object_manager.get_object(loc_name)
+            if space_obj and hasattr(space_obj, 'size'):
+                cx = float(space_obj.size.x // 2)
+                cy = float(space_obj.size.y // 2)
+
+            if len(agents) == 1:
+                agents[0].position.set_value(cx, cy)
+            else:
+                # Arrange agents in a cross/star offset pattern to prevent overlaps on integer grids.
+                # Slots: Center, Left, Right, Up, Down, Diagonals
+                offsets = [
+                    (0.0, 0.0),
+                    (-2.0, 0.0),
+                    (2.0, 0.0),
+                    (0.0, -2.0),
+                    (0.0, 2.0),
+                    (-2.0, -2.0),
+                    (2.0, 2.0),
+                    (-2.0, 2.0),
+                    (2.0, -2.0)
+                ]
+                for i, agent in enumerate(agents):
+                    ox, oy = offsets[i % len(offsets)]
+                    ax = cx + ox
+                    ay = cy + oy
+                    if space_obj and hasattr(space_obj, 'size'):
+                        # Keep it inside the boundary [1, size-2] to avoid touching walls
+                        ax = max(1.0, min(float(space_obj.size.x - 2), ax))
+                        ay = max(1.0, min(float(space_obj.size.y - 2), ay))
+                    agent.position.set_value(ax, ay)
 
 
         

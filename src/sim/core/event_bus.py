@@ -7,6 +7,9 @@ class EventType:
     WORLD_LOG_APPENDED = "world_log_appended"
     ASCII_MAP_UPDATED = "ascii_map_updated"
     SYSTEM_LOG_APPENDED = "system_log_appended"
+    AGENT_POSITION_UPDATED = "agent_position_updated"
+    WORLD_TICKED = "world_ticked"
+    AGENT_THINKING_LOG_APPENDED = "agent_thinking_log_appended"
 
 class EventBus:
     _instance = None

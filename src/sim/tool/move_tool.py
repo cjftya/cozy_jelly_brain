@@ -35,6 +35,7 @@ class MoveTool(BaseTool):
                 agent.position.x = 4.0
                 agent.position.y = 4.0
 
+            world_system_manager.resolve_agent_overlaps()
             world_system_manager.log_world_event(f"{agent.name}가 {location} 공간으로 이동.") 
         else:
             world_system_manager.log_world_event(f"{agent.name}가 {location} 공간으로 이동할 수 없음.")

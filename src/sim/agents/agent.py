@@ -177,8 +177,8 @@ class Agent(AtomicObject):
         action_roll = random.random()
         matrix = self.personality_delegate.get_matrix()
 
-        # [40% 확률 분기] 대상을 먼저 인지하는 경우
-        if action_roll < 0.4 and len(found_agents) > 0:
+        # [50% 확률 분기] 대상을 먼저 인지하는 경우
+        if action_roll < 0.5 and len(found_agents) > 0:
             if len(found_agents) > 0 and self.vital_state.fatigue < 70 and self.vital_state.health > 30:
                 ran_num = matrix["defensive_open"] + random.random()
                 if ran_num >= 1.0:
@@ -186,7 +186,7 @@ class Agent(AtomicObject):
                     self.push_think_event(ThinkEventType.FIND_AGENT, external_event + msg, found_agents)
                     return
         
-        # [60% 확률 분기] (또는 앞선 대인 인지 조건을 통과하지 못해 이쪽으로 넘어온 경우)
+        # [50% 확률 분기] (또는 앞선 대인 인지 조건을 통과하지 못해 이쪽으로 넘어온 경우)
         if len(found_objects) > 0:
             msg = " 주위에 관심있는 사물이 있다. 너의 신체적 겹핍, 목적 달성에 따라 사물을 조사하거나 획득할지 결정하라."
             self.push_think_event(ThinkEventType.FIND_ITEM, external_event + msg, found_objects)

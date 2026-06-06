@@ -66,8 +66,8 @@ class VitalState:
         if not self.is_alive:
             return
 
-        DAILY_FATIGUE_GAIN = 80.0  # 하루(24시간) 동안 누적될 목표 피로도
-        DAILY_HUNGER_GAIN = 110.0  # 하루(24시간) 동안 누적될 목표 허기짐
+        DAILY_FATIGUE_GAIN = 70.0  # 하루(24시간) 동안 누적될 목표 피로도
+        DAILY_HUNGER_GAIN = 80.0  # 하루(24시간) 동안 누적될 목표 허기짐
 
         fatigue_per_hour = DAILY_FATIGUE_GAIN / 24.0
         hunger_per_hour = DAILY_HUNGER_GAIN / 24.0

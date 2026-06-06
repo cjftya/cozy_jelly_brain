@@ -12,6 +12,12 @@ class RemoveAction(BaseAction):
 
         target_object = self.world_system_manager.object_manager.get_object_by_id(target_id)
         if not target_object:
+            for agent in self.world_system_manager.agent_manager.get_agents():
+                target_object = agent.inventory.get_object_by_id(target_id)
+                if target_object:
+                    break
+
+        if not target_object:
             self.world_system_manager.log_system_event("skip function call: remove_action, object null")
             return
         

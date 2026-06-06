@@ -17,14 +17,14 @@ class SkillTool(BaseTool):
     def get_description(self):
         return (
             "[핵심 창조 및 권능 발현 도구] 기본 도구(이동, 대화 등)만으로 해결할 수 없는 상황에서, "
-            "세계에 새로운 물질을 창조하거나, 사물을 변형하거나, 자신/타인에게 영향을 주는 고유 능력을 발현합니다. "
+            "세계에 새로운 물질을 만들거나, 사물의 상태를 변형하거나, 자신/타인에게 영향을 주는 고유 능력을 발현합니다. "
             "당신의 의도는 세계의 절대 법칙(Mediator)의 심사를 거쳐 통과될 경우 월드에 영구 적용되거나 스킬 풀에 등록됩니다."
         )
 
     def get_params(self):
         return '''{
-    "skill_type": "원하는 능력의 타입 선택 (object_craft: 물질의 창조 / object_transform: 사물의 상태 변형 / agent_skill: 에이전트 대상 능력 발현)",
-    "invented_tool": "발현하고자 하는 능력 또는 물질의 명사형 이름 또는 상태 (예: 파이어볼, 상한 음식, 독 정화, 박스 정리)",
+    "skill_type": "원하는 능력의 타입 선택 (object_craft: 물건을 만들거나 요리하기 / object_transform: 물건의 상태 바꾸기 / agent_skill: 에이전트 대상 능력 발현)",
+    "invented_tool": "발현하고자 하는 능력 또는 물질의 명사형 이름 또는 상태 (예: 파이어볼, 요리, 독 해제, 물체 정리)",
     "target_agent_name": "Available Participants 중 한명 (skill_type이 'agent_skill'일 경우에만 필수 이외는 null로 표기)",
     "target_object_id": "Available Objects 중 하나 또는 My Inventory Objects 중 하나 (skill_type이 'object_transform'일 경우에만 필수 이외는 null로 표기)"
 }'''

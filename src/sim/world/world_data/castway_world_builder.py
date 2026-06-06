@@ -53,9 +53,9 @@ class CastAwayWorldBuilder(WorldBuilder):
         # 풍족한 보급 궤짝
         for i in range(100):
             infinite_ration = ItemObject(
-                name="식량팩",
-                state="깨끗한 음식",
-                detail="여객선 잔해에서 떠밀려온 파손되지 않은 철제 상자안에 든 음식팩. 허기를 해결해 준다.",
+                name="과일",
+                state="신선한 상태",
+                detail="신선한 과일. 허기를 해결해 준다.",
                 detail_type=ObjectDetailType.FOOD,
                 parent=camp
             )

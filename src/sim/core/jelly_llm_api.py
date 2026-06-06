@@ -20,6 +20,15 @@ class JellyLlmApi:
     def parse_llm_response(self, text):
         """LLM 응답에서 JSON만 안전하게 추출"""
         try:
+            start_idx = text.find('{')
+            if start_idx != -1:
+                decoder = json.JSONDecoder()
+                obj, idx = decoder.raw_decode(text[start_idx:])
+                return obj
+        except Exception as e:
+            pass
+            
+        try:
             json_match = re.search(r'\{.*\}', text, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())

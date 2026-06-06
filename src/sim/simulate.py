@@ -3,8 +3,8 @@ from sim.world.world_system_manager import WorldSystemManager
 from log import Logger
 
 class Simulator:
-    def __init__(self):
-
+    def __init__(self, support_pygame=False):
+        self.support_pygame = support_pygame
         self.llm_requester = None
         
         # UI API Callbacks

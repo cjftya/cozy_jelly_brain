@@ -5,9 +5,11 @@ from sim.core.event_bus import EventBus, EventType
 from log import Logger
 
 class ChatApp(ctk.CTk):
-    def __init__(self, engine: Engine):
+    def __init__(self, engine: Engine, support_pygame=False):
         super().__init__()
         self.engine = engine
+        self.support_pygame = support_pygame
+        self.pygame_app = None
         
         # Configure window
         self.title("CozyJelly Brain Simulator")
@@ -90,8 +92,8 @@ class ChatApp(ctk.CTk):
         self.world_detail_view = self.create_text_view(self.left_views_frame, "World Detail", 0, 1, height=220)
         self.agent_chat_log_view = self.create_text_view(self.left_views_frame, "agent chat log", 1, 0, height=250)
         self.world_log_view = self.create_text_view(self.left_views_frame, "world log", 1, 1, height=250)
-        self.ascii_map_view = self.create_text_view(self.left_views_frame, "ascii map", 2, 0, columnspan=2, height=350)
-        self.system_log_view = self.create_text_view(self.left_views_frame, "system log", 3, 0, columnspan=2, height=200)
+        # ASCII map is removed as per request. Pygame visualizer handles 2D map rendering.
+        self.system_log_view = self.create_text_view(self.left_views_frame, "system log", 2, 0, columnspan=2, height=200)
 
         # Input Area
         self.input_container = ctk.CTkFrame(self, fg_color="transparent")
@@ -118,12 +120,17 @@ class ChatApp(ctk.CTk):
         self.event_bus.subscribe(EventType.WORLD_DETAIL_UPDATED, self.refresh_world_detail)
         self.event_bus.subscribe(EventType.AGENT_CHAT_LOG_APPENDED, self.append_agent_chat_log)
         self.event_bus.subscribe(EventType.WORLD_LOG_APPENDED, self.append_world_log)
-        self.event_bus.subscribe(EventType.ASCII_MAP_UPDATED, self.refresh_ascii_map)
         self.event_bus.subscribe(EventType.SYSTEM_LOG_APPENDED, self.append_system_log)
 
         # Initialize Engine
         self.engine.start()
         self.last_ai_msg_index = None
+
+        if self.support_pygame:
+            from gui_pygame import PygameApp
+            self.pygame_app = PygameApp(self.engine)
+            self.pygame_app.setup_display()
+            self.after(33, self.pygame_tick)
 
     def on_system_start(self):
         google_api_key = self.api_key_entry.get()
@@ -362,14 +369,18 @@ class ChatApp(ctk.CTk):
     def append_world_log(self, text):
         self.after(0, lambda: self._append_text_view(self.world_log_view, text))
 
-    def refresh_ascii_map(self, text):
-        self.after(0, lambda: self._update_text_view(self.ascii_map_view, text))
-
     def append_system_log(self, text):
         self.after(0, lambda: self._append_text_view(self.system_log_view, text))
 
+    def pygame_tick(self):
+        if self.pygame_app and self.pygame_app.running:
+            self.pygame_app.tick_once()
+            self.after(33, self.pygame_tick)
+
     def on_closing(self):
         Logger.log("Stopping engine and closing application...")
+        if self.pygame_app:
+            self.pygame_app.stop()
         self.engine.stop()
         self.destroy()
 
