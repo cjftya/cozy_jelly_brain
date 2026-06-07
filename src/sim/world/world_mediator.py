@@ -36,6 +36,7 @@ class WorldMediator:
 {{
   "rejected": false,
   "reject_reason": "",
+  "mana_cost": "행동/스킬 격발에 요구되는 마나(정신력) 소모량 (0~100 정수). 시전하는 마법의 규모, 공간의 정서적 저항, 인과율을 거스르는 정도에 비례하여 동적으로 책정할 것.",
   "used_objects": [
     {{
       "object_name": "재료로 사용된 대표 오브젝트 name",
@@ -73,6 +74,7 @@ class WorldMediator:
 {{
   "rejected": false,
   "reject_reason": "",
+  "mana_cost": "행동/스킬 격발에 요구되는 마나(정신력) 소모량 (0~100 정수). 시전하는 마법의 규모, 공간의 정서적 저항, 인과율을 거스르는 정도에 비례하여 동적으로 책정할 것.",
   "approved_skill": {{
     "state_name": "{object_name}의 새로운 상태 이름 (명사형, 예: 차가운 물, 정리된 음식)",
     "type_english": "TransformerType",
@@ -106,6 +108,7 @@ class WorldMediator:
 {{
   "rejected": false,
   "reject_reason": "",
+  "mana_cost": "행동/스킬 격발에 요구되는 마나(정신력) 소모량 (0~100 정수). 시전하는 마법의 규모, 공간의 정서적 저항, 인과율을 거스르는 정도에 비례하여 동적으로 책정할 것.",
   "effects": [
     {{
       "meta_tag": "VITAL_MODIFIER",

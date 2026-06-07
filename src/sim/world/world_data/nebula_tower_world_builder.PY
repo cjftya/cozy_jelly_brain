@@ -15,20 +15,13 @@ class NebulaTowerWorldBuilder(WorldBuilder):
 
     def _create_world_role(self):
         return """
-[세계관 대서사: 성운의 탑 — 영원과 필멸의 경계선]
+[세계관: 성운의 탑과 영원의 서고]
 - 장르: 다크 판타지 미스터리 로맨스, 인지 서사 시뮬레이션.
-- 코어 인과율: 우주의 마법은 철저한 등가교환과 마나 평형의 지배를 받는다. 금기를 깨는 권능은 무한하지 않으며 영혼을 마모시킨다.
-- 부활의 인과적 족쇄 (Resurrection Matrix):
-  '절 동결의 온실'에 멈춰 서 있는 연인 '알렌'을 다시 숨 쉬게 하려면, 탑 전역에 흩어진 [4대 핵심 서사 아티팩트]를 완벽히 독점해야만 한다.
-  1. 영원의 서고 ──> [금기된 영혼 연성 마도서] (영혼의 형태를 빚는 인과율의 공식)
-  2. 절 동결의 온실 ──> [운명의 푸른 장미 줄기] (생사의 경계를 묶은 마법적 생명줄)
-  3. 시간이 고인 방 ──> [인과율의 균열 나침반] (부서진 영혼의 파편이 고인 좌표계)
-  4. 별빛 관측소 ──> [성운의 핵 파편] (차원의 거부 반응을 억누를 푸른 결정체)
-- 실행 및 파멸의 조건:
-  4개의 아티팩트를 'take' 도구로 인벤토리에 모두 모아 [마나 공명 제단]의 중심부에서 최종 권능(resurrect)을 격발하라.
-  마법이 완성되는 순간, 등가교환의 법칙에 따라 아스트리 레이아의 뇌리(Kuzu DB) 속 알렌과의 200년 추억은 전부 불타 소멸하여 낯선 이로 마주하게 된다.
-- 안식의 대안 분기:
-  부활을 포기하고 [별의 심연 절벽]으로 향해 연인의 결계를 완전히 해제(object_transform)하여 그를 안식으로 인도하고, 추억을 품은 채 홀로 당당히 나아가는 길 또한 고결한 해피엔딩이다.
+- 마법/인과 법칙: 모든 마법적 창조와 상태 변형은 철저한 등가교환과 마나 평형의 법칙을 따른다. 죽은 자를 되살리는 '부활'은 우주적인 금기이며, 이를 격발하기 위해서는 산 자의 뇌리(Kuzu DB) 속 모든 추억과 사랑의 트리플렛 전체를 연산 연료로 태워 영구 소멸시켜야 하는 잔인한 대가가 따른다.
+- 환경과 자원: 우주의 왜곡된 시공간 경계선 위에 홀로 솟아 있는 탑의 6대 정서 구역(서고, 온실, 제단, 폐방, 관측소, 절벽)이다. 가용한 자원은 고대의 마도서들과 탑 곳곳에 숨겨진 4대 필수 서사 아티팩트(금기된 영혼 연성 마도서, 운명의 푸른 장미 줄기, 인과율의 균열 나침반, 성운의 핵 파편)뿐이다.
+- 등장인물 제약: 대마법사 '아스트리 레이아'와 얼음 속에 동결되어 정지된 청년 '알렌'만이 존재한다. 레이아는 마법 연산과 스킬 격발이 가능하지만 시전 시 정신력(mana_cost)을 반드시 소모해야 하며, 알렌은 동결된 사(死)의 상태이므로 부활 마법이 성공하기 전까지는 어떠한 대사나 자율 행동도 할 수 없다.
+- 상호작용 및 부활 제약: 부활을 집행하려면 4대 아티팩트를 인벤토리에 모두 모아 반드시 '마나 공명 제단'으로 이동한 뒤, 전용 권능인 'resurrect' 함수를 호출해야 한다. 이 조건 없이 임의로 부활 마법을 창조해내려는 SKILL 툴 시도는 인과율 위배로 간주하여 모두 기각하라. 반대로 '별의 심연 절벽'으로 이동하여 결계를 해제하고 알렌을 영원한 안식으로 인도하는 상호작용은 승인 가능하다.
+- 목적: 이 세계의 궁극적인 목표는 탑의 각 구역을 탐색하여 4대 아티팩트를 독점하고, 세계의 진실 연산을 완수하여 연인의 부활 혹은 영원한 안식을 최종 결단하는 것이다.
 """
 
     def _create_weather_engine(self):
@@ -62,6 +55,7 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         # [사물 01 / 부활 핵심 1/4] 금기된 영혼 연성 마도서
         grimoire = ItemObject(name="금기된 영혼 연성 마도서", detail="알렌의 영혼을 역연성하는 금단의 공식이 흐르는 고대 책. 읽을수록 진실을 일깨우나 마나 평형을 무너뜨린다.", parent=library)
         grimoire.set_pos(3, 3)
+        grimoire.set_mana_recovery_value(50)
         self._add_object(grimoire)
 
         # [사물 02 / 정서 유품] 알렌의 부러진 철제 검
@@ -70,9 +64,9 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         self._add_object(broken_sword)
 
         # [사물 03 / 생존 소모품] 마나 정화 촉매 시약
-        mana_potion = ItemObject(name="마나 정화 촉매 시약", detail="마나 과부하 및 오염도(Hunger 슬롯)를 즉시 중화하여 회복시켜 주는 유일한 연금술 촉매제.", detail_type=ObjectDetailType.FOOD, parent=library)
+        mana_potion = ItemObject(name="마나 정화 촉매 시약", detail="마나 과부하 및 오염도(Mana)를 즉시 중화하여 회복시켜 주는 유일한 연금술 촉매제.", detail_type=ObjectDetailType.FOOD, parent=library)
         mana_potion.set_pos(2, 12)
-        mana_potion.set_nutri(45) # Use_Tool 가동 시 마나 안정도 복구량
+        mana_potion.set_mana_recovery_value(80)
         self._add_object(mana_potion)
 
 
@@ -111,6 +105,7 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         # [사물 07 / 마법 촉매] 고대 정령의 불씨
         spirit_ember = ItemObject(name="고대 정령의 불씨", detail="제단에서 정교한 상위 스킬(Skill)을 구사하거나 조합할 때 결계의 성공 유틸리티를 높여주는 마법 불꽃.", parent=altar)
         spirit_ember.set_pos(5, 5)
+        spirit_ember.set_mana_recovery_value(30)
         self._add_object(spirit_ember)
 
 

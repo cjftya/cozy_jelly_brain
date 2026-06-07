@@ -10,6 +10,7 @@ class EventType:
     AGENT_POSITION_UPDATED = "agent_position_updated"
     WORLD_TICKED = "world_ticked"
     AGENT_THINKING_LOG_APPENDED = "agent_thinking_log_appended"
+    AGENT_PERCEPTION_UPDATED = "agent_perception_updated"
 
 class EventBus:
     _instance = None

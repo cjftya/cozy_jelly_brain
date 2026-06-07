@@ -6,7 +6,19 @@ class ItemObject(BaseObject):
         super().__init__(name, state, detail, detail_type, ObjectType.ITEM, parent)
 
         # 상태 속성
-        self.nutrition_value = 0
+        self.hunger_recovery_value = 0
+        self.fatigue_recovery_value = 0
+        self.health_recovery_value = 0
+        self.mana_recovery_value = 0
 
-    def set_nutri(self, nutrition_value):
-        self.nutrition_value = nutrition_value
+    def set_hunger_recovery_value(self, hunger_recovery_value):
+        self.hunger_recovery_value = hunger_recovery_value
+
+    def set_fatigue_recovery_value(self, fatigue_recovery_value):
+        self.fatigue_recovery_value = fatigue_recovery_value
+
+    def set_health_recovery_value(self, health_recovery_value):
+        self.health_recovery_value = health_recovery_value
+
+    def set_mana_recovery_value(self, mana_recovery_value):
+        self.mana_recovery_value = mana_recovery_value

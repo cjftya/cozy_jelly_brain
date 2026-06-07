@@ -14,7 +14,7 @@ class PygameApp:
         self.running = False
         
         # State data
-        self.agent_positions = {}  # agent_name -> {x, y, location, is_thinking, health, fatigue, hunger}
+        self.agent_positions = {}  # agent_name -> {x, y, location, is_thinking, health, fatigue, hunger, mana}
         self.world_info = {
             "date": "Day 1",
             "clock": "00:00",
@@ -46,13 +46,16 @@ class PygameApp:
         
         # Particles for weather overlays
         self.particles = []
-        self.max_particles = 100
+        self.max_particles = 120  # Slightly increased particle count for better visual density
+        self.last_weather = None
+        self.hovered_agent = None
         
         # New visual effects state
         self.agent_visuals = {}  # agent_name -> {"x": float, "y": float}
         self.click_ripples = []   # list of {"x", "y", "radius", "alpha"}
         self.thinking_particles = [] # list of {"x", "y", "vx", "vy", "radius", "alpha", "color"}
         self.lightning_flash = 0.0
+        self.current_perception = None # {"name": str, "text": str, "time": float}
         
         self.lock = threading.Lock()
         self.agent_thinking_logs = {}
@@ -61,6 +64,77 @@ class PygameApp:
         EventBus().subscribe(EventType.AGENT_POSITION_UPDATED, self.on_agent_position_updated)
         EventBus().subscribe(EventType.WORLD_TICKED, self.on_world_ticked)
         EventBus().subscribe(EventType.AGENT_THINKING_LOG_APPENDED, self.on_agent_thinking_log_appended)
+        EventBus().subscribe(EventType.AGENT_PERCEPTION_UPDATED, self.on_agent_perception_updated)
+
+    def on_agent_perception_updated(self, data):
+        with self.lock:
+            name = data.get("name", "UNKNOWN")
+            text = data.get("perception", "")
+            strategy = data.get("strategy", "")
+            
+            if not (text or strategy):
+                return
+                
+            # Word wrap helper run only once on event arrival
+            def wrap_text(raw_text, start_x_offset, max_w, font):
+                if not raw_text:
+                    return []
+                lines = []
+                current_line = ""
+                is_first_line = True
+                for char in raw_text:
+                    test_line = current_line + char
+                    current_max_w = max_w - start_x_offset if is_first_line else max_w
+                    if font.size(test_line)[0] <= current_max_w:
+                        current_line = test_line
+                    else:
+                        if current_line:
+                            lines.append(current_line)
+                        current_line = char
+                        is_first_line = False
+                if current_line:
+                    lines.append(current_line)
+                return lines
+
+            agent_color = self.colors.get(name, self.colors["UNKNOWN"])
+            
+            # Try to pre-calculate layout if Pygame fonts are initialized
+            try:
+                lbl_perc_title = self.font_body.render(f"[{name}의 인지]", True, agent_color)
+                lbl_strat_title = self.font_body.render("[행동 전략]", True, (251, 191, 36))
+                
+                max_text_w = 968
+                font = self.font_details
+                line_height = font.get_linesize() + 4
+                
+                perc_lines = wrap_text(text, lbl_perc_title.get_width() + 12, max_text_w, font) if text else []
+                strat_lines = wrap_text(strategy, lbl_strat_title.get_width() + 12, max_text_w, font) if strategy else []
+                
+                perc_cnt = len(perc_lines) if perc_lines else 1
+                strat_cnt = len(strat_lines) if strat_lines else 1
+                
+                box_h = 32 + (perc_cnt * line_height) + 12 + (strat_cnt * line_height)
+                box_h = max(90, box_h)
+            except Exception:
+                # Fallback if font is not loaded yet
+                lbl_perc_title = None
+                lbl_strat_title = None
+                perc_lines = [text] if text else []
+                strat_lines = [strategy] if strategy else []
+                box_h = 90
+                line_height = 16
+
+            self.current_perception = {
+                "name": name,
+                "perc_lines": perc_lines,
+                "strat_lines": strat_lines,
+                "lbl_perc_title": lbl_perc_title,
+                "lbl_strat_title": lbl_strat_title,
+                "agent_color": agent_color,
+                "box_h": box_h,
+                "line_height": line_height,
+                "time": time.time()
+            }
 
     def on_agent_position_updated(self, data):
         with self.lock:
@@ -116,14 +190,76 @@ class PygameApp:
 
     def _init_particles(self):
         self.particles = []
+        weather = self.world_info.get("weather", "SUNNY")
+        weather_lower = weather.lower() if isinstance(weather, str) else ""
+        
+        # Determine weather type
+        if "맑음" in weather_lower or "clear" in weather_lower or "sunny" in weather_lower:
+            w_type = "sunny"
+        elif "흐림" in weather_lower or "cloudy" in weather_lower:
+            w_type = "cloudy"
+        elif "비" in weather_lower or "rain" in weather_lower:
+            w_type = "rain"
+        elif "눈" in weather_lower or "snow" in weather_lower:
+            w_type = "snow"
+        else:
+            w_type = "storm" # 천둥, 번개, storm, etc.
+
         for _ in range(self.max_particles):
-            self.particles.append({
-                "x": random.randint(20, 1060),
-                "y": random.randint(120, 700),
-                "speed_y": random.uniform(2.0, 5.0),
-                "speed_x": random.uniform(-1.0, 1.0),
-                "size": random.randint(1, 3)
-            })
+            # Coordinates are local to the map board (0 to 1040, 0 to 480)
+            if w_type == "sunny":
+                # Golden dust motes
+                self.particles.append({
+                    "x": random.randint(0, 1040),
+                    "y": random.randint(0, 480),
+                    "speed_y": random.uniform(-0.8, -0.3),  # floating upwards
+                    "speed_x": random.uniform(-0.2, 0.2),
+                    "size": random.randint(1, 3),
+                    "alpha": random.randint(30, 100),
+                    "phase": random.uniform(0, math.pi * 2)  # For horizontal sway
+                })
+            elif w_type == "cloudy":
+                # Cool grey fog blobs
+                self.particles.append({
+                    "x": random.randint(0, 1040),
+                    "y": random.randint(0, 480),
+                    "speed_y": random.uniform(-0.05, 0.05),
+                    "speed_x": random.uniform(0.2, 0.6),     # horizontal drift
+                    "size": random.randint(30, 80),          # fog puff size
+                    "alpha": random.randint(8, 20),
+                    "phase": random.uniform(0, math.pi * 2)
+                })
+            elif w_type == "rain":
+                # Rain streaks
+                self.particles.append({
+                    "x": random.randint(0, 1040),
+                    "y": random.randint(0, 480),
+                    "speed_y": random.uniform(6.0, 11.0),
+                    "speed_x": random.uniform(-0.3, 0.3),
+                    "size": random.randint(8, 18),           # Streak length
+                    "alpha": random.randint(80, 140)
+                })
+            elif w_type == "snow":
+                # Snow flakes
+                self.particles.append({
+                    "x": random.randint(0, 1040),
+                    "y": random.randint(0, 480),
+                    "speed_y": random.uniform(1.0, 2.5),
+                    "speed_x": 0.0,
+                    "size": random.randint(2, 5),
+                    "alpha": random.randint(120, 180),
+                    "phase": random.uniform(0, math.pi * 2)
+                })
+            else: # storm
+                # Slanted fast rain streaks
+                self.particles.append({
+                    "x": random.randint(0, 1040),
+                    "y": random.randint(0, 480),
+                    "speed_y": random.uniform(8.0, 14.0),
+                    "speed_x": random.uniform(-4.0, -2.0),   # slanted left
+                    "size": random.randint(12, 22),          # longer streaks
+                    "alpha": random.randint(100, 160)
+                })
 
     def tick_once(self):
         if not self.running:
@@ -147,26 +283,37 @@ class PygameApp:
         self.screen.fill(self.colors["bg"])
         
         with self.lock:
-            # 1. Draw weather particles (background)
-            self._update_and_draw_particles()
+            # Initialize hovered_agent to None before drawing components
+            self.hovered_agent = None
             
-            # 2. Draw thinking particles (behind UI but on top of weather)
-            self._update_and_draw_thinking_particles()
-            
-            # 3. Draw UI components
-            self._draw_header(self.screen)
+            # 1. Draw main map board (rooms, items, agents)
             self._draw_map_board(self.screen)
             
-            # 4. Draw click ripples
+            # 2. Draw weather particles (overlay on the board)
+            self._update_and_draw_particles(self.screen)
+            
+            # 3. Draw thinking particles (overlay on the board/agents)
+            self._update_and_draw_thinking_particles(self.screen)
+            
+            # 4. Draw UI headers and perception box (foreground panels)
+            self._draw_header(self.screen)
+            self._draw_perception_box(self.screen)
+            
+            # 5. Draw click ripples
             self._update_and_draw_ripples()
             
-            # 5. Draw lightning flashes
+            # 6. Draw lightning flashes
             self._update_and_draw_lightning()
+            
+            # 7. Draw hovered agent tooltip (always on the absolute top layer)
+            if self.hovered_agent:
+                name, data, mx, my = self.hovered_agent
+                self._draw_agent_tooltip(self.screen, name, data, mx, my)
         
         pygame.display.flip()
         self.pygame_clock.tick(30)
 
-    def _update_and_draw_thinking_particles(self):
+    def _update_and_draw_thinking_particles(self, screen):
         alive_particles = []
         for p in self.thinking_particles:
             p["x"] += p["vx"]
@@ -175,7 +322,7 @@ class PygameApp:
             if p["alpha"] > 0:
                 surf = pygame.Surface((p["radius"] * 2, p["radius"] * 2), pygame.SRCALPHA)
                 pygame.draw.circle(surf, (p["color"][0], p["color"][1], p["color"][2], p["alpha"]), (p["radius"], p["radius"]), p["radius"])
-                self.screen.blit(surf, (int(p["x"] - p["radius"]), int(p["y"] - p["radius"])))
+                screen.blit(surf, (int(p["x"] - p["radius"]), int(p["y"] - p["radius"])))
                 alive_particles.append(p)
         self.thinking_particles = alive_particles
 
@@ -198,7 +345,16 @@ class PygameApp:
 
     def _update_and_draw_lightning(self):
         weather = self.world_info.get("weather", "SUNNY")
-        if weather == "STORM":
+        weather_lower = weather.lower() if isinstance(weather, str) else ""
+        is_storm = (
+            "storm" in weather_lower or 
+            "thunder" in weather_lower or 
+            "lightning" in weather_lower or 
+            "천둥" in weather or 
+            "번개" in weather or 
+            "폭풍우" in weather
+        )
+        if is_storm:
             # 0.6% chance per frame to trigger lightning
             if random.random() < 0.006:
                 self.lightning_flash = 1.0
@@ -210,40 +366,203 @@ class PygameApp:
             self.screen.blit(flash_surf, (0, 0))
             self.lightning_flash -= 0.08
 
+    def _draw_perception_box(self, screen):
+        # Check if we have active perception to render (valid for 12 seconds)
+        active_perc = None
+        if self.current_perception:
+            elapsed = time.time() - self.current_perception["time"]
+            if elapsed < 12.0:
+                active_perc = self.current_perception
+
+        if active_perc:
+            name = active_perc["name"]
+            perc_lines = active_perc["perc_lines"]
+            strat_lines = active_perc["strat_lines"]
+            lbl_perc_title = active_perc["lbl_perc_title"]
+            lbl_strat_title = active_perc["lbl_strat_title"]
+            agent_color = active_perc["agent_color"]
+            box_h = active_perc["box_h"]
+            line_height = active_perc["line_height"]
+            
+            # Dynamic Y to expand upwards from Y=700 limit
+            box_y = 700 - box_h
+            box_rect = pygame.Rect(20, box_y, 1040, box_h)
+            
+            # Draw glassmorphic box & character accent border
+            pygame.draw.rect(screen, self.colors["card_bg"], box_rect, border_radius=12)
+            pygame.draw.rect(screen, agent_color, box_rect, width=2, border_radius=12)
+            
+            # Render Line 1: Subjective Perception
+            curr_y = box_y + 16
+            if lbl_perc_title:
+                screen.blit(lbl_perc_title, (36, curr_y))
+                title_w = lbl_perc_title.get_width()
+            else:
+                title_w = 100
+                
+            if perc_lines:
+                for idx, line in enumerate(perc_lines):
+                    surf = self.font_details.render(line, True, self.colors["text_light"])
+                    if idx == 0:
+                        screen.blit(surf, (36 + title_w + 12, curr_y + 3))
+                    else:
+                        curr_y += line_height
+                        screen.blit(surf, (36, curr_y + 3))
+            else:
+                empty_surf = self.font_details.render("인지 정보 없음", True, self.colors["text_dark"])
+                screen.blit(empty_surf, (36 + title_w + 12, curr_y + 3))
+            
+            # Render Line 2: Internal Strategy
+            curr_y += line_height + 12
+            if lbl_strat_title:
+                screen.blit(lbl_strat_title, (36, curr_y))
+                strat_title_w = lbl_strat_title.get_width()
+            else:
+                strat_title_w = 80
+                
+            if strat_lines:
+                for idx, line in enumerate(strat_lines):
+                    surf = self.font_details.render(line, True, self.colors["text_light"])
+                    if idx == 0:
+                        screen.blit(surf, (36 + strat_title_w + 12, curr_y + 3))
+                    else:
+                        curr_y += line_height
+                        screen.blit(surf, (36, curr_y + 3))
+            else:
+                empty_surf = self.font_details.render("전략 없음", True, self.colors["text_dark"])
+                screen.blit(empty_surf, (36 + strat_title_w + 12, curr_y + 3))
+                
+        else:
+            # Idle state: standard border and guide text
+            box_rect = pygame.Rect(20, 610, 1040, 90)
+            pygame.draw.rect(screen, self.colors["card_bg"], box_rect, border_radius=12)
+            pygame.draw.rect(screen, self.colors["border"], box_rect, width=1, border_radius=12)
+            
+            guide_surf = self.font_details.render("수신 대기 중... 에이전트가 생각에 잠기면 이곳에 주관적 인지 흐름이 표시됩니다.", True, self.colors["text_dark"])
+            gx = box_rect.x + (box_rect.width - guide_surf.get_width()) // 2
+            gy = box_rect.y + (box_rect.height - guide_surf.get_height()) // 2
+            screen.blit(guide_surf, (gx, gy))
+
     def stop(self):
         if self.running:
             self.running = False
             pygame.quit()
 
-    def _update_and_draw_particles(self):
+    def _update_and_draw_particles(self, screen):
         weather = self.world_info.get("weather", "SUNNY")
-        if weather not in ["RAIN", "SNOW", "STORM"]:
-            return
-            
-        # Subtle wind drift based on time
-        wind_drift = math.sin(time.time() * 0.4) * 0.8
+        
+        # Detect weather change
+        if not hasattr(self, "last_weather") or self.last_weather != weather:
+            self.last_weather = weather
+            self._init_particles()
+
+        weather_lower = weather.lower() if isinstance(weather, str) else ""
+        if "맑음" in weather_lower or "clear" in weather_lower or "sunny" in weather_lower:
+            w_type = "sunny"
+        elif "흐림" in weather_lower or "cloudy" in weather_lower:
+            w_type = "cloudy"
+        elif "비" in weather_lower or "rain" in weather_lower:
+            w_type = "rain"
+        elif "눈" in weather_lower or "snow" in weather_lower:
+            w_type = "snow"
+        else:
+            w_type = "storm"
+
+        # Create single semi-transparent overlay surface representing the map board bounds (1040x480)
+        overlay = pygame.Surface((1040, 480), pygame.SRCALPHA)
+        
+        # Subtle wind drift for rain/snow
+        wind_drift = math.sin(time.time() * 0.4) * 0.8 if w_type in ["rain", "snow"] else 0.0
         
         for p in self.particles:
-            # Update particle position
-            p["y"] += p["speed_y"]
-            p["x"] += p["speed_x"] + wind_drift
-            
-            # Recycle particles wrapping out of screen
-            if p["y"] > 700:
-                p["y"] = 120
-                p["x"] = random.randint(20, 1060)
-            if p["x"] < 20 or p["x"] > 1060:
-                p["x"] = random.randint(20, 1060)
+            # 1. Update position based on weather type
+            if w_type == "sunny":
+                p["phase"] += 0.03
+                p["y"] += p["speed_y"]
+                p["x"] += p["speed_x"] + math.sin(p["phase"]) * 0.25
                 
-            # Draw particle
-            if weather in ["RAIN", "STORM"]:
-                # Draw small blue streaks
-                color = (78, 120, 246, 120)
-                pygame.draw.line(self.screen, color, (p["x"], p["y"]), (p["x"] + p["speed_x"]*2 + wind_drift, p["y"] + p["speed_y"]*2), 1)
-            elif weather == "SNOW":
-                # Draw small white circles
-                color = (240, 245, 255, 180)
-                pygame.draw.circle(self.screen, color, (int(p["x"]), int(p["y"])), p["size"])
+                # Recycle bounds: y drifts up, so wrap at y < 0
+                if p["y"] < 0:
+                    p["y"] = 480
+                    p["x"] = random.randint(0, 1040)
+                if p["x"] < 0 or p["x"] > 1040:
+                    p["x"] = random.randint(0, 1040)
+                    
+            elif w_type == "cloudy":
+                p["y"] += p["speed_y"]
+                p["x"] += p["speed_x"]
+                
+                # Recycle bounds: x drifts right, so wrap at x > 1040
+                if p["x"] > 1040:
+                    p["x"] = -p["size"]
+                    p["y"] = random.randint(0, 480)
+                if p["y"] < -p["size"] or p["y"] > 480 + p["size"]:
+                    p["y"] = random.randint(0, 480)
+                    
+            elif w_type == "rain":
+                p["y"] += p["speed_y"]
+                p["x"] += p["speed_x"] + wind_drift
+                
+                # Recycle bounds: falls down
+                if p["y"] > 480:
+                    p["y"] = 0
+                    p["x"] = random.randint(0, 1040)
+                if p["x"] < 0 or p["x"] > 1040:
+                    p["x"] = random.randint(0, 1040)
+                    
+            elif w_type == "snow":
+                p["phase"] += 0.02
+                p["y"] += p["speed_y"]
+                p["x"] += math.sin(p["phase"]) * 0.7 + wind_drift
+                
+                # Recycle bounds: falls down
+                if p["y"] > 480:
+                    p["y"] = 0
+                    p["x"] = random.randint(0, 1040)
+                if p["x"] < 0 or p["x"] > 1040:
+                    p["x"] = random.randint(0, 1040)
+                    
+            else: # storm
+                p["y"] += p["speed_y"]
+                p["x"] += p["speed_x"]  # Already has large negative vx slant
+                
+                # Recycle bounds: diagonal storm
+                if p["y"] > 480 or p["x"] < 0:
+                    p["y"] = 0
+                    p["x"] = random.randint(0, 1040)
+                    
+            # 2. Draw particle on the overlay surface
+            if w_type == "sunny":
+                # Warm white/golden dust glow
+                color = (254, 240, 138, p["alpha"]) if p["size"] == 2 else (255, 253, 240, p["alpha"])
+                pygame.draw.circle(overlay, color, (int(p["x"]), int(p["y"])), p["size"])
+                
+            elif w_type == "cloudy":
+                # Soft translucent fog/mist blobs
+                color = (210, 215, 225, p["alpha"])
+                pygame.draw.circle(overlay, color, (int(p["x"]), int(p["y"])), p["size"])
+                
+            elif w_type == "rain":
+                # Fine blue streak line
+                color = (120, 160, 255, p["alpha"])
+                end_x = p["x"] + p["speed_x"] + wind_drift
+                end_y = p["y"] + p["speed_y"]
+                pygame.draw.line(overlay, color, (p["x"], p["y"]), (end_x, end_y), 1)
+                
+            elif w_type == "snow":
+                # Soft white circular flakes
+                color = (255, 255, 255, p["alpha"])
+                pygame.draw.circle(overlay, color, (int(p["x"]), int(p["y"])), p["size"])
+                
+            else: # storm
+                # Fast storm slanted lines
+                color = (100, 180, 240, p["alpha"])
+                end_x = p["x"] + p["speed_x"]
+                end_y = p["y"] + p["speed_y"]
+                pygame.draw.line(overlay, color, (p["x"], p["y"]), (end_x, end_y), 1 + (p["size"] % 2))
+
+        # Blit the overlay onto the screen at the map board coordinates (20, 120)
+        screen.blit(overlay, (20, 120))
 
     def _draw_pill_badge(self, screen, x, y, label, value, color):
         lbl_surf = self.font_details.render(label, True, self.colors["text_dark"])
@@ -325,7 +644,7 @@ class PygameApp:
             start_x += w + 12
 
     def _draw_map_board(self, screen):
-        map_rect = pygame.Rect(20, 120, 1040, 580)
+        map_rect = pygame.Rect(20, 120, 1040, 480)
         
         # Glassmorphic board container
         pygame.draw.rect(screen, self.colors["card_bg"], map_rect, border_radius=12)
@@ -361,9 +680,9 @@ class PygameApp:
         
         # Layout metrics (Expanded for 1040px width)
         room_width = 225
-        room_height = 230
+        room_height = 190
         margin_x = 25
-        margin_y = 35
+        margin_y = 15
         
         room_positions = {}
         for idx, loc_name in enumerate(loc_list):
@@ -371,7 +690,7 @@ class PygameApp:
             col = idx % 4
             
             rx = map_rect.x + 30 + col * (room_width + margin_x)
-            ry = map_rect.y + 40 + row * (room_height + margin_y)
+            ry = map_rect.y + 20 + row * (room_height + margin_y)
             room_positions[loc_name] = (rx, ry)
             
             # Check if any agents are in this room
@@ -418,7 +737,6 @@ class PygameApp:
         pulse_alpha = int(127 + 127 * math.sin(time.time() * 8))  # Pulse speed
         
         mx, my = pygame.mouse.get_pos()
-        hovered_agent = None
 
         for name, data in self.agent_positions.items():
             loc = data.get("location")
@@ -428,6 +746,7 @@ class PygameApp:
             health = data.get("health", 100.0)
             fatigue = data.get("fatigue", 0.0)
             hunger = data.get("hunger", 0.0)
+            mana = data.get("mana", 100.0)
             
             if loc in room_positions:
                 rx, ry = room_positions[loc]
@@ -463,7 +782,7 @@ class PygameApp:
                 
                 # Check mouse hover (agent bubble has radius 15, name pill is below)
                 if pos_x - 20 <= mx <= pos_x + 20 and pos_y - 18 <= my <= pos_y + 35:
-                    hovered_agent = (name, data, mx, my)
+                    self.hovered_agent = (name, data, mx, my)
 
                 agent_color = self.colors.get(name, self.colors["UNKNOWN"])
                 
@@ -562,9 +881,7 @@ class PygameApp:
                     
                     screen.blit(think_surf, think_rect)
 
-        # Draw tooltip on top if hovering an agent
-        if hovered_agent:
-            self._draw_agent_tooltip(screen, hovered_agent[0], hovered_agent[1], hovered_agent[2], hovered_agent[3])
+        # (Hovered agent tooltip rendering is now deferred to the end of tick_once to be on the absolute top layer)
 
     def _draw_agent_tooltip(self, screen, name, data, mx, my):
         # Analyze data to calculate dynamic height
@@ -574,15 +891,14 @@ class PygameApp:
         inventory = data.get("inventory", [])
         from collections import Counter
         item_counts = Counter(inventory)
-        item_list = [f"{item} x{cnt}" if cnt > 1 else item for item, cnt in item_counts.items()]
-        item_rows = max(1, (len(item_list) + 1) // 2)
+        item_rows = len(item_counts) if item_counts else 1
         
         card_w = 260
-        # Dynamic height calculation:
-        # Base height (fixed elements & spacing) = ~390px
+        # Dynamic height calculation with corrected base height:
+        # Base height (fixed elements & spacing, including 4 vitals) = ~338px
         # Relationships = rel_count * 16px
         # Inventory = item_rows * 18px
-        card_h = 390 + (rel_count * 16) + (item_rows * 18)
+        card_h = 338 + (rel_count * 16) + (item_rows * 18)
         
         # Keep tooltip inside screen boundaries
         tx = mx + 15
@@ -627,6 +943,7 @@ class PygameApp:
         health = data.get("health", 100.0)
         fatigue = data.get("fatigue", 0.0)
         hunger = data.get("hunger", 0.0)
+        mana = data.get("mana", 100.0)
         
         # Helper to draw a small vital bar
         def draw_vital_bar(label, val, y, is_inverse=False):
@@ -645,7 +962,9 @@ class PygameApp:
             fill_w = max(0, min(100, fill_w))
             
             # Color logic
-            if is_inverse:
+            if "마나" in label or "Mana" in label:
+                color = (99, 137, 250) # Neon blue for mana
+            elif is_inverse:
                 color = (239, 68, 68) if val >= 70.0 else (52, 211, 153)
             else:
                 color = (52, 211, 153) if val >= 50.0 else (239, 68, 68)
@@ -654,6 +973,8 @@ class PygameApp:
                 pygame.draw.rect(screen, color, pygame.Rect(tx + 140, y + 4, fill_w, 6), border_radius=2)
                 
         draw_vital_bar("체력 (Health)", health, curr_y, False)
+        curr_y += 18
+        draw_vital_bar("마나 (Mana)", mana, curr_y, False)
         curr_y += 18
         draw_vital_bar("피로 (Fatigue)", fatigue, curr_y, True)
         curr_y += 18
@@ -720,14 +1041,29 @@ class PygameApp:
         screen.blit(section_i, (tx + 16, curr_y))
         curr_y += 20
         
-        if item_list:
-            for i, item_str in enumerate(item_list):
-                col = i % 2
-                row = i // 2
-                col_x = tx + 16 + col * 115
-                row_y = curr_y + row * 18
-                inv_surf = self.font_item.render(item_str, True, (251, 191, 36))
-                screen.blit(inv_surf, (col_x, row_y))
+        if item_counts:
+            for i, (item_name, cnt) in enumerate(item_counts.items()):
+                item_str = f"{item_name} x{cnt}" if cnt > 1 else item_name
+                row_y = curr_y + i * 18
+                col_x = tx + 16
+                
+                # Determine dot color based on keywords
+                dot_color = (130, 135, 150) # default Slate Grey
+                food_keywords = ["식량", "푸드", "물", "음료", "포션", "약초", "고기", "열매", "빵", "food", "water", "ration", "potion", "herb", "meat", "bread", "drink"]
+                material_keywords = ["나무", "목재", "뗏목", "도구", "망치", "자원", "원료", "광석", "철", "금속", "배터리", "부품", "wood", "stone", "ore", "metal", "battery", "part", "tool", "gear"]
+                
+                name_lower = item_name.lower()
+                if any(k in name_lower for k in food_keywords):
+                    dot_color = (52, 211, 153) # Emerald Green for food/consumables
+                elif any(k in name_lower for k in material_keywords):
+                    dot_color = (251, 146, 60) # Amber Orange for tools/materials
+                    
+                # Draw colored circle
+                pygame.draw.circle(screen, dot_color, (col_x + 5, row_y + 8), 3)
+                
+                # Draw text next to the circle
+                inv_surf = self.font_item.render(item_str, True, self.colors["text_light"])
+                screen.blit(inv_surf, (col_x + 16, row_y))
         else:
             inv_surf = self.font_item.render("없음", True, self.colors["text_dark"])
             screen.blit(inv_surf, (tx + 16, curr_y))

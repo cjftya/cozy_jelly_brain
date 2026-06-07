@@ -8,6 +8,7 @@ from sim.core.jelly_function import JellyFunction
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
 from sim.util.object_manager import ObjectManager
 from sim.tool.tool_type import ToolType
+from sim.core.event_bus import EventBus, EventType
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sim.agent import Agent
@@ -175,6 +176,15 @@ class JellyEngine:
 
             if relationship_delta:
                 agent.relationships.apply_relationship_delta(relationship_delta)
+
+            subjective_perception = result.get('subjective_perception', '')
+            internal_strategy = result.get('internal_strategy', '')
+            if subjective_perception or internal_strategy:
+                EventBus().publish(EventType.AGENT_PERCEPTION_UPDATED, {
+                    "name": agent.name,
+                    "perception": subjective_perception,
+                    "strategy": internal_strategy
+                })
 
             return result
 

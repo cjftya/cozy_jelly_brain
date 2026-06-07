@@ -17,8 +17,9 @@ class SkillTool(BaseTool):
     def get_description(self):
         return (
             "[핵심 창조 및 권능 발현 도구] 기본 도구(이동, 대화 등)만으로 해결할 수 없는 상황에서, "
-            "세계에 새로운 물질을 만들거나, 사물의 상태를 변형하거나, 자신/타인에게 영향을 주는 고유 능력을 발현합니다. "
-            "당신의 의도는 세계의 절대 법칙(Mediator)의 심사를 거쳐 통과될 경우 월드에 영구 적용되거나 스킬 풀에 등록됩니다."
+            "세계에 새로운 물질을 만들거나, 사물의 상태를 변형하거나, 자신/타인에게 영향을 주는 고유 능력을 발현함. "
+            "당신의 의도는 세계의 절대 법칙(Mediator)의 심사를 거쳐 통과될 경우 월드에 영구 적용되거나 스킬 풀에 등록됨. "
+            "이 도구를 사용할 때는 인과율의 대가인 정신력 소모량(mana_cost)을 반드시 함께 책정하여 요청해야 함"
         )
 
     def get_params(self):
@@ -63,6 +64,12 @@ class SkillTool(BaseTool):
 
         mediator_response = world_system_manager.world_mediator.request_object_craft(agent.name, invented_tool, execute_reason, materials_context)
         print(mediator_response)
+
+        mana_cost = mediator_response.get("mana_cost", 0)
+        if agent.vital_state.mana < mana_cost:
+            agent.push_think_event(ThinkEventType.PLANNING, f"{invented_tool} 사용 실패. 정신력 부족. 소모치: {mana_cost}, 현재: {agent.vital_state.mana}")
+            world_system_manager.log_world_event(f"{agent.name}가 스킬 {invented_tool}을 사용하려고 시도 했으나 정신력 부족으로 실패 함.")
+            return
         
         if not mediator_response or mediator_response.get("rejected", False):
             reason = mediator_response.get("reject_reason", "물리적으로 불가능한 조합임.")
@@ -95,6 +102,8 @@ class SkillTool(BaseTool):
         description = approved_skill.get("description", "설명 없음")
         create_action = CreateAction(world_system_manager)
         create_action.execute(name, agent.name, description)
+
+        agent.vital_state.update_mana(-mana_cost)
 
         # 성공 피드백
         success_msg = f"'{name}'를 생성함."
@@ -133,6 +142,14 @@ class SkillTool(BaseTool):
             "effects": []
         })
 
+        mana_cost = mediator_response.get("mana_cost", 0)
+        if agent.vital_state.mana < mana_cost:
+            agent.push_think_event(ThinkEventType.PLANNING, f"{invented_tool} 사용 실패. 정신력 부족. 소모치: {mana_cost}, 현재: {agent.vital_state.mana}")
+            world_system_manager.log_world_event(f"{agent.name}가 스킬 {invented_tool}을 사용하려고 시도 했으나 정신력 부족으로 실패 함.")
+            return
+
+        agent.vital_state.update_mana(-mana_cost)
+
         # 성공 피드백
         success_msg = f"'{target_object.name}'의 상태를 '{state_name}'(으)로 변형함."
         agent.push_think_event(ThinkEventType.PLANNING, success_msg)
@@ -169,7 +186,15 @@ class SkillTool(BaseTool):
         }
         agent.dynamic_tool_manager.register_new_tool(tool_data)
 
+        mana_cost = mediator_response.get("mana_cost", 0)
+        if agent.vital_state.mana < mana_cost:
+            agent.push_think_event(ThinkEventType.PLANNING, f"{invented_tool} 사용 실패. 정신력 부족. 소모치: {mana_cost}, 현재: {agent.vital_state.mana}")
+            world_system_manager.log_world_event(f"{agent.name}가 스킬 {invented_tool}을 사용하려고 시도 했으나 정신력 부족으로 실패 함.")
+            return
+
         DynamicToolExecutor.execute(DynamicTool(tool_data), {"applied_target": target_agent_name}, agent, world_system_manager)
+
+        agent.vital_state.update_mana(-mana_cost)
 
         success_msg = f"새로운 스킬 [{invented_tool}] 발현 및 등록 완료."
         agent.push_think_event(ThinkEventType.PLANNING, success_msg)

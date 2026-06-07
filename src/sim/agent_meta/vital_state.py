@@ -6,6 +6,7 @@ class VitalType:
     HEALTH = 0
     FATIGUE = 1
     HUNGER = 2
+    MANA = 3
 
     @classmethod
     def to_string(cls, value):
@@ -15,6 +16,8 @@ class VitalType:
             return "fatigue"
         elif value == cls.HUNGER:
             return "hunger"
+        elif value == cls.MANA:
+            return "mana"
         else:
             raise ValueError(f"Invalid vital type: {value}")
 
@@ -31,6 +34,10 @@ class VitalState:
         self.health = 100.0
         self.max_health = 100.0
         self.health_label = "최상"
+
+        # 마나
+        self.mana = 100.0
+        self.max_mana = 100.0
 
         # 피로도
         self.fatigue = 0.0
@@ -50,6 +57,7 @@ class VitalState:
         self.hunger_damp = 0.3
         self.fatigue_damp = 0.3
         self.health_damp = 1.0
+        self.mana_damp = 0.3
         self.auto_revise_value = 0.3
         self.auto_revise_condition_value = 30.0
 
@@ -61,6 +69,9 @@ class VitalState:
 
     def update_health(self, value):
         self.health = max(0.0, min(self.max_health, self.health + value))
+
+    def update_mana(self, value):
+        self.mana = max(0.0, min(self.max_mana, self.mana + value))
 
     def tick(self, time_scale=1.0):
         if not self.is_alive:
@@ -88,6 +99,9 @@ class VitalState:
         # 허기와 피로가 모두 낮고, 건강이 최대가 아닐 때 회복
         if self.hunger < self.auto_revise_condition_value and self.fatigue < self.auto_revise_condition_value and self.health < self.max_health:
             self.health = min(self.max_health, self.health + (self.auto_revise_value * time_scale))
+
+        # 마나는 서서히 회복. damp가 클수록 회복량이 늘어남
+        self.mana = max(0.0, min(self.max_mana, self.mana + (self.mana_damp) * time_scale))
 
         # 건강 상태 직관적 라벨링
         if self.health > 80: self.health_label = "최상"
@@ -123,6 +137,7 @@ class VitalState:
 - 나이: {self.age:.1f}세
 - 성별: {gender_str}
 - 건강도: {int(self.health)}/100 [{self.health_label}]
+- 정신력: {int(self.mana)}/100
 - 피로도: {int(self.fatigue)}/100
 - 허기짐: {int(self.hunger)}/100
 - 경고: {self.warning}"""

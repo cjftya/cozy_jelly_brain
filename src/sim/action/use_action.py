@@ -26,7 +26,11 @@ class UseAction(BaseAction):
         if target_object:
             object_detail_type = target_object.detail_type
             if object_detail_type == ObjectDetailType.FOOD or object_detail_type == ObjectDetailType.DRINK:
-                agent.vital_state.update_hunger(-target_object.nutrition_value)
+                agent.vital_state.update_hunger(target_object.hunger_recovery_value)
+                agent.vital_state.update_fatigue(target_object.fatigue_recovery_value)
+                agent.vital_state.update_health(target_object.health_recovery_value)
+                agent.vital_state.update_mana(target_object.mana_recovery_value)
+
                 remove_action = RemoveAction(self.world_system_manager)
                 remove_action.execute(object_id)
             else:

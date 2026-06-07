@@ -122,6 +122,7 @@ class WorldSystemManager:
                 "health": agent.vital_state.health,
                 "fatigue": agent.vital_state.fatigue,
                 "hunger": agent.vital_state.hunger,
+                "mana": agent.vital_state.mana,
                 "personality": agent.personality_delegate.get_matrix(),
                 "relationships": agent.relationship_score_delegate.get_matrix(),
                 "inventory": [obj.name for obj in agent.inventory.get_objects()]

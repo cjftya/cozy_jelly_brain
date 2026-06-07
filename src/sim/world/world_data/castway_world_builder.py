@@ -59,7 +59,7 @@ class CastAwayWorldBuilder(WorldBuilder):
                 parent=camp
             )
             infinite_ration.set_pos(2, 2)
-            infinite_ration.set_nutri(80)
+            infinite_ration.set_hunger_recovery_value(-80)
             self._add_object(infinite_ration)
 
         # 서사적 오브젝트 A: 제인의 작은 잠자리 
@@ -116,7 +116,7 @@ class CastAwayWorldBuilder(WorldBuilder):
                 parent=jungle
             )
             berry_bush.set_pos(8, 2)
-            berry_bush.set_nutri(65)
+            berry_bush.set_hunger_recovery_value(-65)
             self._add_object(berry_bush)
 
 
