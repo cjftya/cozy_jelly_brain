@@ -84,46 +84,6 @@ class WorldMediator:
 """
         return self._send_request(system_prompt)
 
-    def request_agent_skill(self, agent_name, skill_name, description, target_name):
-        system_prompt = f"""
-# [SYSTEM: WORLD MEDIATOR - AGENT SKILL PROTOCOL]
-너는 현재 세계의 절대적인 차가운 물리 엔진이자 생체/정신 회로 통제자이다.
-에이전트 '{agent_name}'가 대상 '{target_name}'을 향해 구체적인 능력(Skill)을 발현하려 한다.
-
-- 발현하려는 스킬 명칭: {skill_name}
-- 능력에 대한 서사적 묘사: {description}
-
-## 현재 월드의 절대 법칙
-{self.world_role}
-
-## 너의 임무 (Task)
-1. 이 능력이 세계관의 룰을 초과하는 초자연적인 기적인지 심사하고, 위반 시 즉시 기각(rejected: true)하라.
-2. 통과 시, 이 능력의 물리적/정신적 효과를 아래의 3대 메타 태그 중 **최대 3개**까지만 조합하여 수치화(intensity: -1.0 ~ 1.0)하라.
-   - VITAL_MODIFIER: 대상의 체력, 피로, 허기 수치 가감 (치유, 타격, 독 등)
-   - MIND_MODIFIER: 대상의 공포, 순종 등 정신 매트릭스 조작 (위협, 위로, 정신 충격 등)
-   - BOND_MODIFIER: 에이전트 간의 유대감 및 관계 수치 가감 (포옹, 모욕, 중재 등)
-
-## 출력 규칙 (Strict JSON Only)
-마크다운 태그 기호 없이 오직 순수 JSON 데이터만 반환하라.
-{{
-  "rejected": false,
-  "reject_reason": "",
-  "mana_cost": "행동/스킬 격발에 요구되는 마나(정신력) 소모량 (0~100 정수). 시전하는 마법의 규모, 공간의 정서적 저항, 인과율을 거스르는 정도에 비례하여 동적으로 책정할 것.",
-  "effects": [
-    {{
-      "meta_tag": "VITAL_MODIFIER",
-      "intensity": -0.3
-    }},
-    {{
-      "meta_tag": "BOND_MODIFIER",
-      "intensity": 0.4
-    }}
-  ]
-  ,"description": "세계관에 맞춰 정제된 능력에 대한 설명"
-}}
-"""
-        return self._send_request(system_prompt)
-
     def _send_request(self, system_prompt):
         context = [
             {"role": "system", "content": system_prompt},

@@ -9,7 +9,7 @@ class ModifyMindAction(BaseAction):
 
         if len(args) != 3:
             self.world_system_manager.log_system_event("skip function call: modify_mind, args length not 3")
-            return
+            return False
 
         target_agent_name = args[0]
         key_name = args[1]
@@ -32,7 +32,7 @@ class ModifyMindAction(BaseAction):
             # 적용
             matrix[key_name] = new_value
             
-            self.world_system_manager.log_system_event(f"{target_agent_name}의 {key_name} -> {new_value}로 변경됨")
+            self.world_system_manager.log_world_event(f"{target_agent_name}의 {key_name} -> {new_value}로 변경됨")
             return True
 
         except Exception as e:

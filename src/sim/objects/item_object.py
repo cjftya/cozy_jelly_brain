@@ -11,6 +11,15 @@ class ItemObject(BaseObject):
         self.health_recovery_value = 0
         self.mana_recovery_value = 0
 
+        # 스크립트 정보
+        self.use_detail = None
+
+    def use(self):
+        return self.use_detail
+
+    def set_use_detail(self, use_detail):
+        self.use_detail = use_detail
+
     def set_hunger_recovery_value(self, hunger_recovery_value):
         self.hunger_recovery_value = hunger_recovery_value
 

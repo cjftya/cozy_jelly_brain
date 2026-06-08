@@ -19,4 +19,14 @@ class UseTool(BaseTool):
             return
 
         use_action = UseAction(world_system_manager=world_system_manager)
-        use_action.execute(agent.name, object_id)
+        success, feedback = use_action.execute(agent.name, object_id)
+        if success:
+            target_object = self._find_object_by_id(object_id, agent)
+            if target_object:
+                agent.push_think_event(ThinkEventType.PLANNING, f"{target_object.name}을 사용했음. {feedback}")
+
+    def _find_object_by_id(self, object_id, agent):
+        target_object = self.world_system_manager.object_manager.get_object_by_id(object_id)
+        if not target_object:
+            target_object = agent.inventory.get_object_by_id(object_id)
+        return target_object

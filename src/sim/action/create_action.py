@@ -12,7 +12,7 @@ class CreateAction(BaseAction):
         # args: created_name, agent_name, detail
         if len(args) < 3:
             self.world_system_manager.log_system_event("skip function call: create, args insufficient")
-            return
+            return False
 
         created_name = args[0]
         agent_name = args[1]
@@ -21,8 +21,9 @@ class CreateAction(BaseAction):
         agent = self.world_system_manager.agent_manager.get_agent_by_name(agent_name)
         if not agent:
             self.world_system_manager.log_system_event("skip function call: create, agent not found")
-            return
+            return False
 
         new_obj = ItemObject(name=created_name, detail=detail, parent=agent)
 
         agent.inventory.add_object(new_obj)
+        return True

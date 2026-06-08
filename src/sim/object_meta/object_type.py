@@ -13,6 +13,3 @@ class ObjectDetailType:
 
     # Details type(food)
     FOOD = 1
-    
-    # Details type(drink)
-    DRINK = 2

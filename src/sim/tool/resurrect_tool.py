@@ -1,6 +1,7 @@
 from sim.tool.base_tool import BaseTool
 from sim.tool.tool_type import ToolType
 from sim.action.remove_action import RemoveAction
+from sim.world.event_trigger import ThinkEventType
 
 class ResurrectTool(BaseTool):
     def __init__(self):
@@ -8,7 +9,7 @@ class ResurrectTool(BaseTool):
 
     def get_description(self):
         return (
-            "[알렌 부활 권능] 4대 아티팩트('금기된 영혼 연성 마도서', '운명의 푸른 장미 줄기', '인과율의 균열 나침반', '성운의 핵 파편') 를 모두 모아 '마나 공명 제단'에서만 격발 가능. "
+            "부활의 핵심 재료 네 가지를 모두 모아 '마나 공명 제단'에서만 격발 가능. "
             "대가로 알렌에 대한 모든 기억 그래프가 영구 소멸함. "
             "부활 집행 시 'SKILL' 툴을 통한 마법 창조를 절대 금지하며, 반드시 이 'resurrect' 기능을 직접 호출할 것."
         )
@@ -20,6 +21,7 @@ class ResurrectTool(BaseTool):
         current_loc = agent.location_delegate.get_current_location()
         
         if current_loc != "마나 공명 제단":
+            agent.push_think_event(ThinkEventType.PLANNING, "'마나 공명 제단'이 아니라 부활을 실행할 수 없다.")
             world_system_manager.log_world_event(f"{agent.name}가 제단이 아닌 곳에서 부활을 시도했으나 차가운 인과율의 침묵만이 있음.")
             return
 
@@ -36,13 +38,14 @@ class ResurrectTool(BaseTool):
 
         if not all(item in item_set for item in required_items):
             missing_items = [item for item in required_items if item not in item_set]
-            world_system_manager.log_world_event(f"{agent.name}가 부활을 위해 {', '.join(missing_items)}를 찾고 있으나, 인벤토리에 존재하지 않아 찾을 수 없습니다.")
+            agent.push_think_event(ThinkEventType.PLANNING, f"{', '.join(missing_items)}를 찾고 있으나, 인벤토리에 존재하지 않아 찾을 수 없음.")
+            world_system_manager.log_world_event(f"{agent.name}가 부활을 위해 {', '.join(missing_items)}를 찾고 있으나, 인벤토리에 존재하지 않아 찾을 수 없음.")
             return
 
         # ==========================================
         # 조건 충족: 금기 파괴 및 부활 시퀀스 집행
         # ==========================================
-        world_system_manager.log_world_event(f"4대 아티팩트를 소모하여 인과율을 역류시킴")
+        world_system_manager.log_world_event(f"부활의 핵심 재료 네 가지를 소모하여 인과율을 역류시킴")
 
         # 재료 강제 영구 소멸 처리
         remove_action = RemoveAction(world_system_manager=world_system_manager)
@@ -75,6 +78,8 @@ class ResurrectTool(BaseTool):
             allen.vital_state.is_alive = True
             allen.vital_state.update_health(100)
             allen.vital_state.update_fatigue(0)
+            allen.push_think_event(ThinkEventType.PLANNING, "여기는.. 어디지? 난 분명 그때...")
+            agent.push_think_event(ThinkEventType.SPEAK, "알렌, 드디어 널 만날 수 있어, 정말 긴 시간 이었어...", allen.name)
             world_system_manager.log_world_event(f"'절 동결의 온실' 중앙의 얼음 결계가 산산조각 나며, 알렌이 200년 만에 깊은 숨을 몰아쉬며 다시 눈을 뜸.")
         else:
             world_system_manager.log_system_event("오류: 월드 내에서 '알렌' 에이전트 인스턴스를 찾을 수 없음.")

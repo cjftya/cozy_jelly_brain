@@ -19,4 +19,8 @@ class TakeTool(BaseTool):
             return
 
         action = TakeAction(world_system_manager)
-        action.execute(agent.name, object_id)
+        if action.execute(agent.name, object_id):
+            target_object = agent.inventory.get_object_by_id(object_id)
+            if target_object:
+                agent.push_think_event(ThinkEventType.PLANNING, f"{target_object.name}을 획득했음.")
+            

@@ -97,9 +97,6 @@ class WorldSystemManager:
         # 에이전트 간 겹침 해소 (동일한 방에 있을 때 좌표 충돌 방지)
         self.resolve_agent_overlaps()
 
-        agent_details = self.world_view_manager.update_agent_details_view(focused_agent)
-        EventBus().publish(UIEventType.BIOMETRICS_UPDATED, agent_details)
-
         world_details = self.world_view_manager.update_world_details_view()
         EventBus().publish(UIEventType.WORLD_DETAIL_UPDATED, world_details)
 

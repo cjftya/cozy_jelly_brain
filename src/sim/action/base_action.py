@@ -3,5 +3,5 @@ class BaseAction:
         self.world_system_manager = world_system_manager
 
     def execute(self, *args):
-        pass
+        return True
     

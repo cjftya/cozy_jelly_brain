@@ -10,7 +10,6 @@ from sim.agents.allen import Allen
 
 class NebulaTowerWorldBuilder(WorldBuilder):
     def __init__(self):
-        # WorldType.NEBULA_TOWER_SIM = 1 로 델리게이트 바인딩
         super().__init__(world_type=1) 
 
     def _create_world_role(self):
@@ -53,20 +52,23 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         self._add_object(library)
 
         # [사물 01 / 부활 핵심 1/4] 금기된 영혼 연성 마도서
-        grimoire = ItemObject(name="금기된 영혼 연성 마도서", detail="알렌의 영혼을 역연성하는 금단의 공식이 흐르는 고대 책. 읽을수록 진실을 일깨우나 마나 평형을 무너뜨린다.", parent=library)
+        grimoire = ItemObject(name="금기된 영혼 연성 마도서", detail="(부활의 핵심 재료 1/4) 마도서의 지식이 담겨있는 고대 책. 읽을 수록 정신이 오염된다.", parent=library)
         grimoire.set_pos(3, 3)
-        grimoire.set_mana_recovery_value(50)
+        grimoire.set_mana_recovery_value(-30)
+        grimoire.set_use_detail("네 가지의 핵심 재료('금기된 영혼 연성 마도서', '운명의 푸른 장미 줄기', '인과율의 균열 나침반', '성운의 핵 파편') 를 모아 마나 공명 제단에 바치면 부활의 힘을 얻을 수 있다.")
         self._add_object(grimoire)
 
         # [사물 02 / 정서 유품] 알렌의 부러진 철제 검
-        broken_sword = ItemObject(name="알렌의 부러진 철제 검", detail="200년 전 알렌이 그녀를 구하다 차원 괴수의 발톱에 부러뜨린 검. 조사 시 죄책감과 사명감 유발.", parent=library)
+        broken_sword = ItemObject(name="알렌의 부러진 철제 검", detail="200년 전 알렌이 그녀를 구하다 차원 괴수의 발톱에 부러뜨린 검.", parent=library)
         broken_sword.set_pos(7, 7)
+        broken_sword.set_use_detail("알렌의 유품. 부러져서 더이상 사용할 수 없다.")
         self._add_object(broken_sword)
 
-        # [사물 03 / 생존 소모품] 마나 정화 촉매 시약
-        mana_potion = ItemObject(name="마나 정화 촉매 시약", detail="마나 과부하 및 오염도(Mana)를 즉시 중화하여 회복시켜 주는 유일한 연금술 촉매제.", detail_type=ObjectDetailType.FOOD, parent=library)
+        # [사물 03 / 마나 회복 아이템] 마나 정화 촉매 시약
+        mana_potion = ItemObject(name="마나 정화 촉매 시약", detail="시약을 직접 복용하거나, 마법 재료에 섞어 연소시켜 폭발을 막는 데 사용할 수 있는 푸른 액체.", detail_type=ObjectDetailType.FOOD, parent=library)
         mana_potion.set_pos(2, 12)
         mana_potion.set_mana_recovery_value(80)
+        mana_potion.set_use_detail("마나 과부하 및 오염도를 즉시 중화하여 회복시켜 주는 유일한 연금술 촉매제.")
         self._add_object(mana_potion)
 
 
@@ -77,18 +79,21 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         self._add_object(greenhouse)
 
         # [사물 04 / 부활 핵심 2/4] 운명의 푸른 장미 줄기
-        blue_rose_stem = ItemObject(name="운명의 푸른 장미 줄기", detail="알렌의 가슴 위 얼음 결계를 뚫고 자라난 차가운 마법 가시 줄기. 부활 연성의 핵심 골격 재료.", parent=greenhouse)
+        blue_rose_stem = ItemObject(name="운명의 푸른 장미 줄기", detail="(부활의 핵심 재료 2/4) 알렌의 가슴 위 얼음 결계를 뚫고 자라난 차가운 마법 가시 줄기.", parent=greenhouse)
         blue_rose_stem.set_pos(6, 7)
+        blue_rose_stem.set_use_detail("너무 오래되어서 더이상 자라나지 않는다.")
         self._add_object(blue_rose_stem)
 
         # [사물 05 / 정서 유품] 알렌의 멈춘 회중시계
-        chronograph = ItemObject(name="알렌의 멈춘 회중시계", detail="알렌의 심장이 정지했던 200년 전 그 새벽의 시간에 바늘이 영구 고정되어 버린 아스라한 유품.", parent=greenhouse)
+        chronograph = ItemObject(name="알렌의 멈춘 회중시계", detail="알렌의 유품.", parent=greenhouse)
         chronograph.set_pos(6, 6)
+        chronograph.set_use_detail("너무 오래되어서 더이상 작동하지 않는다.")
         self._add_object(chronograph)
 
         # [사물 06 / 장소 제어 핵] 마법적 절 동결 결계 핵
-        freeze_core = ItemObject(name="절 동결 결계 핵", detail="알렌의 육신이 풍화되는 것을 막기 위해 온실 전체의 시간선을 강제로 묶어두고 있는 푸른 얼음 기둥.", parent=greenhouse)
+        freeze_core = ItemObject(name="절 동결 결계 핵", detail="알렌의 육신이 풍화되는 것을 막기 위한 푸른 얼음 기둥.", parent=greenhouse)
         freeze_core.set_pos(5, 6)
+        freeze_core.set_use_detail("엄청 차갑지만 알렌의 육체는 완벽하게 보존되고있다.")
         self._add_object(freeze_core)
 
 
@@ -103,9 +108,10 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         self._add_object(altar)
 
         # [사물 07 / 마법 촉매] 고대 정령의 불씨
-        spirit_ember = ItemObject(name="고대 정령의 불씨", detail="제단에서 정교한 상위 스킬(Skill)을 구사하거나 조합할 때 결계의 성공 유틸리티를 높여주는 마법 불꽃.", parent=altar)
+        spirit_ember = ItemObject(name="고대 정령의 불씨", detail="제단 중앙에서 타오르고있는 정령의 불꽃.", parent=altar)
         spirit_ember.set_pos(5, 5)
         spirit_ember.set_mana_recovery_value(30)
+        spirit_ember.set_use_detail("정령의 불씨가 마나를 회복시킨다.")
         self._add_object(spirit_ember)
 
 
@@ -116,18 +122,21 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         self._add_object(stagnant_room)
 
         # [사물 08 / 부활 핵심 3/4] 인과율의 균열 나침반
-        causality_compass = ItemObject(name="인과율의 균열 나침반", detail="이 세계선에서 부서진 알렌의 유령 영혼 파편이 고여 있는 차원 좌표를 실시간 추적하여 지시하는 나침반.", parent=stagnant_room)
+        causality_compass = ItemObject(name="인과율의 균열 나침반", detail="(부활의 핵심 재료 3/4) 제단 위에 놓여져있는 영혼을 가르키는 나침반.", parent=stagnant_room)
         causality_compass.set_pos(5, 5)
+        causality_compass.set_use_detail("알렌의 영혼이 있는 곳을 가르킨다.")
         self._add_object(causality_compass)
 
         # [사물 09 / 정신 성찰] 금이 간 차원 거울
-        mirror = ItemObject(name="금이 간 차원 거울", detail="자신의 비틀린 무의식 심부와 마모 상태를 투영하는 거울. 사용 시 스스로의 성격 매트릭스를 성찰하는 독백 유도.", parent=stagnant_room)
+        mirror = ItemObject(name="금이 간 차원 거울", detail="균열이 간 차원의 거울. 여러 모습이 비춰진다.", parent=stagnant_room)
         mirror.set_pos(2, 5)
+        mirror.set_use_detail("균열 사이로 자신의 비뚤어진 모습과 슬픔에 잠긴 자신의 모습이 비춰진다.")
         self._add_object(mirror)
 
         # [사물 10 / 서사 아티팩트] 실패한 인형의 잔해
-        failed_doll = ItemObject(name="실패한 인형의 잔해", detail="알렌을 대체하려다 차원의 인과율적 거부 반응으로 기괴하게 뒤틀려 산산조각 난 인간형 도자기 의체의 흔적.", parent=stagnant_room)
+        failed_doll = ItemObject(name="실패한 인형의 잔해", detail="알렌을 대체하려다 차원의 인과율적 거부 반응으로 기괴하게 뒤틀려 산산조각 난 인형무더기.", parent=stagnant_room)
         failed_doll.set_pos(8, 3)
+        failed_doll.set_use_detail("당신을 대체하려다 산산조각 난 인형. 끔찍하고 처참한 모습에서 거부감이 느껴진다.")
         self._add_object(failed_doll)
 
 
@@ -142,13 +151,15 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         self._add_object(observatory)
 
         # [사물 11 / 부활 핵심 4/4] 성운의 핵 파편
-        nebula_core = ItemObject(name="성운의 핵 파편", detail="최종 연성 격발 시 밀려올 차원의 역류와 우주의 거부 반응을 억누르고 결계를 격리해 줄 푸른 별빛의 융합 결정체.", parent=observatory)
+        nebula_core = ItemObject(name="성운의 핵 파편", detail="(부활의 핵심 재료 4/4) 관측소 난간에 놓여진 푸른 별빛 결정체.", parent=observatory)
         nebula_core.set_pos(6, 6)
+        nebula_core.set_use_detail("만지면 차갑고 신비한 힘이 느껴진다.")
         self._add_object(nebula_core)
 
         # [사물 12 / 연산 보조] 양자 천체망원경
-        telescope = ItemObject(name="양자 천체망원경", detail="칠흑 같은 성운의 왜곡률과 별빛 궤적을 실시간 연산하여 공백의 마도서의 락(Lock)을 해독하는 거대 관측 기기.", parent=observatory)
+        telescope = ItemObject(name="양자 천체망원경", detail="칠흑 같은 성운의 왜곡률과 별빛 궤적을 실시간 연산하는 거대 관측 기기.", parent=observatory)
         telescope.set_pos(6, 3)
+        telescope.set_use_detail("거대한 렌즈를 통해 밤하늘을 볼 수 있다. 별들의 궤적을 추적하며 인과율을 계산하는 듯하다.")
         self._add_object(telescope)
 
 
@@ -159,6 +170,7 @@ class NebulaTowerWorldBuilder(WorldBuilder):
         self._add_object(cliff)
 
         # [사물 13 / 서사 아티팩트] 별의 모래시계
-        hourglass = ItemObject(name="별의 모래시계", detail="마법사로서 살아갈 영원의 무상한 시간선과 남은 고독의 깊이를 푸른 성운의 모래로 떨어뜨리는 시간의 아티팩트.", parent=cliff)
+        hourglass = ItemObject(name="별의 모래시계", detail="빛나는 모래가 끝임없이 떨어지는 유리병.", parent=cliff)
         hourglass.set_pos(4, 4)
+        hourglass.set_use_detail("유리병 속 모래는 밤하늘의 별빛처럼 반짝인다. 모래가 떨어지는 속도는 점점 느려지는 것 같다.")
         self._add_object(hourglass)

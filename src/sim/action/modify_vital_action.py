@@ -28,6 +28,8 @@ class ModifyVitalAction(BaseAction):
                 target_agent.vital_state.update_hunger(amount)
             elif vital_type == VitalType.FATIGUE:
                 target_agent.vital_state.update_fatigue(amount)
+            elif vital_type == VitalType.MANA:
+                target_agent.vital_state.update_mana(amount)
             else:
                 self.world_system_manager.log_system_event("skip function call: modify_vital, vital_type not found")
                 return

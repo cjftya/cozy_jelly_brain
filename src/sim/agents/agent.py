@@ -18,7 +18,6 @@ from sim.util.global_util import GlobalUtil
 from sim.util.point import Point
 from sim.tool.tool_type import ToolType
 from sim.objects.atomic_object import AtomicObject
-from sim.util.dynamic_tool_manager import DynamicToolManager
 
 class Agent(AtomicObject):
     def __init__(self, name="UNKNOWN", identifier="UNKNOWN", world_system_manager: "WorldSystemManager"=None, brain_root_dir_path=None):
@@ -59,9 +58,6 @@ class Agent(AtomicObject):
         # 툴 정보
         self.tool_delegate = ToolDelegate()
 
-        # 동적 툴 정보
-        self.dynamic_tool_manager = DynamicToolManager()
-
         # 인벤토리
         self.inventory = ObjectManager()
 
@@ -80,8 +76,6 @@ class Agent(AtomicObject):
 
     def start(self, llm_requester):
         self.engine.start(llm_requester)
-        if self.world_system_manager and hasattr(self.world_system_manager, 'world_assets_path'):
-            self.dynamic_tool_manager.start(db_path=self.world_system_manager.world_assets_path)
 
     def stop(self):
         self.engine.stop()

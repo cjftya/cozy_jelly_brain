@@ -7,8 +7,6 @@ from sim.object_meta.object_type import ObjectType
 from sim.util.object_manager import ObjectManager
 from sim.action.remove_action import RemoveAction
 from sim.action.create_action import CreateAction
-from sim.tool.dynamic_tool_meta.dynamic_tool_executor import DynamicToolExecutor
-from sim.tool.dynamic_tool import DynamicTool
 
 class SkillTool(BaseTool):
     def __init__(self):
@@ -16,24 +14,22 @@ class SkillTool(BaseTool):
 
     def get_description(self):
         return (
-            "[핵심 창조 및 권능 발현 도구] 기본 도구(이동, 대화 등)만으로 해결할 수 없는 상황에서, "
-            "세계에 새로운 물질을 만들거나, 사물의 상태를 변형하거나, 자신/타인에게 영향을 주는 고유 능력을 발현함. "
+            "[창조 및 변화 도구] 기본 도구(이동, 대화 등)만으로 해결할 수 없는 상황에서, "
+            "새로운 물질을 만들거나, 사물의 상태를 변형할 수 있는 고유 능력을 발현함. "
             "당신의 의도는 세계의 절대 법칙(Mediator)의 심사를 거쳐 통과될 경우 월드에 영구 적용되거나 스킬 풀에 등록됨. "
             "이 도구를 사용할 때는 인과율의 대가인 정신력 소모량(mana_cost)을 반드시 함께 책정하여 요청해야 함"
         )
 
     def get_params(self):
         return '''{
-    "skill_type": "원하는 능력의 타입 선택 (object_craft: 물건을 만들거나 요리하기 / object_transform: 물건의 상태 바꾸기 / agent_skill: 에이전트 대상 능력 발현)",
-    "invented_tool": "발현하고자 하는 능력 또는 물질의 명사형 이름 또는 상태 (예: 파이어볼, 요리, 독 해제, 물체 정리)",
-    "target_agent_name": "Available Participants 중 한명 (skill_type이 'agent_skill'일 경우에만 필수 이외는 null로 표기)",
+    "skill_type": "원하는 능력의 타입 선택 (object_craft: 물건을 만들거나 요리하기 / object_transform: 물건의 상태 바꾸기)",
+    "invented_tool": "발현하고자 하는 능력 또는 물질의 명사형 이름 또는 상태 (예: 힐링 포션, 이동석, 정화, 물체 정리)",
     "target_object_id": "Available Objects 중 하나 또는 My Inventory Objects 중 하나 (skill_type이 'object_transform'일 경우에만 필수 이외는 null로 표기)"
 }'''
 
     def execute(self, params, agent, world_system_manager):
         skill_type = params.get("skill_type", "unknown_skill_type")
         invented_tool = params.get("invented_tool", "unknown_action")
-        target_agent_name = params.get("target_agent_name", "null")
         target_object_id = params.get("target_object_id", "null")
         execute_reason = params.get("reason", "unknown_reason")
 
@@ -43,8 +39,6 @@ class SkillTool(BaseTool):
             self._execute_object_craft(invented_tool, agent, execute_reason, world_system_manager)
         elif skill_type == "object_transform":
             self._execute_object_transform(invented_tool, target_object_id, agent, execute_reason, world_system_manager)
-        elif skill_type == "agent_skill":
-            self._execute_agent_skill(invented_tool, target_agent_name, agent, execute_reason, world_system_manager)
         else:
             world_system_manager.log_world_event(f"{agent.name}가 '{invented_tool}'을(를) 사용하려고 시도 했으나 실패 함.")
 
@@ -101,14 +95,13 @@ class SkillTool(BaseTool):
         name = approved_skill.get("name", invented_tool)
         description = approved_skill.get("description", "설명 없음")
         create_action = CreateAction(world_system_manager)
-        create_action.execute(name, agent.name, description)
+        if create_action.execute(name, agent.name, description):
+            agent.vital_state.update_mana(-mana_cost)
 
-        agent.vital_state.update_mana(-mana_cost)
-
-        # 성공 피드백
-        success_msg = f"'{name}'를 생성함."
-        agent.push_think_event(ThinkEventType.PLANNING, success_msg)
-        world_system_manager.log_world_event(f"{agent.name}가 재료를 소모해 '{name}'을 완성함")
+            # 성공 피드백
+            success_msg = f"'{name}'를 생성함. 소모된 정신력: {mana_cost}"
+            agent.push_think_event(ThinkEventType.PLANNING, success_msg)
+            world_system_manager.log_world_event(f"{agent.name}가 재료를 소모해 '{name}'을 완성함")
 
     def _execute_object_transform(self, invented_tool, target_object_id, agent, execute_reason, world_system_manager):
         target_object = self._find_object_by_id(target_object_id, agent, world_system_manager)
@@ -131,17 +124,6 @@ class SkillTool(BaseTool):
         
         target_object.set_state(state_name, description)
 
-        agent.dynamic_tool_manager.register_new_tool({
-            "invented_tool": invented_tool,
-            "skill_type": "object_transform",
-            "creator": agent.name,
-            "creator_id": agent.id,
-            "is_public": True,
-            "description": f"대상 [{target_object.name}]을(를) {state_name} 상태로 영구 변형.",
-            "parameters": {"target_object_id": target_object_id},
-            "effects": []
-        })
-
         mana_cost = mediator_response.get("mana_cost", 0)
         if agent.vital_state.mana < mana_cost:
             agent.push_think_event(ThinkEventType.PLANNING, f"{invented_tool} 사용 실패. 정신력 부족. 소모치: {mana_cost}, 현재: {agent.vital_state.mana}")
@@ -151,53 +133,9 @@ class SkillTool(BaseTool):
         agent.vital_state.update_mana(-mana_cost)
 
         # 성공 피드백
-        success_msg = f"'{target_object.name}'의 상태를 '{state_name}'(으)로 변형함."
+        success_msg = f"'{target_object.name}'의 상태를 '{state_name}'(으)로 변형함. 소모된 정신력: {mana_cost}"
         agent.push_think_event(ThinkEventType.PLANNING, success_msg)
         world_system_manager.log_world_event(f"{agent.name}가 '{target_object.name}'의 상태를 '{state_name}'(으)로 변형함")
-
-    def _execute_agent_skill(self, invented_tool, target_agent_name, agent, execute_reason, world_system_manager):
-        if target_agent_name == "null" or target_agent_name == agent.name:
-            target_agent_name = agent.name
-
-        mediator_response = world_system_manager.world_mediator.request_agent_skill(
-            agent.name, invented_tool, execute_reason, target_agent_name
-        )
-        print(mediator_response)
-
-        if not mediator_response or mediator_response.get("rejected", False):
-            reason = mediator_response.get("reject_reason", "우주의 인과율이 이 능력의 도약을 기각함.")
-            agent.push_think_event(ThinkEventType.PLANNING, f"'{invented_tool}' 능력 발현에 실패함: {reason}")
-            world_system_manager.log_world_event(f"{agent.name}의 스킬 생성 요청이 거부됨.")
-            return
-
-        effects = mediator_response.get("effects", [])
-        description = mediator_response.get("description", "정제된 스킬 설명")
-
-        # 스킬 풀 시스템 캐싱 연동 등록
-        tool_data = {
-            "invented_tool": invented_tool,
-            "skill_type": "agent_skill",
-            "creator": agent.name,
-            "creator_id": agent.id,
-            "is_public": True,
-            "description": description,
-            "parameters": {"target_agent_name": target_agent_name},
-            "effects": effects
-        }
-        agent.dynamic_tool_manager.register_new_tool(tool_data)
-
-        mana_cost = mediator_response.get("mana_cost", 0)
-        if agent.vital_state.mana < mana_cost:
-            agent.push_think_event(ThinkEventType.PLANNING, f"{invented_tool} 사용 실패. 정신력 부족. 소모치: {mana_cost}, 현재: {agent.vital_state.mana}")
-            world_system_manager.log_world_event(f"{agent.name}가 스킬 {invented_tool}을 사용하려고 시도 했으나 정신력 부족으로 실패 함.")
-            return
-
-        DynamicToolExecutor.execute(DynamicTool(tool_data), {"applied_target": target_agent_name}, agent, world_system_manager)
-
-        agent.vital_state.update_mana(-mana_cost)
-
-        success_msg = f"새로운 스킬 [{invented_tool}] 발현 및 등록 완료."
-        agent.push_think_event(ThinkEventType.PLANNING, success_msg)
 
     def _find_objects_by_name(self, object_name, agent, world_system_manager):
         target_object = world_system_manager.object_manager.get_pack(object_name)

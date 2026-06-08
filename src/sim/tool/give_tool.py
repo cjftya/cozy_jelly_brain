@@ -21,4 +21,9 @@ class GiveTool(BaseTool):
             return
 
         action = GiveAction(world_system_manager=world_system_manager)
-        action.execute(target_agent_name, agent.name, target_object_id)
+        if action.execute(target_agent_name, agent.name, target_object_id):
+            target_agent = self.world_system_manager.agent_manager.get_agent_by_name(target_agent_name)
+            if target_agent:
+                target_object = target_agent.inventory.get_object_by_id(target_object_id)
+                if target_object:
+                    target_agent.push_think_event(ThinkEventType.PLANNING, f"{agent.name}에게 물건 '{target_object.name}'을(를) 받음")

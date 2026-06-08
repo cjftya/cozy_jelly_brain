@@ -161,11 +161,11 @@ class ObjectManager:
                 representative = items[0]
                 state_str = f" - [state: {state_val}]" if representative.state else ""
                 description = representative.detail or ""
-                lines.append(f"- [name: {representative.name}] - [object_id: {representative.id}] - [count: {count}]{state_str} - [detail: {description}]")
+                lines.append(f"- [name: {representative.name}] - [object_id: {representative.id}] - [count: {count}]{state_str}")
             return "\n".join(lines)
         else:
             description = obj.detail or ""
-            return f"- [name: {obj.name}] - [object_id: {obj.id}] - [detail: {description}]"
+            return f"- [name: {obj.name}] - [object_id: {obj.id}]"
 
     def get_objects_full_context(self):
         if not self.objects:
