@@ -1,6 +1,4 @@
-import json
 import re
-import os
 from sim.core.jelly_prompt import JellyPrompt
 from sim.core.jelly_memory import JellyMemory
 from sim.core.jelly_llm_api import JellyLlmApi
@@ -33,50 +31,9 @@ class JellyEngine:
     def stop(self):
         self.core_memory.stop()
 
-    def think_event_normal(self, agent, event_type, external_event, available_tool_types):
-        detected_agents = agent.perceive_agents()
-        names = []
-        for d in detected_agents:
-            if d.vital_state.is_alive:
-                names.append(d.name)
-            else:
-                names.append(f"{d.name}(죽음)")
-        participant_delegate = ParticipantsDelegate()
-        participant_delegate.add_all_participants(names)
-
-        detected_objects = agent.perceive_objects()
-        object_manager = ObjectManager()
-        object_manager.add_objects(detected_objects)
-        available_objects = object_manager.get_objects_full_context()
-
-        memories = self._retrieve_memory(agent, external_event, False)
-
-        system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, False, memories)
-
-        return self._run_llm_core(agent, external_event, system_prompt)
-
-    def think_event_detect_objects(self, agent, external_event, detected_objects, available_tool_types):
-        detected_agents = agent.perceive_agents()
-        names = []
-        for d in detected_agents:
-            if d.vital_state.is_alive:
-                names.append(d.name)
-            else:
-                names.append(f"{d.name}(죽음)")
-        participant_delegate = ParticipantsDelegate()
-        participant_delegate.add_all_participants(names)
-
-        object_manager = ObjectManager()
-        object_manager.add_objects(detected_objects)
-        available_objects = object_manager.get_objects_full_context()
-
-        memories = self._retrieve_memory(agent, external_event, False)
-
-        system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, False, memories)
-
-        return self._run_llm_core(agent, external_event, system_prompt)
-
-    def think_event_speak(self, user_input, agent, available_agents, from_scan=False, available_tool_types=None):
+    def _get_participant_delegate(self, agent, available_agents=None):
+        if available_agents is None:
+            available_agents = agent.perceive_agents()
         names = []
         for d in available_agents:
             if d.vital_state.is_alive:
@@ -85,16 +42,32 @@ class JellyEngine:
                 names.append(f"{d.name}(죽음)")
         participant_delegate = ParticipantsDelegate()
         participant_delegate.add_all_participants(names)
+        return participant_delegate
 
-        detected_objects = agent.perceive_objects()
+    def _get_objects_context(self, detected_objects):
         object_manager = ObjectManager()
         object_manager.add_objects(detected_objects)
-        available_objects = object_manager.get_objects_full_context()
+        return object_manager.get_objects_full_context()
 
+    def think_event_normal(self, agent, external_event, available_tool_types):
+        participant_delegate = self._get_participant_delegate(agent)
+        available_objects = self._get_objects_context(agent.perceive_objects())
+        memories = self._retrieve_memory(agent, external_event, False)
+        system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, False, memories)
+        return self._run_llm_core(agent, external_event, system_prompt)
+
+    def think_event_detect_objects(self, agent, external_event, detected_objects, available_tool_types):
+        participant_delegate = self._get_participant_delegate(agent)
+        available_objects = self._get_objects_context(detected_objects)
+        memories = self._retrieve_memory(agent, external_event, False)
+        system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, False, memories)
+        return self._run_llm_core(agent, external_event, system_prompt)
+
+    def think_event_speak(self, user_input, agent, available_agents, from_scan=False, available_tool_types=None):
+        participant_delegate = self._get_participant_delegate(agent, available_agents)
+        available_objects = self._get_objects_context(agent.perceive_objects())
         memories = None if from_scan else self._retrieve_memory(agent, user_input, True)
-
         system_prompt = self._get_system_context(agent, participant_delegate, available_objects, available_tool_types, True, memories)
-
         return self._run_llm_core(agent, user_input, system_prompt)
 
     def _get_system_context(self, agent, participant_delegate, available_objects, available_tool_types, is_dialogue_mode, memories=None):
@@ -112,7 +85,7 @@ class JellyEngine:
             if ToolType.GIVE not in available_tool_types:
                 available_tool_types.append(ToolType.GIVE)
 
-        fixed_manual = agent.world_system_manager.tool_manager.get_tools_manual(available_tool_types)
+        fixed_manual = agent.tool_manager.get_tools_manual(available_tool_types)
 
         return JellyPrompt.get_system_prompt(
             personality_matrix=raw_matrix,

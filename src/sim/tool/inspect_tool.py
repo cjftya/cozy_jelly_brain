@@ -7,7 +7,7 @@ class InspectTool(BaseTool):
         super().__init__("inspect", ToolType.INSPECT)
 
     def get_description(self):
-        return "내 눈앞에 식별된 특정 사물이 '무엇'인지 전혀 모르거나 궁금할때 사용."
+        return "인간 지각 범위 내에 있는 특정 오브젝트의 숨겨진 서사적 상세 정보와 상세 정보(detail)를 면밀히 관찰하고 식별함."
 
     def get_params(self):
         return '{"object_id": "Available Objects 중 하나"}'

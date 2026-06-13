@@ -9,7 +9,7 @@ class JellyFunction:
     def process_action_call(self, action_call, agent: "Agent"):
         function_name = action_call.get('function')
         
-        has_tool = self.world_system_manager.tool_manager.has_tool_by_name(function_name)
+        has_tool = agent.tool_manager.has_tool_by_name(function_name)
         if not has_tool:
             self.world_system_manager.log_system_event(f"Action Execution Error: {function_name}, error: function not found")
             return
@@ -20,7 +20,7 @@ class JellyFunction:
         agent.before_action_reason = parameters['reason']
         
         try:
-            tool = self.world_system_manager.tool_manager.get_tool_by_name(function_name)
+            tool = agent.tool_manager.get_tool_by_name(function_name)
             tool.execute(parameters, agent, self.world_system_manager)
         except Exception as e:
             self.world_system_manager.log_system_event(f"Action Execution Error: {function_name}, error: {e}")

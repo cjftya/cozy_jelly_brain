@@ -2,7 +2,7 @@ import random
 from sim.core.jelly_engine import JellyEngine
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
 from sim.agent_meta.location_delegate import LocationDelegate
-from sim.agent_meta.tool_delegate import ToolDelegate
+from sim.util.tool_manager import ToolManager
 from sim.agent_meta.vital_state import VitalState
 from sim.agent_meta.personality_delegate import PersonalityDelegate
 from sim.agent_meta.relationship_score_delegate import RelationShipScoreDelegate
@@ -56,7 +56,7 @@ class Agent(AtomicObject):
         self.location_delegate = LocationDelegate()
 
         # 툴 정보
-        self.tool_delegate = ToolDelegate()
+        self.tool_manager = ToolManager()
 
         # 인벤토리
         self.inventory = ObjectManager()
@@ -68,7 +68,7 @@ class Agent(AtomicObject):
         self.object_detector = ObjectDetector()
 
         # 초기화
-        self._init_tools(self.tool_delegate)
+        self._init_tools(self.tool_manager)
         self._init_vital_state(self.vital_state)
         self._init_location_delegate(self.location_delegate)
         self._init_relationship_score_delegate(self.relationship_score_delegate)
@@ -103,7 +103,7 @@ class Agent(AtomicObject):
                     combined_signal += f"{think_event_message}\n"
 
             self.think_event_queue.clear()
-            res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types())
+            res = self.engine.think_event_normal(agent=self, external_event=combined_signal, available_tool_types=self.get_available_tool_types())
             return res
 
         # find agent signal
@@ -144,7 +144,7 @@ class Agent(AtomicObject):
             think_event_message = think_event.get("message", "")
             combined_signal += f"{think_event_message}\n"
         self.think_event_queue.clear()
-        res = self.engine.think_event_normal(agent=self, event_type=None, external_event=combined_signal, available_tool_types=self.get_available_tool_types())
+        res = self.engine.think_event_normal(agent=self, external_event=combined_signal, available_tool_types=self.get_available_tool_types())
         return res
 
     def push_think_event(self, think_event_type, message, data=None):
@@ -212,10 +212,10 @@ class Agent(AtomicObject):
         return self.relationship_score_delegate
 
     def get_available_tool_types(self):
-        return self.tool_delegate.get_available_tool_types()
+        return self.tool_manager.get_available_tool_types()
 
-    def _init_tools(self, tool_delegate):
-        tool_delegate.add_all_available_tool_types([
+    def _init_tools(self, tool_manager):
+        tool_manager.add_all_available_tool_types([
             ToolType.USE, ToolType.MOVE_TO, ToolType.INSPECT, 
             ToolType.REST, ToolType.TAKE, ToolType.GIVE,
             ToolType.SPEAK, ToolType.SKILL

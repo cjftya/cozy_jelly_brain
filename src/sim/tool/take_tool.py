@@ -1,6 +1,7 @@
 from sim.tool.base_tool import BaseTool
 from sim.tool.tool_type import ToolType
 from sim.action.take_action import TakeAction
+from sim.world.event_trigger import ThinkEventType
 
 class TakeTool(BaseTool):
     def __init__(self):
@@ -23,4 +24,3 @@ class TakeTool(BaseTool):
             target_object = agent.inventory.get_object_by_id(object_id)
             if target_object:
                 agent.push_think_event(ThinkEventType.PLANNING, f"{target_object.name}을 획득했음.")
-            

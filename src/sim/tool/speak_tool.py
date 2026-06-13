@@ -7,7 +7,7 @@ class SpeakTool(BaseTool):
         super().__init__("speak", ToolType.SPEAK)
 
     def get_description(self):
-        return "주관적 의도 전달 및 소통. 대화의 목적을 달성했거나, 작별 인사(안녕, 이만 갈게 등)를 건네며 대화를 끝내고 각자의 자율 행동으로 돌아가고 싶을 때는 finish 값을 반드시 true로 설정하라."
+        return "주변 에이전트와 소통함. 대화 목적을 달성했거나 작별 인사를 건네며 대화를 완전히 끝내고 자율 생존 행동으로 복귀하고 싶다면 반드시 finish 값을 true로 선언할 것."
 
     def get_params(self):
         return '{"agent_name": "Available Participants 중 한명", "message": "대화할 내용", "finish": true/false}'

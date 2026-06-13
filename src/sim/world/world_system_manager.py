@@ -1,12 +1,9 @@
 import time
 import random
-from sim.core.jelly_llm_api import JellyLlmApi
 from sim.util.object_manager import ObjectManager
 from sim.util.agent_manager import AgentManager
-from sim.util.tool_manager import ToolManager
 from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
 from sim.world.world_view_manager import WorldViewManager
-from sim.world.map_engine import MapEngine
 from sim.world.world_data_factory import WorldDataFactory
 from sim.world.world_data.world_type import WorldType
 from sim.world.world_mediator import WorldMediator
@@ -28,10 +25,8 @@ class WorldSystemManager:
         self.weather_engine = None
         self.time_engine = None
         self.event_trigger = EventTrigger()
-        self.map_engine = MapEngine(self)
         self.world_view_manager = WorldViewManager(self)
         self.world_data_factory = WorldDataFactory()
-        self.tool_manager = ToolManager()
         self.world_mediator = WorldMediator()
 
         self.world_agents = []
@@ -86,9 +81,6 @@ class WorldSystemManager:
         # 시간 및 날씨 업데이트
         self.time_engine.tick()
         self.weather_engine.tick(self.time_engine.time_scale, self.time_engine.season)
-
-        # 포커스 에이전트
-        focused_agent = self.world_agents[0]
 
         # 월드 에이전트 업데이트
         for agent in self.world_agents:

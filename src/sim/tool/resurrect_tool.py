@@ -8,11 +8,7 @@ class ResurrectTool(BaseTool):
         super().__init__("resurrect", ToolType.RESURRECT)
 
     def get_description(self):
-        return (
-            "부활의 핵심 재료 네 가지를 모두 모아 '마나 공명 제단'에서만 격발 가능. "
-            "대가로 알렌에 대한 모든 기억 그래프가 영구 소멸함. "
-            "부활 집행 시 'SKILL' 툴을 통한 마법 창조를 절대 금지하며, 반드시 이 'resurrect' 기능을 직접 호출할 것."
-        )
+        return "[조건: 4대 부활 재료 보유 + '마나 공명 제단' 위치 시에만 격발 가능] 알렌을 부활시키는 최종 권능. 대가로 알렌에 대한 모든 기억 그래프가 영구 삭제됨. (※ 경고: 부활 시 skill 툴 사용 금지, 반드시 이 resurrect 툴을 직접 호출할 것)"
         
     def get_params(self):
         return ''
@@ -68,7 +64,7 @@ class ResurrectTool(BaseTool):
         agent.vital_state.update_health(80)
         agent.vital_state.update_fatigue(80)
 
-        agent.tool_delegate.add_all_available_tool_types([
+        agent.tool_manager.add_all_available_tool_types([
             ToolType.SPEAK, ToolType.GIVE
         ])
 

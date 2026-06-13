@@ -38,7 +38,11 @@ class CognitiveWorker:
             try:
                 result = agent.think_tick()
                 if result:
-                    agent_log = self.world_system_manager.world_view_manager.update_agent_light_log_view(agent, result)
+                    wvm = self.world_system_manager.world_view_manager
+                    if hasattr(wvm, 'update_agent_light_log_view'):
+                        agent_log = wvm.update_agent_light_log_view(agent, result)
+                    else:
+                        agent_log = wvm.update_agent_log_view(agent, result)
                     self.world_system_manager.log_agent_event(agent_log)
                     
                     time.sleep(JellyLlmApi.get_loop_delay())
@@ -46,5 +50,6 @@ class CognitiveWorker:
                 self.world_system_manager.log_system_event(f"Error in cognitive worker for {agent.name}: {e}")
             finally:
                 agent.is_thinking = False
-                self.world_system_manager.log_agent_thinking_event(agent.name, None)
+                if hasattr(self.world_system_manager, 'log_agent_thinking_event'):
+                    self.world_system_manager.log_agent_thinking_event(agent.name, None)
                 self.queue.task_done()

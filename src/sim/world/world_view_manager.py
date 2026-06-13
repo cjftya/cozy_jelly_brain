@@ -44,36 +44,6 @@ class WorldViewManager:
 """
         return view_data
 
-    def update_ascii_map_view(self, root_agent):
-        # 정보 수집
-        location = root_agent.location_delegate.get_current_location()
-        space = self.world_system_manager.object_manager.get_object(location)
-        location_detail = space.detail
-
-        # 지도 초기화
-        self.world_system_manager.map_engine.init_map(root_agent)
-        
-        # 지도 컨텍스트, 아이템 컨텍스트, 에이전트 컨텍스트
-        ascii_map = self.world_system_manager.map_engine.get_map_context()
-        items_view = self.world_system_manager.map_engine.get_map_objects_context()
-        agents_view = self.world_system_manager.map_engine.get_map_agents_context(root_agent)
-
-        view_data = f"""
-• Location: {location} ({location_detail})
-• Global Coordinates: [{space.position.x}, {space.position.y}]
-• Space Size: [{space.size.x}, {space.size.y}]
-───────────────────────────────────────────────────────────────────────────
-{ascii_map}
-───────────────────────────────────────────────────────────────────────────
-
-• Agents In Area
-{agents_view}
-
-• Items In Area
-{items_view}
-"""
-        return view_data
-
     def update_agent_light_log_view(self, agent, result):
         if isinstance(result, str):
             try:

@@ -13,12 +13,7 @@ class SkillTool(BaseTool):
         super().__init__("skill", ToolType.SKILL)
 
     def get_description(self):
-        return (
-            "[창조 및 변화 도구] 기본 도구(이동, 대화 등)만으로 해결할 수 없는 상황에서, "
-            "새로운 물질을 만들거나, 사물의 상태를 변형할 수 있는 고유 능력을 발현함. "
-            "당신의 의도는 세계의 절대 법칙(Mediator)의 심사를 거쳐 통과될 경우 월드에 영구 적용되거나 스킬 풀에 등록됨. "
-            "이 도구를 사용할 때는 인과율의 대가인 정신력 소모량(mana_cost)을 반드시 함께 책정하여 요청해야 함"
-        )
+        return "[창조/변형 권능] 기본 도구로 해결할 수 없는 상황에서 새로운 물질을 제작(object_craft)하거나 사물의 상태를 영구 변형(object_transform)함. 절대 법칙(Mediator)의 심사를 거쳐 월드에 반영되며 시전 시 정신력(Mana)이 소모됨."
 
     def get_params(self):
         return '''{
@@ -81,7 +76,6 @@ class SkillTool(BaseTool):
             rep_name = consumed.get("object_name")
             count = int(consumed.get("consumed_count", 1))
             
-            # 대표 name를 통해 사물의 고유 이름(예: '단단한 야자나무 통나무')을 알아냄
             remove_count = 0
             rep_objs = self._find_objects_by_name(rep_name, agent, world_system_manager)
             for obj in list(rep_objs):
@@ -138,11 +132,11 @@ class SkillTool(BaseTool):
         world_system_manager.log_world_event(f"{agent.name}가 '{target_object.name}'의 상태를 '{state_name}'(으)로 변형함")
 
     def _find_objects_by_name(self, object_name, agent, world_system_manager):
-        target_object = world_system_manager.object_manager.get_pack(object_name)
+        target_object = world_system_manager.object_manager.get_objects_by_name(object_name)
         if target_object:
             return target_object
         
-        target_object = agent.inventory.get_pack(object_name)
+        target_object = agent.inventory.get_objects_by_name(object_name)
         if target_object:
             return target_object
         

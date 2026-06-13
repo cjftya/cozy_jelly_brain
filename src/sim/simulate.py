@@ -55,6 +55,8 @@ class Simulator:
 
     def set_serper_api_key(self, api_key):
         self.serper_api_key = api_key
+        if self.world_system_manager:
+            self.world_system_manager.set_serper_api_key(api_key)
         
     def set_enabled_web_search(self, enabled):
         self.use_web_search = enabled
