@@ -7,7 +7,6 @@ class ModifyVitalAction(BaseAction):
 
     def execute(self, *args):
         # args: agent_name, vital_type, amount
-
         if len(args) != 3:
             self.world_system_manager.log_system_event("skip function call: modify_vital, args length not 3")
             return

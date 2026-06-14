@@ -1,14 +1,13 @@
 import customtkinter as ctk
 import threading
 from engine import Engine
-from sim.core.event_bus import EventBus, EventType
+from sim.core.event_bus import EventBus, UIEventType
 from log import Logger
 
 class ChatApp(ctk.CTk):
-    def __init__(self, engine: Engine, support_pygame=False):
+    def __init__(self, engine: Engine):
         super().__init__()
         self.engine = engine
-        self.support_pygame = support_pygame
         self.pygame_app = None
         
         # Configure window
@@ -22,7 +21,6 @@ class ChatApp(ctk.CTk):
         # Grid layout (0: Sidebar, 1: Main Area)
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=0)
         
         # Sidebar
         self.sidebar_frame = ctk.CTkFrame(self, width=250, corner_radius=0)
@@ -81,7 +79,7 @@ class ChatApp(ctk.CTk):
         
         # Left Views Frame (6 Views) - Scrollable to prevent squishing
         self.left_views_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        self.left_views_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=(20, 10))
+        self.left_views_frame.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
         
         # Configure layout for the 6 views inside the frame
         self.left_views_frame.grid_columnconfigure(0, weight=1)
@@ -93,41 +91,24 @@ class ChatApp(ctk.CTk):
         self.agent_chat_log_view = self.create_text_view(self.left_views_frame, "Agent Chat Log", 1, 0, height=300)
         self.system_log_view = self.create_text_view(self.left_views_frame, "System Log", 1, 1, height=300)
 
-        # Input Area
-        self.input_container = ctk.CTkFrame(self, fg_color="transparent")
-        self.input_container.grid(row=1, column=1, sticky="ew", padx=25, pady=(0, 20))
-        self.input_container.grid_columnconfigure(0, weight=1)
-        
-        self.user_input = ctk.CTkEntry(self.input_container, placeholder_text="Message AI...", height=50)
-        self.user_input.grid(row=0, column=0, sticky="ew", padx=(0, 10))
-        self.user_input.bind("<Return>", lambda e: self.on_send())
-        
-        self.send_button = ctk.CTkButton(self.input_container, text="Send", width=100, height=50, command=self.on_send)
-        self.send_button.grid(row=0, column=1)
-        
         # Handle close
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
         
-        # Initialize state
-        self.user_input.configure(state="disabled", placeholder_text="Auto Play Mode - Input Disabled")
-        self.send_button.configure(state="disabled")
-        
         # Subscribe to Event Bus for headless decoupling
         self.event_bus = EventBus()
-        self.event_bus.subscribe(EventType.WORLD_DETAIL_UPDATED, self.refresh_world_detail)
-        self.event_bus.subscribe(EventType.AGENT_CHAT_LOG_APPENDED, self.append_agent_chat_log)
-        self.event_bus.subscribe(EventType.WORLD_LOG_APPENDED, self.append_world_log)
-        self.event_bus.subscribe(EventType.SYSTEM_LOG_APPENDED, self.append_system_log)
+        self.event_bus.subscribe(UIEventType.WORLD_DETAIL_UPDATED, self.refresh_world_detail)
+        self.event_bus.subscribe(UIEventType.AGENT_CHAT_LOG_APPENDED, self.append_agent_chat_log)
+        self.event_bus.subscribe(UIEventType.WORLD_LOG_APPENDED, self.append_world_log)
+        self.event_bus.subscribe(UIEventType.SYSTEM_LOG_APPENDED, self.append_system_log)
 
         # Initialize Engine
         self.engine.start()
         self.last_ai_msg_index = None
 
-        if self.support_pygame:
-            from gui_pygame import PygameApp
-            self.pygame_app = PygameApp(self.engine)
-            self.pygame_app.setup_display()
-            self.after(33, self.pygame_tick)
+        from gui_pygame import PygameApp
+        self.pygame_app = PygameApp(self.engine)
+        self.pygame_app.setup_display()
+        self.after(33, self.pygame_tick)
 
     def on_system_start(self):
         google_api_key = self.api_key_entry.get()
@@ -174,72 +155,7 @@ class ChatApp(ctk.CTk):
             self.serper_key_label.configure(text_color="gray")
 
 
-    def on_send(self):
-        prompt = self.user_input.get().strip()
-        if not prompt:
-            return
-        
-        self.user_input.delete(0, 'end')
-        self.log_to_chat("User", prompt)
-        
-        model_name = self.model_spinner.get()
-        if model_name == "Select a model...":
-            self.log_to_chat("System", "Please select a model first.")
-            return
-
-        # Disable input while thinking
-        self.user_input.configure(state="disabled")
-        self.send_button.configure(state="disabled")
-        
-        # Start thinking thread
-        threading.Thread(target=self.run_chat_logic, args=(model_name, prompt), daemon=True).start()
-
-    def run_chat_logic(self, model_name, prompt):
-        try:
-            # First, prepare the AI message area
-            self.after(0, self.prepare_ai_message)
-            
-            # Final response update
-            content = self.engine.run(model_name, prompt)
-            self.after(0, lambda: self.finalize_ai_message(content))
-            
-        except Exception as e:
-            error_msg = str(e)
-            self.after(0, lambda: self.log_to_chat("System", f"Execution error: {error_msg}"))
-        finally:
-            self.after(0, self.reenable_input)
-
-    def prepare_ai_message(self):
-        self.agent_chat_log_view.configure(state="normal")
-        self.agent_chat_log_view._textbox.insert("end", "AI: ")
-        self.last_ai_msg_index = self.agent_chat_log_view._textbox.index("end-1c")
-        self.agent_chat_log_view._textbox.insert("end", "Thinking...\n\n")
-        self.agent_chat_log_view.configure(state="disabled")
-        self.agent_chat_log_view.see("end")
-
-    def _update_thinking_text(self, text):
-        if not self.last_ai_msg_index:
-            return
-            
-        self.agent_chat_log_view.configure(state="normal")
-        # Find where "AI: " ends
-        line_start = self.agent_chat_log_view._textbox.index(f"{self.last_ai_msg_index} linestart")
-        pass
-
-    def finalize_ai_message(self, content):
-        self.agent_chat_log_view.configure(state="normal")
-        # Clear the "Thinking..." or previous stream
-        # Delete the last line and insert final content
-        self.agent_chat_log_view._textbox.delete("end-3c linestart", "end-1c")
-        self.agent_chat_log_view._textbox.insert("end", f"AI: {content}\n\n")
-        
-        self.agent_chat_log_view.configure(state="disabled")
-        self.agent_chat_log_view.see("end")
-
-    def reenable_input(self):
-        self.user_input.configure(state="normal")
-        self.send_button.configure(state="normal")
-        self.user_input.focus()
+    # (Chat input sending methods removed since Auto Play is the only execution mode)
 
     def log_to_chat(self, sender, message):
         if sender == "System":

@@ -6,7 +6,6 @@ class ModifyMindAction(BaseAction):
 
     def execute(self, *args):
         # args: target_agent_name, key_name, score
-
         if len(args) != 3:
             self.world_system_manager.log_system_event("skip function call: modify_mind, args length not 3")
             return False

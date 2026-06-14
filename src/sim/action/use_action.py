@@ -33,12 +33,12 @@ class UseAction(BaseAction):
 
                 remove_action = RemoveAction(self.world_system_manager)
                 remove_action.execute(object_id)
-                self.world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 먹음.")
-                return False # 바로 사용되기 때문에 피드백 없도록 처리
+                self.world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 소모.")
+                return True
             else:
                 # 소모되지 않는 도구들
                 self.world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 사용.")
-                return True, target_object.use()
+                return True
         else:
             self.world_system_manager.log_world_event(f"{agent.name}가 {object_id}을 사용할 수 없음.")
             return False

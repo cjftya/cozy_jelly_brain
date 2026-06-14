@@ -15,9 +15,8 @@ class GoogleStudioManager(BaseClient):
 
     def get_options(self):
         return {
-            "temperature": 0.8,
-            "max_output_tokens": 8192,
-            "top_p": 0.95,
+            "temperature": 0.6,
+            "top_p": 0.9,
             "top_k": 40
         }
 
@@ -62,7 +61,6 @@ class GoogleStudioManager(BaseClient):
             config = types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 temperature=op.get("temperature"),
-                max_output_tokens=op.get("max_output_tokens"),
                 top_p=op.get("top_p"),
                 top_k=op.get("top_k"),
                 response_mime_type="application/json"

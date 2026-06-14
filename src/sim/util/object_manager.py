@@ -157,26 +157,28 @@ class ObjectManager:
 
     def get_group_context(self, group):
         """
-        동일한 이름을 가진 객체 그룹의 상태(State)별 수량을 분류/요약하여
+        동일한 이름을 가진 객체 그룹의 검사 여부(is_inspected)별 수량을 분류/요약하여
         LLM 인지에 최적화된 텍스트 컨텍스트로 컴파일하여 반환합니다.
-        (예: 젖은 상태의 아이템 2개와 마른 상태의 아이템 1개를 그룹화하여 표시)
+        (예: 검사 완료된 아이템(상세 표기 포함)과 그렇지 않은 아이템을 구분하여 표시)
         """
         if not group:
             return ""
         
         obj = group[0]
-        # 아이템 타입인 경우 동일 이름 내에서도 상태(state)별로 세분화하여 그룹화
+        # 아이템 타입인 경우 동일 이름 내에서도 검사 여부(is_inspected)별로 세분화하여 그룹화
         if obj.type == ObjectType.ITEM:
-            state_groups = {}
+            groups = {}
             for o in group:
-                state_groups.setdefault(o.state or "기본", []).append(o)
+                groups.setdefault(getattr(o, 'is_inspected', False), []).append(o)
             
             lines = []
-            for state_val, items in state_groups.items():
+            for is_inspected_val, items in groups.items():
                 count = len(items)
                 representative = items[0]
-                state_str = f" - [state: {state_val}]" if representative.state else ""
-                lines.append(f"- [name: {representative.name}] - [object_id: {representative.id}] - [count: {count}]{state_str}")
+                detail_str = ""
+                if is_inspected_val and getattr(representative, 'detail', None):
+                    detail_str = f" - [detail: {representative.detail}]"
+                lines.append(f"- [name: {representative.name}] - [object_id: {representative.id}] - [count: {count}]{detail_str}")
             return "\n".join(lines)
         else:
             return f"- [name: {obj.name}] - [object_id: {obj.id}]"

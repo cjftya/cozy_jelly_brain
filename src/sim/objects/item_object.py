@@ -2,23 +2,14 @@ from sim.objects.base_object import BaseObject
 from sim.object_meta.object_type import ObjectType, ObjectDetailType
 
 class ItemObject(BaseObject):
-    def __init__(self, name, state=None, detail=None, detail_type=ObjectDetailType.DEFAULT_ITEM, parent=None):
-        super().__init__(name, state, detail, detail_type, ObjectType.ITEM, parent)
+    def __init__(self, name, detail=None, detail_type=ObjectDetailType.DEFAULT_ITEM, parent=None):
+        super().__init__(name, detail, detail_type, ObjectType.ITEM, parent)
 
         # 상태 속성
         self.hunger_recovery_value = 0
         self.fatigue_recovery_value = 0
         self.health_recovery_value = 0
         self.mana_recovery_value = 0
-
-        # 스크립트 정보
-        self.use_detail = None
-
-    def use(self):
-        return self.use_detail
-
-    def set_use_detail(self, use_detail):
-        self.use_detail = use_detail
 
     def set_hunger_recovery_value(self, hunger_recovery_value):
         self.hunger_recovery_value = hunger_recovery_value

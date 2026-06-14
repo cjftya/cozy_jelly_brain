@@ -1,6 +1,6 @@
 import threading
 
-class EventType:
+class UIEventType:
     WORLD_DETAIL_UPDATED = "world_detail_updated"
     AGENT_CHAT_LOG_APPENDED = "agent_chat_log_appended"
     WORLD_LOG_APPENDED = "world_log_appended"

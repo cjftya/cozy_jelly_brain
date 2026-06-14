@@ -6,8 +6,7 @@ from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
 from sim.world.world_view_manager import WorldViewManager
 from sim.world.world_data_factory import WorldDataFactory
 from sim.world.world_data.world_type import WorldType
-from sim.world.world_mediator import WorldMediator
-from sim.core.event_bus import EventBus, EventType as UIEventType
+from sim.core.event_bus import EventBus, UIEventType
 from sim.core.cognitive_worker import CognitiveWorker
 from log import Logger
 
@@ -27,7 +26,6 @@ class WorldSystemManager:
         self.event_trigger = EventTrigger()
         self.world_view_manager = WorldViewManager(self)
         self.world_data_factory = WorldDataFactory()
-        self.world_mediator = WorldMediator()
 
         self.world_agents = []
         self.cognitive_worker = None
@@ -53,9 +51,6 @@ class WorldSystemManager:
         # 월드 오브젝트 초기화
         for obj in objects:
             self.object_manager.add_object(obj)
-
-        # 월드 미디에이터 초기화
-        self.world_mediator.start(self.llm_requester, self.world_role)
 
         # 인지 작업 워커 시작
         self.cognitive_worker = CognitiveWorker(self)

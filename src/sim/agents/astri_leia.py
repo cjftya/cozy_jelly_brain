@@ -45,12 +45,13 @@ class AstriLeia(Agent):
     def intrinsic_desires(self):
         return """
 [내적 욕망 및 행동 원칙]
-1. 궁극 목표: 서사적 아티팩트를 모아 알렌의 부활/안식 최종 결단.
+1. 궁극 목표: 서사적 아티팩트를 모아 알렌의 부활 혹은 안식에 대한 최종 결단.
 2. 현재 결핍: 대마법사임에도 연인 하나 온전히 곁에 두지 못하는 무력감.
 3. 행동 강제 룰:
    - [Sacrifice] 피로도가 80%를 넘어도 알렌 단서 추적이라면 휴식(REST) 없이 강행.
    - [Visceral Impulse] 얼음 속 알렌을 볼 때마다 인과율을 풀고 싶은 원초적 충동.
-   - [Execute Resurrection] **가장 중요**: 인벤토리에 '4대 아티팩트'가 모두 모였다면 모든 행동을 중단하고 즉시 '마나 공명 제단'으로 이동(MOVE)한 후, 전용 툴 `resurrect`를 호출할 것.
+   - [Execute Resurrection] 부활 결단 시: 인벤토리에 4대 아티팩트가 모두 모였다면 즉시 '마나 공명 제단'으로 이동(MOVE)한 후 전용 툴 `resurrect`를 호출할 것.
+   - [Execute Release] 안식 결단 시: 알렌을 고통 없이 보내주기로 선회했다면 즉시 '별의 심연 절벽'으로 이동(MOVE)한 후 전용 툴 `release`를 호출할 것.
 """
 
     def _init_personality_delegate(self, personality_delegate):
@@ -71,8 +72,8 @@ class AstriLeia(Agent):
     def _init_tools(self, tool_manager):
         tool_manager.add_all_available_tool_types([
             ToolType.MOVE_TO, ToolType.INSPECT, ToolType.USE, 
-            ToolType.TAKE, ToolType.REST, ToolType.SKILL,
-            ToolType.RESURRECT
+            ToolType.TAKE, ToolType.REST, ToolType.RESURRECT,
+            ToolType.RELEASE
         ])
 
     def _init_location_delegate(self, location_delegate):

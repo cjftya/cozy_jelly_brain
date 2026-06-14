@@ -2,18 +2,17 @@ from llm_requester import LLMRequester
 from sim.simulate import Simulator
 
 class Engine:
-    def __init__(self, support_pygame=False):
+    def __init__(self):
         self.llm_requester = None
         self.model_name = None
         self.simulator = None
-        self.support_pygame = support_pygame
 
     def start(self):
         if self.llm_requester is None:
             self.llm_requester = LLMRequester()
             self.llm_requester.start_engine(full=True)
         if self.simulator is None:
-            self.simulator = Simulator(support_pygame=self.support_pygame)
+            self.simulator = Simulator()
             self.simulator.start(self.llm_requester)
 
     def load(self, api_key, serper_api_key, use_web_search):

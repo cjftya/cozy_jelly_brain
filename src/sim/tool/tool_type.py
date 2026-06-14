@@ -8,12 +8,12 @@ class ToolType:
     USE = 5
     GIVE = 6
     TAKE = 7
-    SKILL = 8
-    WEB_SEARCH = 9
+    WEB_SEARCH = 8
+    EXPLORE = 9
 
     # cast away sim specific tools
-    EXPLORE = 500
-    BUILD_RAFT = 501
+    BUILD_RAFT = 500
 
     # nebula tower sim specific tools
     RESURRECT = 600
+    RELEASE = 601

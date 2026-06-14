@@ -1,30 +1,6 @@
-from sim.agent_meta.vital_state import GenderType
-
 class WorldViewManager:
     def __init__(self, world_system_manager):
         self.world_system_manager = world_system_manager
-
-    def _draw_gauge(self, value):
-        return f"[{'█' * int(value*10)}{'░' * (10 - int(value*10))}] {value*100:03.0f} %"
-
-    def update_agent_details_view(self, agent):
-        gender_context = "Female" if agent.vital_state.gender == GenderType.FEMALE else "Male"
-        personality_matrix = agent.personality_delegate.get_matrix()
-        view_data = f"""
-[VITALS] Age: {agent.vital_state.age:05.2f} | Gender: {gender_context}
-• Health: [{agent.vital_state.health:06.2f}] {self._draw_gauge(agent.vital_state.health/100.0)}
-• Fatigue: [{agent.vital_state.fatigue:06.2f}] {self._draw_gauge(agent.vital_state.fatigue/100.0)}
-• Hunger: [{agent.vital_state.hunger:06.2f}] {self._draw_gauge(agent.vital_state.hunger/100.0)}
-[WARNING] {agent.vital_state.warning}
-----------------------------------------------------------------------
-[PERSONALITY]
-• LOG vs EMO: [{personality_matrix['logic_emotion']:.2f}] {self._draw_gauge(personality_matrix['logic_emotion'])} : 이성적 vs 감성적
-• DEF vs OPN: [{personality_matrix['defensive_open']:.2f}] {self._draw_gauge(personality_matrix['defensive_open'])} : 방어적 vs 개방적
-• FEA vs DEC: [{personality_matrix['fear_decisive']:.2f}] {self._draw_gauge(personality_matrix['fear_decisive'])} : 공포심 vs 결단력
-• OBE vs REB: [{personality_matrix['obedient_rebellious']:.2f}] {self._draw_gauge(personality_matrix['obedient_rebellious'])} : 순종적 vs 반항적
-• CUR vs IND: [{personality_matrix['curiosity_indifference']:.2f}] {self._draw_gauge(personality_matrix['curiosity_indifference'])} : 호기심 vs 무관심
-"""
-        return view_data
 
     def update_world_details_view(self):
         time_engine = self.world_system_manager.time_engine
@@ -138,5 +114,3 @@ class WorldViewManager:
 ----------------------------------------------------------------------
 """
         return agent_log
-        
-        

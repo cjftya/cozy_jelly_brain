@@ -4,7 +4,7 @@ import sys
 import time
 import math
 import random
-from sim.core.event_bus import EventBus, EventType
+from sim.core.event_bus import EventBus, UIEventType
 from sim.object_meta.object_type import ObjectType
 from log import Logger
 
@@ -61,10 +61,10 @@ class PygameApp:
         self.agent_thinking_logs = {}
         
         # Subscribe to visual events
-        EventBus().subscribe(EventType.AGENT_POSITION_UPDATED, self.on_agent_position_updated)
-        EventBus().subscribe(EventType.WORLD_TICKED, self.on_world_ticked)
-        EventBus().subscribe(EventType.AGENT_THINKING_LOG_APPENDED, self.on_agent_thinking_log_appended)
-        EventBus().subscribe(EventType.AGENT_PERCEPTION_UPDATED, self.on_agent_perception_updated)
+        EventBus().subscribe(UIEventType.AGENT_POSITION_UPDATED, self.on_agent_position_updated)
+        EventBus().subscribe(UIEventType.WORLD_TICKED, self.on_world_ticked)
+        EventBus().subscribe(UIEventType.AGENT_THINKING_LOG_APPENDED, self.on_agent_thinking_log_appended)
+        EventBus().subscribe(UIEventType.AGENT_PERCEPTION_UPDATED, self.on_agent_perception_updated)
 
     def on_agent_perception_updated(self, data):
         with self.lock:
