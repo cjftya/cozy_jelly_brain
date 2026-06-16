@@ -1,6 +1,7 @@
 from google import genai
 from google.genai import types
 from llm_client.base_client import BaseClient
+from llm_client.cognitive_schema import OrganicCognitiveResponse
 
 class GoogleStudioManager(BaseClient):
     def __init__(self):
@@ -63,7 +64,8 @@ class GoogleStudioManager(BaseClient):
                 temperature=op.get("temperature"),
                 top_p=op.get("top_p"),
                 top_k=op.get("top_k"),
-                response_mime_type="application/json"
+                response_mime_type="application/json",
+                response_schema=OrganicCognitiveResponse
             )
 
             response_stream = self.client.models.generate_content_stream(

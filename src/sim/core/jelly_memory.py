@@ -1,5 +1,6 @@
 import kuzu
 import time
+import random
 import numpy as np
 from sim.core.embedding_service import EmbeddingService
 from log import Logger
@@ -31,23 +32,28 @@ class JellyMemory:
 
     def _prepare_schema(self):
         try:
-            # 보정: 개체 노드는 ID만 관리하고, 구체적인 사건 임베딩 속성을 관계(REL) 테이블로 이전합니다.
+            # 개체 노드(인물, 장소, 사물 아이디 등)
             self.conn.execute("CREATE NODE TABLE node (id STRING, PRIMARY KEY (id))")
+            
+            # 에피소드 중심 노드 스펙 신설 (메타데이터 및 고차원 서사 구조 속성 통합 바인딩)
             self.conn.execute("""
-                CREATE REL TABLE rel (
-                    FROM node TO node, 
+                CREATE NODE TABLE episode (
+                    id STRING,
+                    timestamp DOUBLE,
                     intensity DOUBLE,
-                    last_accessed DOUBLE,
-                    frequency INT64,
                     sub_label STRING,
                     interpretation STRING,
                     emotional_imprint STRING,
                     importance DOUBLE,
                     valence DOUBLE,
                     embedding DOUBLE[],
-                    MANY_MANY
+                    PRIMARY KEY (id)
                 )
             """)
+            
+            # 유기적 연결 관계 테이블 생성
+            self.conn.execute("CREATE REL TABLE triggered (FROM node TO episode, MANY_MANY)")
+            self.conn.execute("CREATE REL TABLE target_object (FROM episode TO node, MANY_MANY)")
         except Exception:
             pass
 
@@ -55,7 +61,7 @@ class JellyMemory:
         state_impact = sum(abs(v) for v in state_delta.values() if isinstance(v, (int, float))) * 0.05
         now = time.time()
 
-        for t in triplets:
+        for i, t in enumerate(triplets):
             subj, rel, obj = t['subject'], t['relation'], t['object']
             meta = t.get('metadata', {})
 
@@ -66,76 +72,74 @@ class JellyMemory:
 
             memory_intensity = (importance * self.imp_weight) + (state_impact * self.impact_weight) 
 
-            # 개선: 단어가 아닌 트리플렛 서사와 원인 맥락을 통째로 엮은 문장형 텍스트 임베딩을 생성합니다.
             narrative_context = f"{subj}가 {obj}와 상호작용함 ({meta.get('label', rel)}). 상황 및 이유: {reason} | 정서: {e_imprint}"
             rich_event_embedding = self.embed_model.encode(narrative_context).tolist()
             
+            # 1. 엔티티 노드 무결성 유지
             self.conn.execute("MERGE (n:node {id: $id})", {"id": subj})
             self.conn.execute("MERGE (n:node {id: $id})", {"id": obj})
 
-            self.conn.execute(f"""
-                MATCH (s:node {{id: $subj}}), (o:node {{id: $obj}})
-                MERGE (s)-[r:rel]->(o)
-                ON CREATE SET 
-                    r.intensity = $intensity,
-                    r.frequency = 1,
-                    r.last_accessed = $now,
-                    r.sub_label = $label,
-                    r.interpretation = $reason,
-                    r.emotional_imprint = $e_imprint,
-                    r.importance = $importance,
-                    r.valence = $valence,
-                    r.embedding = $embedding
-                ON MATCH SET 
-                    r.intensity = (r.intensity * 0.4) + ($intensity * 0.6),
-                    r.frequency = r.frequency + 1,
-                    r.last_accessed = $now,
-                    r.emotional_imprint = $e_imprint,
-                    r.importance = $importance,
-                    r.valence = $valence,
-                    r.embedding = $embedding
+            # 2. 고유 에피소드 시냅스 스냅샷 노드 생성
+            ep_id = f"EP_{int(now)}_{i}_{random.randint(1000, 9999)}"
+            self.conn.execute("""
+                CREATE (e:episode {
+                    id: $ep_id,
+                    timestamp: $now,
+                    intensity: $intensity,
+                    sub_label: $label,
+                    interpretation: $reason,
+                    emotional_imprint: $e_imprint,
+                    importance: $importance,
+                    valence: $valence,
+                    embedding: $embedding
+                })
             """, {
-                    "subj": subj, "obj": obj, "intensity": memory_intensity, 
-                    "now": now, "label": meta.get('label', rel), 
-                    "reason": reason, "e_imprint": e_imprint,
-                    "importance": importance, "valence": valence,
-                    "embedding": rich_event_embedding
+                "ep_id": ep_id, "now": now, "intensity": memory_intensity,
+                "label": meta.get('label', rel), "reason": reason,
+                "e_imprint": e_imprint, "importance": importance,
+                "valence": valence, "embedding": rich_event_embedding
             })
 
-    def retrieve_memory(self, query, current_valence=0.0, top_k=3):
+            # 3. 주체 및 객체 연쇄 관계 구조 매핑
+            self.conn.execute("MATCH (n:node {id: $subj}), (e:episode {id: $ep_id}) CREATE (n)-[:triggered]->(e)", {"subj": subj, "ep_id": ep_id})
+            self.conn.execute("MATCH (e:episode {id: $ep_id}), (o:node {id: $obj}) CREATE (e)-[:target_object]->(o)", {"obj": obj, "ep_id": ep_id})
+
+    def retrieve_memory(self, agent_name, query, current_valence=0.0, top_k=3):
         query_emb = self.embed_model.encode(query).tolist()
         now = time.time()
+        time_cutoff = now - (86400 * 30) 
         
-        # 보정: 관계 임베딩(r.embedding)과 핵심 서사 맥락(r.interpretation)을 명확히 리턴받도록 쿼리를 수정합니다.
+        # 에피소드 스키마 전용 패스 탐색 Cypher 패턴 개정 (에이전트별 DB가 격리되어 있으므로 노드 필터링 불필요)
         res = self.conn.execute("""
-            MATCH (n:node)-[r:rel]->(o:node)
-            RETURN n.id, o.id, r.intensity, r.frequency, r.last_accessed, r.sub_label, 
-                   r.embedding, r.importance, r.valence, r.emotional_imprint, r.interpretation
-        """)
+            MATCH (n:node)-[r1:triggered]->(e:episode)-[r2:target_object]->(o:node)
+            WHERE e.timestamp > $time_cutoff OR e.importance >= 0.2
+            RETURN n.id, o.id, e.intensity, e.timestamp, e.sub_label, 
+                   e.embedding, e.importance, e.valence, e.emotional_imprint, e.interpretation
+        """, {"time_cutoff": time_cutoff})
 
         candidates = []
         while res.has_next():
             row = res.get_next()
-            subj, obj, intensity, freq, last_time, sub_label, rel_emb, imp, val, e_imprint, interpretation = row
+            subj, obj, intensity, last_time, sub_label, rel_emb, imp, val, e_imprint, interpretation = row
             
             if rel_emb is None: 
                 continue
 
-            # 질문 문장 전체와 사건 맥락 전체의 코사인 유사도 연산을 수행합니다.
             sim = np.dot(query_emb, rel_emb) / (np.linalg.norm(query_emb) * np.linalg.norm(rel_emb))
             if sim < self.sim_threshold: 
                 continue
 
             time_diff = now - last_time
             effective_decay = self.decay_rate / (1 + (imp * 15))
-            memory_strength = (intensity * freq * (1 + imp)) / (1 + effective_decay * time_diff)
+            
+            # 에피소드는 고유 단일 스냅샷이므로 빈도(frequency) 가중치를 배제하고 시간 감쇄식으로 정밀화
+            memory_strength = (intensity * (1 + imp)) / (1 + effective_decay * time_diff)
 
             mood_match = current_valence * val
             emotional_weight = 1 + abs(val) + (max(0, mood_match) * 0.8)
             
             final_score = sim * memory_strength * emotional_weight
             
-            # 보정: 뼈대 정보 뒤에 당시 상세 사유(interpretation)를 다시 결합하여 완벽한 서사 맥락을 복원합니다.
             vivid_text = f"{subj} ──({sub_label})──> {obj}"
             if interpretation:
                 vivid_text += f" (당시 맥락: {interpretation})"
@@ -157,15 +161,15 @@ class JellyMemory:
             v_str = "POS" if c['valence'] > 0.1 else "NEG" if c['valence'] < -0.1 else "NEU"
             result_texts.append(f"- {tag} {c['text']} | 감정: {v_str} | 낙인: {c['imprint']} (Imp: {c['importance']:.1f})")
 
-        return "\n".join(result_texts)
+        return "\n".join(result_texts) if result_texts else "연관된 기억 없음"
 
     def perform_brain_cleanup(self, strength_threshold=0.1):
         now = time.time()
+        # 에피소드 스키마 전용 연쇄 삭제 클린업 쿼리 보정
         self.conn.execute(f"""
-            MATCH ()-[r:rel]->()
-            WHERE (r.intensity * r.frequency * (1 + r.importance)) / 
-                (1 + {self.decay_rate} * ({now} - r.last_accessed)) < {strength_threshold}
-            DELETE r
+            MATCH (n:node)-[r1:triggered]->(e:episode)-[r2:target_object]->(o:node)
+            WHERE (e.intensity * (1 + e.importance)) / (1 + {self.decay_rate} * ({now} - e.timestamp)) < {strength_threshold}
+            DELETE r1, r2, e
         """)
-        self.conn.execute("MATCH (n:node) WHERE NOT (n)-[:rel]-() DELETE n")
+        self.conn.execute("MATCH (n:node) WHERE NOT (n)-[:triggered]-() AND NOT ()-[:target_object]->(n) DELETE n")
         Logger.log_debug("[Memory]", "잠을 자며 불필요한 시냅스를 정리했습니다.")

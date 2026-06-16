@@ -51,9 +51,21 @@ class ResurrectTool(BaseTool):
         # 대가 지불: 아스트리 레이아의 Kuzu DB 내부 '알렌' 관련 기억 청소 (Memory Wipe)
         try:
             memory_db = agent.engine.core_memory
-            # Kuzu DB 커넥션을 직접 제어하여 '알렌' 혹은 'ALLEN'이 포함된 노드와 시냅스(관계) 테이블을 물리적으로 완전 삭제
-            memory_db.conn.execute("MATCH (n:node)-[r:rel]->(o:node) WHERE n.id = '알렌' OR o.id = '알렌' OR n.id = 'ALLEN' OR o.id = 'ALLEN' DELETE r")
-            memory_db.conn.execute("MATCH (n:node) WHERE n.id = '알렌' OR n.id = 'ALLEN' DELETE n")
+            
+            # 1단계: '알렌' 혹은 'ALLEN'이 주체 또는 객체로 관여한 에피소드 노드와 모든 하위 관계선 일괄 삭제
+            memory_db.conn.execute("""
+                MATCH (n:node)-[r1:triggered]->(e:episode)-[r2:target_object]->(o:node) 
+                WHERE n.id = '알렌' OR o.id = '알렌' OR n.id = 'ALLEN' OR o.id = 'ALLEN' 
+                DELETE r1, r2, e
+            """)
+            
+            # 2단계: 고립된 '알렌' 엔티티 물리 노드 원천 삭제
+            memory_db.conn.execute("""
+                MATCH (n:node) 
+                WHERE n.id = '알렌' OR n.id = 'ALLEN' 
+                DELETE n
+            """)
+            
             world_system_manager.log_system_event("아스트리 레이아의 JellyBrain 시냅스 메모리 내 '알렌' 엔티티 및 유대 트리플렛 영구 삭제 완료.")
         except Exception as e:
             world_system_manager.log_system_event(f"메모리 삭제 중 예외 발생 (헤드리스 무결성 유지): {e}")

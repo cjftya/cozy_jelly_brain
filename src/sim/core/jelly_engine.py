@@ -181,28 +181,30 @@ class JellyEngine:
         # 1. 매트릭스 기반 내부 감정 계산
         matrix = agent.personality_delegate.get_matrix()
 
-        # 개방성(Open)이 높고 호기심(Curiosity)이 높을수록 긍정, 반대면 부정
-        # curiosity_indifference는 0.0이 호기심이므로 (1.0 - val)로 계산
         internal_positivity = (matrix['defensive_open'] + (1.0 - matrix['curiosity_indifference'])) / 2
-        internal_valence = (internal_positivity - 0.5) * 2 # -1.0 ~ 1.0 범위로 변환
+        internal_valence = (internal_positivity - 0.5) * 2
 
         # 2. 관계 점수 기반 외부 감정 계산
         rel_valence = 0.0
         if is_dialogue_mode:
             sender_name = self._extract_sender_name(user_input)
             rel_score = agent.relationships.get_value(sender_name)
-            rel_valence = (rel_score - 50.0) / 50.0 # -1.0 ~ 1.0 범위로 변환
+            rel_valence = (rel_score - 50.0) / 50.0
 
         # 3. 최종 Valence 융합
-        # 이성적일수록 감정을 감쇄시키되, 최소 0.3의 최소 감정선은 유지
         base_resonance = self.core_memory.emotional_resonance
         damping_factor = max(base_resonance, 1.0 - matrix['logic_emotion'])
 
         combined_valence = (internal_valence * 0.4 + rel_valence * 0.6) * damping_factor
         current_valence = round(combined_valence, 2)
 
-        memories = self.core_memory.retrieve_memory(user_input, current_valence, top_k=3)
-        memories = memories if len(memories) > 0 else "연관된 기억 없음"
+        # 고도화 바인딩 보정: 인출 타겟 대상을 전체 DB가 아닌 agent.name 서브 그래프로 밀어넣음
+        memories = self.core_memory.retrieve_memory(
+            agent_name=agent.name, 
+            query=user_input, 
+            current_valence=current_valence, 
+            top_k=3
+        )
         return memories
 
     def _extract_sender_name(self, text):

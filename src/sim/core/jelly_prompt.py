@@ -79,30 +79,6 @@ class JellyPrompt:
 # [Available Action Tools]
 {available_tools}
 
-# 출력 규칙 (Strict JSON Only - 마크다운 태그 기호 없이 오직 순수 JSON 데이터만 출력하라)
-* 주의: 아래의 JSON 키 순서를 절대 변경하지 마라. 상단에 출력된 감정 가중치 토큰이 하단의 인지 왜곡 문장 및 최종 행동 생성을 완벽히 지배(Lock-in)하도록 설계된 규격이다.
-* state_delta: 호르몬 변화량 (-2~2 정수)
-* 기준: 0(변화 없음), 1/-1(일상적 행동이나 대화에 의한 미세한 변화), 2/-2(생존 위기, 동료의 사망/부활 등 극단적인 정신적 충격에만 사용)
-* 언어 절대 원칙: "memories_to_save" 배열 내부의 subject, relation, object 및 metadata 내의 label, emotional_imprint 등 모든 문자열 값은 무조건 한국어로만 자연스럽게 작성하라. 절대로 영어를 혼용하거나 영어 엔티티 이름을 사용하지 마라.
-* memories_to_save: valence는 -1.0(부정) ~ 1.0(긍정) 소수점
-
-{{
-  "unconscious_impulse": "[Neural Loop 1, 2단계 결과] 날것의 본능/단어 파편들",
-  "state_delta": {{
-    "logic_emotion": 0,
-    "defensive_open": 0,
-    "fear_decisive": 0,
-    "obedient_rebellious": 0,
-    "curiosity_indifference": 0
-  }},
-  "relationship_delta": {{ "TARGET_NAME": 0 }},
-  "subjective_perception": "[Neural Loop 3, 4단계 결과] 바로 위에서 확정된 신규 호르몬 변동값(state_delta)이 실시간으로 동기화되었다고 가정한 상태에서 서술하는 {subjective_desc}",
-  "internal_strategy": "[Neural Loop 5단계 결과] 변화된 인지 상태를 바탕으로 수립한 {internal_strategy}",
-  "action_call": {{
-    "function": "선택한 도구의 정확한 영문 이름",
-    "parameters": {{ "매뉴얼에 명시된 파라미터 Key-Value 규격" }},
-    "reason": "새로운 호르몬 상태와 내면 생존 전략에 부합하는 도구 선택의 명확한 실행 근거"
-  }},
-  "memories_to_save": [ {{ "subject": "", "relation": "", "object": "", "metadata": {{ "label": "", "importance": 0.0, "valence": 0.0, "emotional_imprint": "" }} }} ]
-}}
-"""
+# 출력 조건 규칙 (Strict Schema Only)
+너의 출력은 사전에 시스템에 정의된 구조화 JSON 형태 스키마 스펙 규격을 100% 만족해야 한다.
+'memories_to_save' 내부의 엔티티 이름(subject, relation, object, label, emotional_imprint)은 인위적인 영어를 배제하고 철저히 자연스럽고 직관적인 한국어 단어 서사 구조로 매핑하라."""

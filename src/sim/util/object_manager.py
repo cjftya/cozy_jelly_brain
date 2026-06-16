@@ -22,7 +22,7 @@ class ObjectManager:
     def get_object(self, name):
         """지정된 이름을 가진 객체 중 첫 번째 객체를 반환합니다."""
         with self._lock:
-            group = self.get_objects_by_name(name)
+            group = self.objects.get(name)
             return group[0] if group else None
 
     def get_object_by_id(self, id):
@@ -36,57 +36,56 @@ class ObjectManager:
             return None
 
         with self._lock:
-            # 1단계: 정밀 일치 (Exact Match)
-            for group in self.objects.values():
-                for obj in group:
-                    if obj.id == id:
-                        return obj
-
-            # 2단계: 타입 변환 및 정규화 (int -> str, 대소문자 무시, 접두사 보정)
-            # 예: 5 -> "5" -> "OBJECT_5"
             str_id = str(id).strip()
-            
-            # 대소문자 무시 비교
+            str_id_upper = str_id.upper()
+            prefixed_id_upper = f"OBJECT_{str_id}".upper() if str_id.isdigit() else None
+
+            # 1~2단계: 활성 객체 ID 매칭 (Exact, Case-Insensitive, Prefixed ID 순서로 우선순위 부여)
+            best_match = None
+            match_priority = 99  # 낮은 값일수록 우선순위가 높음
+
             for group in self.objects.values():
                 for obj in group:
-                    if obj.id.upper() == str_id.upper():
-                        return obj
+                    obj_id = getattr(obj, 'id', '')
+                    if not obj_id:
+                        continue
+                    
+                    obj_id_upper = obj_id.upper()
+                    if obj_id == id:
+                        return obj  # 가장 우선순위가 높은 Exact Match이므로 즉시 반환
+                    elif obj_id_upper == str_id_upper:
+                        if match_priority > 2:
+                            best_match = obj
+                            match_priority = 2
+                    elif prefixed_id_upper and obj_id_upper == prefixed_id_upper:
+                        if match_priority > 3:
+                            best_match = obj
+                            match_priority = 3
 
-            # 숫자만 넘어온 경우 보정 (예: 5 또는 "5" -> "OBJECT_5")
-            target_prefixed_id = None
-            if str_id.isdigit():
-                target_prefixed_id = f"OBJECT_{str_id}"
-                for group in self.objects.values():
-                    for obj in group:
-                        if obj.id.upper() == target_prefixed_id.upper():
-                            return obj
+            if best_match:
+                return best_match
 
-            # 3단계: 이름 매칭 백업
-            # LLM이 ID 대신 사물 이름을 그대로 보낸 경우 처리
-            # 해당 이름의 그룹이 존재하면 첫 번째 객체를 반환
-            group = self.get_objects_by_name(str_id)
+            # 3단계: 이름 매칭 백업 (LLM이 ID 대신 사물 이름을 그대로 전달한 경우)
+            group = self.objects.get(str_id)
             if group:
                 return group[0]
 
             # 4단계: 이미 삭제(pop)된 객체 ID에 대한 동일 이름의 다른 활성 객체 대체 매칭 (Fallback)
-            # 예: OBJECT_3가 이미 수집되었으나, 같은 이름("과일")의 다른 객체가 여전히 맵에 존재하는 경우
+            popped_name = None
             if id in self.popped_metadata:
-                meta = self.popped_metadata[id]
-                name = meta.get("name")
-                if name:
-                    fallback_group = self.get_objects_by_name(name)
-                    if fallback_group:
-                        return fallback_group[0]
+                popped_name = self.popped_metadata[id].get("name")
+            else:
+                # 대소문자 및 접두사 보정 매칭을 적용하여 삭제 기록 검색
+                for popped_id, meta in self.popped_metadata.items():
+                    popped_id_upper = str(popped_id).upper()
+                    if popped_id_upper == str_id_upper or (prefixed_id_upper and popped_id_upper == prefixed_id_upper):
+                        popped_name = meta.get("name")
+                        break
 
-            # 정규화된 ID로도 popped_metadata 조회 시도
-            norm_id = target_prefixed_id if target_prefixed_id else str_id
-            for popped_id, meta in list(self.popped_metadata.items()):
-                if popped_id.upper() == norm_id.upper():
-                    name = meta.get("name")
-                    if name:
-                        fallback_group = self.get_objects_by_name(name)
-                        if fallback_group:
-                            return fallback_group[0]
+            if popped_name:
+                fallback_group = self.objects.get(popped_name)
+                if fallback_group:
+                    return fallback_group[0]
 
         return None
 
@@ -98,22 +97,15 @@ class ObjectManager:
     def get_objects_by_type(self, obj_type):
         """특정 타입(예: ITEM, SPACE, BUILDING)에 해당하는 모든 객체 리스트를 반환합니다."""
         with self._lock:
-            result = []
-            for group in self.objects.values():
-                for obj in group:
-                    if obj.type == obj_type:
-                        result.append(obj)
-            return result
+            return [obj for group in self.objects.values() for obj in group if obj.type == obj_type]
 
     def get_objects_by_parent_name(self, parent_name):
         """특정 부모 공간에 배치된 모든 객체 리스트를 반환합니다."""
         with self._lock:
-            result = []
-            for group in self.objects.values():
-                for obj in group:
-                    if obj.parent and getattr(obj.parent, 'name', None) == parent_name:
-                        result.append(obj)
-            return result
+            return [
+                obj for group in self.objects.values() for obj in group
+                if obj.parent and getattr(obj.parent, 'name', None) == parent_name
+            ]
 
     def has_object(self, name):
         """지정된 이름을 가진 객체 그룹이 관리 테이블에 존재하는지 확인합니다."""
@@ -134,13 +126,12 @@ class ObjectManager:
     def pop_object(self, name):
         """지정된 이름을 가진 객체 중 첫 번째 객체를 제거하고 반환합니다. 삭제 메타데이터에 기록됩니다."""
         with self._lock:
-            group = self.get_objects_by_name(name)
+            group = self.objects.get(name)
             if group:
                 obj = group.pop(0)
-                if len(group) == 0:
+                if not group:
                     self.objects.pop(name, None)
-                if obj:
-                    self.popped_metadata[obj.id] = {"name": obj.name}
+                self.popped_metadata[obj.id] = {"name": obj.name}
                 return obj
             return None
 
@@ -149,10 +140,10 @@ class ObjectManager:
         with self._lock:
             obj = self.get_object_by_id(id)
             if obj:
-                group = self.get_objects_by_name(obj.name)
+                group = self.objects.get(obj.name)
                 if group and obj in group:
                     group.remove(obj)
-                    if len(group) == 0:
+                    if not group:
                         self.objects.pop(obj.name, None)
                     self.popped_metadata[obj.id] = {"name": obj.name}
                     return obj
@@ -179,23 +170,22 @@ class ObjectManager:
             return ""
         
         obj = group[0]
-        # 아이템 타입인 경우 동일 이름 내에서도 검사 여부(is_inspected)별로 세분화하여 그룹화
-        if obj.type == ObjectType.ITEM:
-            groups = {}
-            for o in group:
-                groups.setdefault(getattr(o, 'is_inspected', False), []).append(o)
-            
-            lines = []
-            for is_inspected_val, items in groups.items():
-                count = len(items)
-                representative = items[0]
-                detail_str = ""
-                if is_inspected_val and getattr(representative, 'detail', None):
-                    detail_str = f" - [detail: {representative.detail}] - (already inspected)"
-                lines.append(f"- [name: {representative.name}] - [object_id: {representative.id}] - [count: {count}]{detail_str}")
-            return "\n".join(lines)
-        else:
+        if obj.type != ObjectType.ITEM:
             return f"- [name: {obj.name}] - [object_id: {obj.id}]"
+
+        # 아이템 타입인 경우 동일 이름 내에서도 검사 여부(is_inspected)별로 세분화하여 그룹화
+        groups = {}
+        for o in group:
+            groups.setdefault(getattr(o, 'is_inspected', False), []).append(o)
+        
+        lines = []
+        for is_inspected_val, items in groups.items():
+            representative = items[0]
+            detail_str = ""
+            if is_inspected_val and getattr(representative, 'detail', None):
+                detail_str = f" - [detail: {representative.detail}] - (already inspected)"
+            lines.append(f"- [name: {representative.name}] - [object_id: {representative.id}] - [count: {len(items)}]{detail_str}")
+        return "\n".join(lines)
 
     def get_objects_full_context(self):
         """
@@ -206,9 +196,8 @@ class ObjectManager:
             if not self.objects:
                 return "관찰된 대상 없음"
 
-            description_list = []
-            for obj_name in self.objects.keys():
-                context = self.get_group_context(self.get_objects_by_name(obj_name))
-                if context:
-                    description_list.append(context)
-            return "\n".join(description_list)
+            description_list = [
+                self.get_group_context(group)
+                for group in self.objects.values()
+            ]
+            return "\n".join(filter(None, description_list))
