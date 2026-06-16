@@ -87,6 +87,11 @@ class JellyEngine:
 
         fixed_manual = agent.tool_manager.get_tools_manual(available_tool_types)
 
+        memory_lines = []
+        for idx, mem in enumerate(reversed(agent.monologue_working_memory)):
+            memory_lines.append(f"  * {idx+1}턴 전 행동: {mem['tool']} | 의도: {mem['reason']} | 당시 사유: {mem['thought']}")
+        working_memory_context = "\n".join(memory_lines) if memory_lines else "  * 직전 행동 이력 없음 (첫 턴)"
+
         return JellyPrompt.get_system_prompt(
             personality_matrix=raw_matrix,
             name=agent.name,
@@ -100,17 +105,16 @@ class JellyEngine:
             current_location=agent.location_delegate.get_current_location(),
             available_locations=agent.location_delegate.get_available_locations(context_format=True),
             available_agent_inventory=agent.inventory.get_objects_full_context(),
-            before_action=agent.before_action,
-            before_action_reason=agent.before_action_reason,
             available_objects=available_objects,
             available_tools=fixed_manual,
+            working_memory_context=working_memory_context,
             is_dialogue_mode=is_dialogue_mode,
             vital_context=agent.vital_state.get_context(),
             world_state_context=agent.world_system_manager.get_state_context()
         )
 
     def _run_llm_core(self, agent: "Agent", user_input, system_prompt):
-        # print(system_prompt)
+        print(system_prompt)
 
         context = []
         context.append({"role": "system", "content": system_prompt})
@@ -156,6 +160,18 @@ class JellyEngine:
                     "perception": subjective_perception,
                     "strategy": internal_strategy
                 })
+
+            short_perception = subjective_perception if subjective_perception else '특이 소견 없음'
+            if len(short_perception) > 60:
+                short_perception = short_perception[:60] + "..."
+                
+            agent.monologue_working_memory.append({
+                "tool": result.get('action_call', {}).get('function', 'NONE'),
+                "reason": result.get('action_call', {}).get('reason', '이유 미지수'),
+                "thought": short_perception
+            })
+            if len(agent.monologue_working_memory) > 5:
+                agent.monologue_working_memory.pop(0)
 
             return result
 

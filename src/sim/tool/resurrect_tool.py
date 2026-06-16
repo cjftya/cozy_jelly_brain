@@ -49,8 +49,6 @@ class ResurrectTool(BaseTool):
             remove_action.execute(item_set[item_name])
 
         # 대가 지불: 아스트리 레이아의 Kuzu DB 내부 '알렌' 관련 기억 청소 (Memory Wipe)
-        agent.before_action = None
-        agent.before_action_reason = None
         try:
             memory_db = agent.engine.core_memory
             # Kuzu DB 커넥션을 직접 제어하여 '알렌' 혹은 'ALLEN'이 포함된 노드와 시냅스(관계) 테이블을 물리적으로 완전 삭제

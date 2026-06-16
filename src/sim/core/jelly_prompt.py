@@ -16,11 +16,12 @@ class JellyPrompt:
         if is_dialogue_mode:
           return """\
 [Neural Loop (대화 모드)]
-1. 대상 선정 2. 주관적 왜곡(Matrix 반영) 3. 본능적 충동(날것의 감정 파편) 4. 내면 전략(가면과 균열 계산) 5. 최적 Action 도출"""
+1. 대상 선정 2. 본능적 충동 계산 3. 호르몬 변화량 확정 4. 주관적 왜곡 5. 내면 전략 수립 6. 최종 Action 도출"""
         else:
           return """\
 [Neural Loop (독백 모드)]
-1. 고립 인지(결핍 직시) 2. 환경 왜곡(위협 평가) 3. 본능적 충동(심연의 공포/욕망) 4. 단독 생존 전략 수립 5. 최적 Action 도출"""
+1. 고립 인지 2. 본능적 충동 계산 3. 호르몬 변화량 확정 4. 환경 왜곡 평가 5. 단독 생존 전략 수립 6. 최종 Action 도출"""
+
     @staticmethod
     def get_system_prompt(personality_matrix=None, name=None, persona_context=None,
                         intrinsic_desires=None, world_context=None,
@@ -29,7 +30,7 @@ class JellyPrompt:
                         current_location=None, available_locations=None,
                         available_objects=None, available_tools=None,
                         available_agent_inventory=None,
-                        before_action=None, before_action_reason=None,
+                        working_memory_context=None,
                         is_dialogue_mode=False,
                         vital_context=None,
                         world_state_context=None):
@@ -62,7 +63,6 @@ class JellyPrompt:
 
 # [Working & Retrieved Memory]
 - 회상된 기억: {retrieved_memories}
-- 직전 행동: {before_action} (의도: {before_action_reason})
 
 # [Physical & Spatial State]
 {vital_context}
@@ -80,21 +80,29 @@ class JellyPrompt:
 {available_tools}
 
 # 출력 규칙 (Strict JSON Only - 마크다운 태그 기호 없이 오직 순수 JSON 데이터만 출력하라)
-* state_delta: 호르몬 변화량 (-2~2 정수. 2/-2는 극단적 충격에만 사용)
-* relationship_delta: 호감도 변화량 (-2~2 정수)
+* 주의: 아래의 JSON 키 순서를 절대 변경하지 마라. 상단에 출력된 감정 가중치 토큰이 하단의 인지 왜곡 문장 및 최종 행동 생성을 완벽히 지배(Lock-in)하도록 설계된 규격이다.
+* state_delta: 호르몬 변화량 (-2~2 정수)
+* 기준: 0(변화 없음), 1/-1(일상적 행동이나 대화에 의한 미세한 변화), 2/-2(생존 위기, 동료의 사망/부활 등 극단적인 정신적 충격에만 사용)
+* 언어 절대 원칙: "memories_to_save" 배열 내부의 subject, relation, object 및 metadata 내의 label, emotional_imprint 등 모든 문자열 값은 무조건 한국어로만 자연스럽게 작성하라. 절대로 영어를 혼용하거나 영어 엔티티 이름을 사용하지 마라.
 * memories_to_save: valence는 -1.0(부정) ~ 1.0(긍정) 소수점
 
 {{
-  "subjective_perception": "[Neural Loop 1, 2단계 결과] {subjective_desc}",
-  "unconscious_impulse": "[Neural Loop 3단계 결과] 날것의 본능/단어 파편들",
-  "internal_strategy": "[Neural Loop 4단계 결과] {internal_strategy}",
+  "unconscious_impulse": "[Neural Loop 1, 2단계 결과] 날것의 본능/단어 파편들",
+  "state_delta": {{
+    "logic_emotion": 0,
+    "defensive_open": 0,
+    "fear_decisive": 0,
+    "obedient_rebellious": 0,
+    "curiosity_indifference": 0
+  }},
+  "relationship_delta": {{ "TARGET_NAME": 0 }},
+  "subjective_perception": "[Neural Loop 3, 4단계 결과] 바로 위에서 확정된 신규 호르몬 변동값(state_delta)이 실시간으로 동기화되었다고 가정한 상태에서 서술하는 {subjective_desc}",
+  "internal_strategy": "[Neural Loop 5단계 결과] 변화된 인지 상태를 바탕으로 수립한 {internal_strategy}",
   "action_call": {{
     "function": "선택한 도구의 정확한 영문 이름",
     "parameters": {{ "매뉴얼에 명시된 파라미터 Key-Value 규격" }},
-    "reason": "해당 액션을 선택한 핵심 이유"
+    "reason": "새로운 호르몬 상태와 내면 생존 전략에 부합하는 도구 선택의 명확한 실행 근거"
   }},
-  "state_delta": {{ "logic_emotion": 0, "defensive_open": -1, "fear_decisive": 0, "obedient_rebellious": 0, "curiosity_indifference": 1 }},
-  "relationship_delta": {{ "TARGET_NAME": 1 }},
   "memories_to_save": [ {{ "subject": "", "relation": "", "object": "", "metadata": {{ "label": "", "importance": 0.0, "valence": 0.0, "emotional_imprint": "" }} }} ]
 }}
 """

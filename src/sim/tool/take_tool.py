@@ -23,4 +23,5 @@ class TakeTool(BaseTool):
         if action.execute(agent.name, object_id):
             target_object = agent.inventory.get_object_by_id(object_id)
             if target_object:
+                target_object.is_inspected = True
                 agent.push_think_event(ThinkEventType.PLANNING, f"{target_object.name}을 획득했음.")

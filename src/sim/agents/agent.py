@@ -30,10 +30,6 @@ class Agent(AtomicObject):
         # Think Event 큐
         self.think_event_queue = {}
 
-        # 이전 행동 정보
-        self.before_action = "none"
-        self.before_action_reason = ""
-
         # 월드 시스템 매니져
         self.world_system_manager = world_system_manager
 
@@ -63,6 +59,9 @@ class Agent(AtomicObject):
 
         # 좌표
         self.position = Point()
+
+        # 작업 기억 버퍼
+        self.monologue_working_memory = []
         
         # 시야 감지 엔진
         self.object_detector = ObjectDetector()

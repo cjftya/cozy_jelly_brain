@@ -17,11 +17,11 @@ class InspectTool(BaseTool):
         object_id = params.get('object_id')
         target_object = world_system_manager.object_manager.get_object_by_id(object_id)
         if not target_object:
-            world_system_manager.log_system_event("skip function call: inspect, target object null")
+            world_system_manager.log_system_event("skip function call: inspect, target object null " + object_id)
             return
 
         target_object.is_inspected = True
-        context = f"[{reason}] 라는 이유로, 나는 {target_object.name}를 자세히 관찰함. 이제 이걸 바탕으로 계획을 세우자. (관찰한 결과: {target_object.detail})"
+        context = f"나는 {target_object.name}에 대한 상세 정보를 얻었다. 더이상 관찰할 필요가 없다. 이제 이 관찰을 바탕으로 다음 계획을 세우자. (관찰한 결과: {target_object.detail})"
         agent.push_think_event(ThinkEventType.INSPECT, context, agent.name)
-        world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 관찰.")
+        world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 상세히 관찰.")
         
