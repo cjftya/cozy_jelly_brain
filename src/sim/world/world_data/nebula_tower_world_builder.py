@@ -1,6 +1,6 @@
 from sim.agents.allen import Allen
 from sim.agents.astri_leia import AstriLeia
-from sim.object_meta.object_type import ObjectDetailType, ObjectType
+from sim.object_meta.object_type import ObjectDetailType
 from sim.objects.building_object import BuildingObject
 from sim.objects.item_object import ItemObject
 from sim.objects.space_object import SpaceObject

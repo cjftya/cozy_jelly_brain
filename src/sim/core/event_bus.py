@@ -16,6 +16,8 @@ class UIEventType:
 class EventBus:
     _instance = None
     _lock = threading.Lock()
+    _subscribers: dict
+    _subscribers_lock: threading.Lock
 
     def __new__(cls, *args, **kwargs):
         with cls._lock:

@@ -53,7 +53,7 @@ class ResurrectTool(BaseTool):
         # 조건 충족: 금기 파괴 및 부활 시퀀스 집행
         # ==========================================
         world_system_manager.log_world_event(
-            f"부활의 핵심 재료 네 가지를 소모하여 인과율을 역류시킴"
+            "부활의 핵심 재료 네 가지를 소모하여 인과율을 역류시킴"
         )
 
         # 재료 강제 영구 소멸 처리
@@ -108,7 +108,7 @@ class ResurrectTool(BaseTool):
                 allen.name,
             )
             world_system_manager.log_world_event(
-                f"'절 동결의 온실' 중앙의 얼음 결계가 산산조각 나며, 알렌이 200년 만에 깊은 숨을 몰아쉬며 다시 눈을 뜸."
+                "'절 동결의 온실' 중앙의 얼음 결계가 산산조각 나며, 알렌이 200년 만에 깊은 숨을 몰아쉬며 다시 눈을 뜸."
             )
         else:
             world_system_manager.log_system_event(

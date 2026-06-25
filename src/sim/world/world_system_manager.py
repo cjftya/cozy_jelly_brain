@@ -10,9 +10,15 @@ from sim.world.event_trigger import EventTrigger, EventType, ThinkEventType
 from sim.world.world_data.world_type import WorldType
 from sim.world.world_data_factory import WorldDataFactory
 from sim.world.world_view_manager import WorldViewManager
+from sim.world.time_engine import TimeEngine
+from sim.world.weather_engine import WeatherEngine
 
 
 class WorldSystemManager:
+    weather_engine: WeatherEngine
+    time_engine: TimeEngine
+    cognitive_worker: CognitiveWorker
+
     def __init__(self):
         self.llm_requester = None
 
@@ -23,14 +29,14 @@ class WorldSystemManager:
         self.object_manager = ObjectManager()
 
         # 엔진
-        self.weather_engine = None
-        self.time_engine = None
+        self.weather_engine: WeatherEngine = None  # type: ignore
+        self.time_engine: TimeEngine = None  # type: ignore
         self.event_trigger = EventTrigger()
         self.world_view_manager = WorldViewManager(self)
         self.world_data_factory = WorldDataFactory()
 
         self.world_agents = []
-        self.cognitive_worker = None
+        self.cognitive_worker: CognitiveWorker = None  # type: ignore
 
     def start(self, llm_requester):
         self.llm_requester = llm_requester
@@ -66,7 +72,7 @@ class WorldSystemManager:
     def stop(self):
         if self.cognitive_worker:
             self.cognitive_worker.stop()
-            self.cognitive_worker = None
+            self.cognitive_worker = None  # type: ignore
 
         for agent in self.world_agents:
             agent.stop()

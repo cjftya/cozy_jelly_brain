@@ -1,5 +1,5 @@
 import random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sim.agent_meta.location_delegate import LocationDelegate
 from sim.agent_meta.participants_delegate import ParticipantsDelegate
@@ -19,16 +19,16 @@ from sim.util.object_detector import ObjectDetector
 from sim.util.object_manager import ObjectManager, ObjectType
 from sim.util.point import Point
 from sim.world.event_trigger import ThinkEventType
-from sim.world.time_engine import DayCycleType, SeasonType
-from sim.world.weather_engine import WeatherType
 
 
 class Agent(AtomicObject):
+    world_system_manager: "WorldSystemManager"
+
     def __init__(
         self,
         name="UNKNOWN",
         identifier="UNKNOWN",
-        world_system_manager: "WorldSystemManager" = None,
+        world_system_manager: Optional["WorldSystemManager"] = None,
         brain_root_dir_path=None,
     ):
         super().__init__(name, GlobalUtil.gen_agent_id())
@@ -41,7 +41,7 @@ class Agent(AtomicObject):
         self.think_event_queue = {}
 
         # 월드 시스템 매니져
-        self.world_system_manager = world_system_manager
+        self.world_system_manager = world_system_manager  # type: ignore
 
         # 인지 엔진
         self.engine = JellyEngine(
@@ -117,7 +117,6 @@ class Agent(AtomicObject):
                 if event_type in self.think_event_queue.keys():
                     think_event = self.think_event_queue[event_type]
                     think_event_message = think_event.get("message", "")
-                    think_event_data = think_event.get("data", None)
                     combined_signal += f"{think_event_message}\n"
 
             self.think_event_queue.clear()
@@ -234,26 +233,25 @@ class Agent(AtomicObject):
         pass
 
     def set_serper_api_key(self, api_key):
-        if self.engine:
-            self.engine.set_serper_api_key(api_key)
+        pass
 
     def support_web_search(self):
         return False
 
     @property
-    def persona_context(self):
+    def persona_context(self) -> Optional[str]:
         return None
 
     @property
-    def world_context(self):
+    def world_context(self) -> Optional[str]:
         return None
 
     @property
-    def response_style(self):
+    def response_style(self) -> Optional[str]:
         return None
 
     @property
-    def intrinsic_desires(self):
+    def intrinsic_desires(self) -> Optional[str]:
         return None
 
     @property
@@ -273,7 +271,6 @@ class Agent(AtomicObject):
                 ToolType.TAKE,
                 ToolType.GIVE,
                 ToolType.SPEAK,
-                ToolType.SKILL,
             ]
         )
 

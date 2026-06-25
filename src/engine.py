@@ -3,10 +3,13 @@ from sim.simulate import Simulator
 
 
 class Engine:
+    llm_requester: LLMRequester
+    simulator: Simulator
+
     def __init__(self):
-        self.llm_requester = None
+        self.llm_requester: LLMRequester = None  # type: ignore
         self.model_name = None
-        self.simulator = None
+        self.simulator: Simulator = None  # type: ignore
 
     def start(self):
         if self.llm_requester is None:
@@ -28,10 +31,10 @@ class Engine:
     def stop(self):
         if self.llm_requester:
             self.llm_requester.stop_engine(full=True)
-            self.llm_requester = None
+            self.llm_requester = None  # type: ignore
         if self.simulator:
             self.simulator.stop()
-            self.simulator = None
+            self.simulator = None  # type: ignore
 
     def run(self, model_name, prompt):
         self.model_name = model_name

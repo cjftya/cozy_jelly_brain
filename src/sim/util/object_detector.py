@@ -1,7 +1,5 @@
 import math
 
-from sim.object_meta.object_type import ObjectType
-from sim.util.point import Point
 
 
 class ObjectDetector:
@@ -70,7 +68,6 @@ class ObjectDetector:
         raw_matrix = agent.personality_delegate.get_matrix()
         current_range = self._calculate_dynamic_range(raw_matrix, agent.vital_state)
 
-        duplicate_map = {}
         for entity in entities:
             if hasattr(entity, "id") and entity.id == agent.id:
                 continue

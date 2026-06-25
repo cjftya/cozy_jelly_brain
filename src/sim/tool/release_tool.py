@@ -1,4 +1,3 @@
-import logging
 
 from sim.tool.base_tool import BaseTool
 from sim.tool.tool_type import ToolType

@@ -1,7 +1,7 @@
 import os
 
 from sim.world.time_engine import TimeEngine
-from sim.world.weather_engine import WeatherEngine, WeatherType
+from sim.world.weather_engine import WeatherEngine
 from sim.world.world_data.world_type import WorldTypeName
 
 
@@ -12,7 +12,7 @@ class WorldBuilder:
         self._objects = []
 
         self._world_prefix = f"[{WorldTypeName.get_name(world_type)}]"
-        self._world_root_path = f"../assets/world_assets"
+        self._world_root_path = "../assets/world_assets"
         self._world_assets_path = f"{self._world_root_path}/{self._world_prefix}"
         self._world_agents_brain_db_path = f"{self._world_assets_path}/agents_brain_db"
 
@@ -44,7 +44,7 @@ class WorldBuilder:
     def _create_time_engine(self):
         return TimeEngine()
 
-    def _create_world_role(self):
+    def _create_world_role(self) -> str:
         return ""
 
     def build(self, world_system_manager):

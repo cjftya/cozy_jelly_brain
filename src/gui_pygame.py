@@ -1,12 +1,10 @@
 import math
 import random
-import sys
 import threading
 import time
 
 import pygame
 
-from log import Logger
 from sim.core.event_bus import EventBus, UIEventType
 from sim.object_meta.object_type import ObjectType
 
@@ -206,7 +204,7 @@ class PygameApp:
             self.font_item = pygame.font.SysFont("malgungothic", 11)
             self.font_details = pygame.font.SysFont("malgungothic", 13)
             self.font_agent = pygame.font.SysFont("malgungothic", 12, bold=True)
-        except:
+        except Exception:
             self.font_title = pygame.font.Font(None, 26)
             self.font_body = pygame.font.Font(None, 18)
             self.font_item = pygame.font.Font(None, 14)
@@ -345,8 +343,9 @@ class PygameApp:
             self._update_and_draw_lightning()
 
             # 7. Draw hovered agent tooltip (always on the absolute top layer)
-            if self.hovered_agent:
-                name, data, mx, my = self.hovered_agent
+            hovered = getattr(self, "hovered_agent")
+            if hovered:
+                name, data, mx, my = hovered
                 self._draw_agent_tooltip(self.screen, name, data, mx, my)
 
         pygame.display.flip()
@@ -438,7 +437,6 @@ class PygameApp:
                 active_perc = self.current_perception
 
         if active_perc:
-            name = active_perc["name"]
             perc_lines = active_perc["perc_lines"]
             strat_lines = active_perc["strat_lines"]
             lbl_perc_title = active_perc["lbl_perc_title"]
@@ -883,7 +881,6 @@ class PygameApp:
             health = data.get("health", 100.0)
             fatigue = data.get("fatigue", 0.0)
             hunger = data.get("hunger", 0.0)
-            mana = data.get("mana", 100.0)
 
             if loc in room_positions:
                 rx, ry = room_positions[loc]
@@ -1444,5 +1441,5 @@ class PygameApp:
                 )
                 screen.blit(plus_surf, (rx + r_w - 36, start_y + 24))
 
-        except Exception as e:
+        except Exception:
             pass

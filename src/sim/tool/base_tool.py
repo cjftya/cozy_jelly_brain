@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class BaseTool:
     def __init__(self, name, tool_type):
         self.name = name
@@ -12,10 +15,10 @@ class BaseTool:
     def get_tool_type(self):
         return self.tool_type
 
-    def get_description(self):
+    def get_description(self) -> Optional[str]:
         return None
 
-    def get_params(self):
+    def get_params(self) -> Optional[str]:
         return None
 
     def get_manual(self):

@@ -1,8 +1,5 @@
 from sim.action.base_action import BaseAction
-from sim.object_meta.object_type import ObjectType
-from sim.objects.building_object import BuildingObject
 from sim.objects.item_object import ItemObject
-from sim.objects.space_object import SpaceObject
 
 
 class CreateAction(BaseAction):

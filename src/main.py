@@ -1,4 +1,3 @@
-import sys
 
 from engine import Engine
 from gui import ChatApp

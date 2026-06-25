@@ -2,6 +2,7 @@ import json
 import random
 import re
 import time
+from typing import Optional
 
 from log import Logger
 
@@ -19,15 +20,15 @@ class JellyLlmApi:
     def set_llm_requester(self, llm_requester):
         self.llm_requester = llm_requester
 
-    def parse_llm_response(self, text):
+    def parse_llm_response(self, text) -> Optional[dict]:
         """구조화 출력을 통해 수신된 완벽한 JSON 문자열 안전 파싱"""
         if not text:
             return None
-        result = None
+        result: Optional[dict] = None
         try:
             # Gemini Native Structured Output은 완전한 JSON 문자열 반환을 보장함
             result = json.loads(text.strip())
-        except Exception as e:
+        except Exception:
             # 혹시 모를 유실을 대비한 2차 폴백 정규식 추출 파싱 가드 유지
             try:
                 start_idx = text.find("{")
@@ -73,6 +74,9 @@ class JellyLlmApi:
         retriable_errors = ["503", "429", "500", "504", "overloaded", "rate limit"]
 
         for i in range(max_retries):
+            if self.llm_requester is None:
+                Logger.log("Error", "LLMRequester가 설정되지 않았습니다.")
+                return "인지 프로세스 중단..."
             res = self.llm_requester.request(context=context)
             content = (
                 res

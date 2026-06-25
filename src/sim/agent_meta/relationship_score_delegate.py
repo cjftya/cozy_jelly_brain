@@ -1,4 +1,3 @@
-from log import Logger
 
 
 class RelationShipScoreDelegate:

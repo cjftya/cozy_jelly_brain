@@ -7,10 +7,10 @@ class WorldDataFactory:
     def __init__(self):
         pass
 
-    def get_world_data(self, world_type, world_system_manager):
+    def get_world_data(self, world_type, world_system_manager) -> list:
         if world_type == WorldType.CAST_AWAY_SIM:
             return CastAwayWorldBuilder().build(world_system_manager)
         elif world_type == WorldType.NEBULA_TOWER_SIM:
             return NebulaTowerWorldBuilder().build(world_system_manager)
 
-        return None, None
+        return [None] * 7

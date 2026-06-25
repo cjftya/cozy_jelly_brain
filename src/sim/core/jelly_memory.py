@@ -1,5 +1,6 @@
 import random
 import time
+from typing import Any, Optional
 
 import kuzu
 import numpy as np
@@ -9,6 +10,8 @@ from sim.core.embedding_service import EmbeddingService
 
 
 class JellyMemory:
+    embed_model: Optional[EmbeddingService]
+
     def __init__(self, db_path, load_embed_model=True):
         self.db = kuzu.Database(db_path)
         self.conn = kuzu.Connection(self.db)
@@ -85,7 +88,10 @@ class JellyMemory:
             )
 
             narrative_context = f"{subj}가 {obj}와 상호작용함 ({meta.get('label', rel)}). 상황 및 이유: {reason} | 정서: {e_imprint}"
-            rich_event_embedding = self.embed_model.encode(narrative_context).tolist()
+            if self.embed_model is not None:
+                rich_event_embedding = self.embed_model.encode(narrative_context).tolist()
+            else:
+                rich_event_embedding = [0.0] * 1024
 
             # 1. 엔티티 노드 무결성 유지
             self.conn.execute("MERGE (n:node {id: $id})", {"id": subj})
@@ -131,12 +137,14 @@ class JellyMemory:
             )
 
     def retrieve_memory(self, agent_name, query, current_valence=0.0, top_k=3):
+        if self.embed_model is None:
+            return []
         query_emb = self.embed_model.encode(query).tolist()
         now = time.time()
         time_cutoff = now - (86400 * 30)
 
         # 에피소드 스키마 전용 패스 탐색 Cypher 패턴 개정 (에이전트별 DB가 격리되어 있으므로 노드 필터링 불필요)
-        res = self.conn.execute(
+        res: Any = self.conn.execute(
             """
             MATCH (n:node)-[r1:triggered]->(e:episode)-[r2:target_object]->(o:node)
             WHERE e.timestamp > $time_cutoff OR e.importance >= 0.2
@@ -152,15 +160,20 @@ class JellyMemory:
             (
                 subj,
                 obj,
-                intensity,
-                last_time,
+                raw_intensity,
+                raw_last_time,
                 sub_label,
                 rel_emb,
-                imp,
-                val,
+                raw_imp,
+                raw_val,
                 e_imprint,
                 interpretation,
             ) = row
+
+            intensity = float(raw_intensity) if raw_intensity is not None else 0.0
+            last_time = float(raw_last_time) if raw_last_time is not None else 0.0
+            imp = float(raw_imp) if raw_imp is not None else 0.0
+            val = float(raw_val) if raw_val is not None else 0.0
 
             if rel_emb is None:
                 continue

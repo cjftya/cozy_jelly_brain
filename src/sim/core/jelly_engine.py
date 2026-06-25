@@ -9,7 +9,7 @@ from sim.tool.tool_type import ToolType
 from sim.core.event_bus import EventBus, UIEventType
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from sim.agent import Agent
+    from sim.agents.agent import Agent
 from log import Logger
 
 class JellyEngine:

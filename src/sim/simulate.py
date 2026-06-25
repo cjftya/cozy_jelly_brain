@@ -1,4 +1,3 @@
-import time
 
 from log import Logger
 from sim.world.world_system_manager import WorldSystemManager
@@ -28,7 +27,7 @@ class Simulator:
     def run(self, user_input=None):
         while True:
             if self._interupt:
-                Logger.log(f"종료.")
+                Logger.log("종료.")
                 break
 
             # ===============================

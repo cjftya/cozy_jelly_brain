@@ -26,6 +26,7 @@ class LLMRequester:
         current_symbol = self.chunck_spinner[spinner_idx]
 
         spinner_msg = f"\r{current_emoji} {status_text} {current_symbol}"
+        print(spinner_msg, end="", flush=True)
 
         self.chunk_count[0] += 1
 

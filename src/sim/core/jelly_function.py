@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from sim.agents.agent import Agent
     from sim.world.world_system_manager import WorldSystemManager
 
 
@@ -23,7 +24,10 @@ class JellyFunction:
 
         try:
             tool = agent.tool_manager.get_tool_by_name(function_name)
-            tool.execute(parameters, agent, self.world_system_manager)
+            if tool is not None:
+                tool.execute(parameters, agent, self.world_system_manager)
+            else:
+                raise ValueError("tool object is None")
         except Exception as e:
             self.world_system_manager.log_system_event(
                 f"Action Execution Error: {function_name}, error: {e}"

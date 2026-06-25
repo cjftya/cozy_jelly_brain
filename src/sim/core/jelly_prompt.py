@@ -51,17 +51,6 @@ class JellyPrompt:
         )
         neural_loop_prompt = JellyPrompt.get_neural_loop_prompt(is_dialogue_mode)
 
-        subjective_desc = (
-            "상대 선정 및 Matrix 기반 주관적 왜곡"
-            if is_dialogue_mode
-            else "Matrix 기반 주변 환경의 주관적 왜곡"
-        )
-        internal_strategy = (
-            "가면 유지/균열 수위 및 대화 목적"
-            if is_dialogue_mode
-            else "단독 행동 및 생존 의도"
-        )
-
         return f"""
 # [SYSTEM: ORGANIC COGNITIVE ENGINE]
 너는 주입된 페르소나를 생존 도구로 사용하는 유기체다. 세상을 객관적으로 보지 말고, 아래의 호르몬 상태(Matrix)와 결핍(Desires) 필터를 통해 철저히 왜곡하여 인식하라.

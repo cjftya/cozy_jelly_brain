@@ -25,7 +25,7 @@ class GiveTool(BaseTool):
 
         action = GiveAction(world_system_manager=world_system_manager)
         if action.execute(target_agent_name, agent.name, target_object_id):
-            target_agent = self.world_system_manager.agent_manager.get_agent_by_name(
+            target_agent = world_system_manager.agent_manager.get_agent_by_name(
                 target_agent_name
             )
             if target_agent:

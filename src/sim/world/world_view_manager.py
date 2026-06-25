@@ -68,7 +68,6 @@ class WorldViewManager:
         action_call = result.get("action_call", {}) or {}  # None 방지
         function = action_call.get("function", "NONE")
         parameters = action_call.get("parameters", {})
-        reason = action_call.get("reason", "No reason provided.")
 
         if unconscious_impulse:
             impulses = [
@@ -88,14 +87,15 @@ class WorldViewManager:
                 memories_to_save = []
 
         memories_str = ""
-        if memories_to_save:
+        if isinstance(memories_to_save, list) and memories_to_save:
             for memory in memories_to_save:
-                try:
-                    memories_str += f"\n[RELATION] {memory.get('subject')} ──({memory.get('relation')})──> {memory.get('object')}\n"
-                    memories_str += f" └─ [METADATA] {memory.get('metadata', {})}\n"
-                except Exception:
-                    continue
-        else:
+                if isinstance(memory, dict):
+                    try:
+                        memories_str += f"\n[RELATION] {memory.get('subject')} ──({memory.get('relation')})──> {memory.get('object')}\n"
+                        memories_str += f" └─ [METADATA] {memory.get('metadata', {})}\n"
+                    except Exception:
+                        continue
+        if not memories_str:
             memories_str = "[NO GRAPH MEMORY UPDATE]"
 
         agent_log = f"""

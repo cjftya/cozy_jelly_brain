@@ -1,12 +1,16 @@
 import os
 import threading
 
+from typing import Optional
+
 from sentence_transformers import SentenceTransformer
 
 
 class EmbeddingService:
     _instance = None
     _lock = threading.Lock()
+    _model_lock: threading.Lock
+    _model: Optional[SentenceTransformer]
 
     def __new__(cls, *args, **kwargs):
         with cls._lock:

@@ -3,7 +3,6 @@ import random
 from sim.object_meta.object_type import ObjectType
 from sim.tool.base_tool import BaseTool
 from sim.tool.tool_type import ToolType
-from sim.world.event_trigger import ThinkEventType
 
 
 class ExploreTool(BaseTool):
