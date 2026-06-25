@@ -5,10 +5,10 @@ class WorldViewManager:
     def update_world_details_view(self):
         time_engine = self.world_system_manager.time_engine
         weather_engine = self.world_system_manager.weather_engine
-        
+
         weather_type = weather_engine.weather_type
         weather_description = weather_engine.get_weather_description(weather_type)
-        
+
         view_data = f"""
 [WORLD] Date: {time_engine.get_date()} | Clock: {time_engine.get_clock()}
 [WEATHER] {weather_type}
@@ -24,16 +24,17 @@ class WorldViewManager:
         if isinstance(result, str):
             try:
                 import json
+
                 result = json.loads(result)
             except Exception:
                 return f"--- CRITICAL: LOG PARSE ERROR ---\nRaw: {result}"
 
-        subjective_perception = result.get('subjective_perception', '')
-        internal_strategy = result.get('internal_strategy', '')
-        
-        action_call = result.get('action_call', {}) or {} # None 방지
-        function = action_call.get('function', 'NONE')
-        reason = action_call.get('reason', 'No reason provided.')
+        subjective_perception = result.get("subjective_perception", "")
+        internal_strategy = result.get("internal_strategy", "")
+
+        action_call = result.get("action_call", {}) or {}  # None 방지
+        function = action_call.get("function", "NONE")
+        reason = action_call.get("reason", "No reason provided.")
 
         agent_log = f"""
 <{agent.name}>
@@ -51,38 +52,42 @@ class WorldViewManager:
     def update_agent_log_view(self, agent, result):
         if not result or result == "None":
             return None
-            
+
         if isinstance(result, str):
             try:
                 import json
+
                 result = json.loads(result)
             except Exception:
                 return f"--- CRITICAL: LOG PARSE ERROR ---\nRaw: {result}"
 
-        subjective_perception = result.get('subjective_perception', '')
-        unconscious_impulse = result.get('unconscious_impulse', '')
-        internal_strategy = result.get('internal_strategy', '')
-        
-        action_call = result.get('action_call', {}) or {} # None 방지
-        function = action_call.get('function', 'NONE')
-        parameters = action_call.get('parameters', {})
-        reason = action_call.get('reason', 'No reason provided.')
-        
+        subjective_perception = result.get("subjective_perception", "")
+        unconscious_impulse = result.get("unconscious_impulse", "")
+        internal_strategy = result.get("internal_strategy", "")
+
+        action_call = result.get("action_call", {}) or {}  # None 방지
+        function = action_call.get("function", "NONE")
+        parameters = action_call.get("parameters", {})
+        reason = action_call.get("reason", "No reason provided.")
+
         if unconscious_impulse:
-            impulses = [imp.strip() for imp in unconscious_impulse.split(',') if imp.strip()]
+            impulses = [
+                imp.strip() for imp in unconscious_impulse.split(",") if imp.strip()
+            ]
             unconscious_str = "  ".join([f"▶ [{imp}]" for imp in impulses])
         else:
             unconscious_str = "▶ [NONE]"
 
-        memories_to_save = result.get('memories_to_save', [])
+        memories_to_save = result.get("memories_to_save", [])
         if isinstance(memories_to_save, str):
             try:
                 import json
+
                 memories_to_save = json.loads(memories_to_save)
             except Exception:
                 memories_to_save = []
 
-        memories_str = ''
+        memories_str = ""
         if memories_to_save:
             for memory in memories_to_save:
                 try:

@@ -1,10 +1,16 @@
+from sim.agent_meta.vital_state import GenderType
 from sim.agents.agent import Agent
 from sim.tool.tool_type import ToolType
-from sim.agent_meta.vital_state import GenderType
+
 
 class AstriLeia(Agent):
     def __init__(self, world_system_manager=None, brain_root_dir_path=None):
-        super().__init__("ASTRI_LEIA", "ELF", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
+        super().__init__(
+            "ASTRI_LEIA",
+            "ELF",
+            world_system_manager=world_system_manager,
+            brain_root_dir_path=brain_root_dir_path,
+        )
         self.position.x = 3.0
         self.position.y = 3.0
 
@@ -21,7 +27,7 @@ class AstriLeia(Agent):
 - 영겁의 시간 속에서 극심한 죄책감을 안고 세계의 진실을 연구함.
 - 핵심 딜레마: 알렌을 부활시켜 다시 만날 것인가 vs 자연의 안식으로 보내줄 것인가.
 """
-    
+
     @property
     def world_context(self):
         return """
@@ -40,7 +46,7 @@ class AstriLeia(Agent):
 - [Matrix 분기 2] logic_emotion > 0.80: 강철의 합리화. 기억 소멸은 구원이 아님을 깨닫고 '영원한 안식'으로 내면 전략 선회.
 """
         return raw_style.strip()
-    
+
     @property
     def intrinsic_desires(self):
         return """
@@ -56,36 +62,41 @@ class AstriLeia(Agent):
 
     def _init_personality_delegate(self, personality_delegate):
         personality_delegate.set_value(
-            logic_emotion=0.85,            # 차가운 연구자적 이성 (심부에 슬픔의 가중치 휴면)
-            defensive_open=0.10,           # 필멸자들과의 시간선 단절로 인한 철벽의 방어 태세
-            fear_decisive=0.80,            # 영겁을 버텨온 단호함 (위기 상황에서도 냉정함 유지)
-            obedient_rebellious=0.95,      # 생사의 금기를 깨부수기 위한 인과율에 대한 극단적 반항
-            curiosity_indifference=0.15    # 오직 세계의 진실과 부활에만 몰두하는 강박적 호기심
+            logic_emotion=0.85,  # 차가운 연구자적 이성 (심부에 슬픔의 가중치 휴면)
+            defensive_open=0.10,  # 필멸자들과의 시간선 단절로 인한 철벽의 방어 태세
+            fear_decisive=0.80,  # 영겁을 버텨온 단호함 (위기 상황에서도 냉정함 유지)
+            obedient_rebellious=0.95,  # 생사의 금기를 깨부수기 위한 인과율에 대한 극단적 반항
+            curiosity_indifference=0.15,  # 오직 세계의 진실과 부활에만 몰두하는 강박적 호기심
         )
 
     def _init_relationship_score_delegate(self, relationship_score_delegate):
-        relationship_score_delegate.set_value(
-            name="ALLEN",
-            score=90.0
-        )
+        relationship_score_delegate.set_value(name="ALLEN", score=90.0)
 
     def _init_tools(self, tool_manager):
-        tool_manager.add_all_available_tool_types([
-            ToolType.MOVE_TO, ToolType.INSPECT, ToolType.USE, 
-            ToolType.TAKE, ToolType.REST, ToolType.RESURRECT,
-            ToolType.RELEASE
-        ])
+        tool_manager.add_all_available_tool_types(
+            [
+                ToolType.MOVE_TO,
+                ToolType.INSPECT,
+                ToolType.USE,
+                ToolType.TAKE,
+                ToolType.REST,
+                ToolType.RESURRECT,
+                ToolType.RELEASE,
+            ]
+        )
 
     def _init_location_delegate(self, location_delegate):
         location_delegate.set_current_location("영원의 서고")
-        location_delegate.add_all_locations([
-            "영원의 서고",
-            "절 동결의 온실",
-            "마나 공명 제단",
-            "시간이 고인 방",
-            "별빛 관측소",
-            "별의 심연 절벽"
-        ])
+        location_delegate.add_all_locations(
+            [
+                "영원의 서고",
+                "절 동결의 온실",
+                "마나 공명 제단",
+                "시간이 고인 방",
+                "별빛 관측소",
+                "별의 심연 절벽",
+            ]
+        )
 
     def _init_vital_state(self, vital_state):
         vital_state.age = 238

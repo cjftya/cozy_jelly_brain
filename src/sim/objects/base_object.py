@@ -1,9 +1,12 @@
 from sim.objects.atomic_object import AtomicObject
-from sim.util.point import Point
 from sim.util.global_util import GlobalUtil
+from sim.util.point import Point
+
 
 class BaseObject(AtomicObject):
-    def __init__(self, name=None, detail=None, detail_type=None, obj_type=None, parent=None):
+    def __init__(
+        self, name=None, detail=None, detail_type=None, obj_type=None, parent=None
+    ):
         super().__init__(name, GlobalUtil.gen_object_id(), parent)
         self.detail = detail
         self.detail_type = detail_type

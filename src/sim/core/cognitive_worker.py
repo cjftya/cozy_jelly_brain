@@ -1,7 +1,9 @@
 import queue
 import threading
 import time
+
 from sim.core.jelly_llm_api import JellyLlmApi
+
 
 class CognitiveWorker:
     def __init__(self, world_system_manager):
@@ -39,17 +41,19 @@ class CognitiveWorker:
                 result = agent.think_tick()
                 if result:
                     wvm = self.world_system_manager.world_view_manager
-                    if hasattr(wvm, 'update_agent_light_log_view'):
+                    if hasattr(wvm, "update_agent_light_log_view"):
                         agent_log = wvm.update_agent_light_log_view(agent, result)
                     else:
                         agent_log = wvm.update_agent_log_view(agent, result)
                     self.world_system_manager.log_agent_event(agent_log)
-                    
+
                     time.sleep(JellyLlmApi.get_loop_delay())
             except Exception as e:
-                self.world_system_manager.log_system_event(f"Error in cognitive worker for {agent.name}: {e}")
+                self.world_system_manager.log_system_event(
+                    f"Error in cognitive worker for {agent.name}: {e}"
+                )
             finally:
                 agent.is_thinking = False
-                if hasattr(self.world_system_manager, 'log_agent_thinking_event'):
+                if hasattr(self.world_system_manager, "log_agent_thinking_event"):
                     self.world_system_manager.log_agent_thinking_event(agent.name, None)
                 self.queue.task_done()

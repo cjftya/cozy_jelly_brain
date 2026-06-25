@@ -1,7 +1,8 @@
+from sim.action.take_action import TakeAction
 from sim.tool.base_tool import BaseTool
 from sim.tool.tool_type import ToolType
-from sim.action.take_action import TakeAction
 from sim.world.event_trigger import ThinkEventType
+
 
 class TakeTool(BaseTool):
     def __init__(self):

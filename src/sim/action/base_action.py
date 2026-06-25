@@ -4,4 +4,3 @@ class BaseAction:
 
     def execute(self, *args):
         return True
-    

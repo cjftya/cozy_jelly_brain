@@ -1,17 +1,18 @@
-from sim.tool.tool_type import ToolType
-from sim.tool.use_tool import UseTool
-from sim.tool.move_tool import MoveTool
-from sim.tool.inspect_tool import InspectTool
-from sim.tool.speak_tool import SpeakTool
-from sim.tool.rest_tool import RestTool
-from sim.tool.none_tool import NoneTool
+from sim.tool.build_raft_tool import BuildRaftTool
 from sim.tool.explore_tool import ExploreTool
 from sim.tool.give_tool import GiveTool
-from sim.tool.take_tool import TakeTool
-from sim.tool.web_search_tool import WebSearchTool
-from sim.tool.build_raft_tool import BuildRaftTool
-from sim.tool.resurrect_tool import ResurrectTool
+from sim.tool.inspect_tool import InspectTool
+from sim.tool.move_tool import MoveTool
+from sim.tool.none_tool import NoneTool
 from sim.tool.release_tool import ReleaseTool
+from sim.tool.rest_tool import RestTool
+from sim.tool.resurrect_tool import ResurrectTool
+from sim.tool.speak_tool import SpeakTool
+from sim.tool.take_tool import TakeTool
+from sim.tool.tool_type import ToolType
+from sim.tool.use_tool import UseTool
+from sim.tool.web_search_tool import WebSearchTool
+
 
 class ToolManager:
     TOOL_CLASSES = {
@@ -27,7 +28,7 @@ class ToolManager:
         ToolType.EXPLORE: ExploreTool,
         ToolType.BUILD_RAFT: BuildRaftTool,
         ToolType.RESURRECT: ResurrectTool,
-        ToolType.RELEASE: ReleaseTool
+        ToolType.RELEASE: ReleaseTool,
     }
 
     def __init__(self):

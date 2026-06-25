@@ -1,5 +1,6 @@
 from llm_client.google_studio_manager import GoogleStudioManager
 
+
 class LLMRequester:
     def __init__(self):
         self.google_studio_manager = GoogleStudioManager()
@@ -8,7 +9,7 @@ class LLMRequester:
 
         self.chunck_spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
         self.pretty_emojis = ["🔍", "🧠", "⚙️", "🔬", "📡", "💠", "💎", "✨"]
-        
+
     def chunk_callback(self, chunk):
         if chunk is None:
             self.chunk_count[0] = 0
@@ -20,12 +21,12 @@ class LLMRequester:
         emoji_idx = (self.chunk_count[0] // 18) % len(self.pretty_emojis)
         # 2청크마다 10프레임 브라유 스피너 회전
         spinner_idx = (self.chunk_count[0] // 2) % len(self.chunck_spinner)
-        
+
         current_emoji = self.pretty_emojis[emoji_idx]
         current_symbol = self.chunck_spinner[spinner_idx]
-        
+
         spinner_msg = f"\r{current_emoji} {status_text} {current_symbol}"
-        
+
         self.chunk_count[0] += 1
 
     def init_client(self):

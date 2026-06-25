@@ -4,11 +4,13 @@ class SeasonType:
     AUTUMN = "가을"
     WINTER = "겨울"
 
+
 class DayCycleType:
     NIGHT = "밤"
     MORNING = "아침"
     DAY = "낮"
     EVENING = "저녁"
+
 
 class WeekType:
     MONDAY = "월요일"
@@ -19,6 +21,7 @@ class WeekType:
     SATURDAY = "토요일"
     SUNDAY = "일요일"
 
+
 class TimeEngine:
     def __init__(self, start_year=3000, start_month=1, start_day=1, start_hour=8):
         """
@@ -27,12 +30,12 @@ class TimeEngine:
         self.days_in_month = 30
         self.seconds_to_advance = 300  # 턴당 300초
         self.time_scale = self.seconds_to_advance / 3600
-        
+
         # 시작 날짜를 가상 세계의 '총 누적 초(Total Seconds)'로 환산
         total_days = (
-            ((start_year - 1) * 12 * self.days_in_month) + 
-            ((start_month - 1) * self.days_in_month) + 
-            (start_day - 1)
+            ((start_year - 1) * 12 * self.days_in_month)
+            + ((start_month - 1) * self.days_in_month)
+            + (start_day - 1)
         )
         self.total_virtual_seconds = (total_days * 24 * 3600) + (start_hour * 3600)
 
@@ -43,7 +46,7 @@ class TimeEngine:
         self.hour = start_hour
         self.minute = 0
         self.second = 0
-        
+
         self.day_of_week = ""
         self.season = ""
         self.day_cycle = ""
@@ -67,17 +70,17 @@ class TimeEngine:
         # 1. 시/분/초 분해 (60초, 60분, 24시간 제한)
         self.second = total_secs % 60
         total_mins = total_secs // 60
-        
+
         self.minute = total_mins % 60
         total_hours = total_mins // 60
-        
+
         self.hour = total_hours % 24
         total_days = total_hours // 24
 
         # 2. 년/월/일 분해 (달력 기준 1부터 시작하도록 +1 처리)
         self.day = (total_days % self.days_in_month) + 1
         total_months = total_days // self.days_in_month
-        
+
         self.month = (total_months % 12) + 1
         self.year = (total_months // 12) + 1
 
@@ -88,7 +91,15 @@ class TimeEngine:
 
     def _update_day_of_week(self, total_days):
         # 일주일 주기는 누적된 총 일수(total_days)를 기준으로 계산합니다.
-        days_of_week = [WeekType.MONDAY, WeekType.TUESDAY, WeekType.WEDNESDAY, WeekType.THURSDAY, WeekType.FRIDAY, WeekType.SATURDAY, WeekType.SUNDAY]
+        days_of_week = [
+            WeekType.MONDAY,
+            WeekType.TUESDAY,
+            WeekType.WEDNESDAY,
+            WeekType.THURSDAY,
+            WeekType.FRIDAY,
+            WeekType.SATURDAY,
+            WeekType.SUNDAY,
+        ]
         self.day_of_week = days_of_week[total_days % 7]
 
     def _update_season(self):

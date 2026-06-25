@@ -2,6 +2,7 @@ class GenderType:
     MALE = 0
     FEMALE = 1
 
+
 class VitalType:
     HEALTH = 0
     FATIGUE = 1
@@ -20,6 +21,7 @@ class VitalType:
             return "mana"
         else:
             raise ValueError(f"Invalid vital type: {value}")
+
 
 class VitalState:
     def __init__(self):
@@ -46,7 +48,7 @@ class VitalState:
         # 식욕/허기
         self.hunger = 0.0
         self.max_hunger = 100.0
-        
+
         # 사망 여부 플래그
         self.is_alive = True
 
@@ -84,30 +86,48 @@ class VitalState:
         hunger_per_hour = DAILY_HUNGER_GAIN / 24.0
 
         # damp에 따라 누적량을 조절
-        self.fatigue = min(self.max_fatigue, self.fatigue + (fatigue_per_hour + self.fatigue_damp) * time_scale)
-        self.hunger = min(self.max_hunger, self.hunger + (hunger_per_hour + self.hunger_damp) * time_scale)
+        self.fatigue = min(
+            self.max_fatigue,
+            self.fatigue + (fatigue_per_hour + self.fatigue_damp) * time_scale,
+        )
+        self.hunger = min(
+            self.max_hunger,
+            self.hunger + (hunger_per_hour + self.hunger_damp) * time_scale,
+        )
 
         # 상태 상호작용 (패널티 적용)
         # 배가 고프거나 너무 지치면 건강(health)이 깎임
         if self.hunger >= self.max_hunger:
             self.health = max(0.0, self.health - ((2 * self.health_damp) * time_scale))
-            
+
         if self.fatigue >= self.max_fatigue:
             self.health = max(0.0, self.health - ((1 * self.health_damp) * time_scale))
 
         # 자연 치유 메커니즘
         # 허기와 피로가 모두 낮고, 건강이 최대가 아닐 때 회복
-        if self.hunger < self.auto_revise_condition_value and self.fatigue < self.auto_revise_condition_value and self.health < self.max_health:
-            self.health = min(self.max_health, self.health + (self.auto_revise_value * time_scale))
+        if (
+            self.hunger < self.auto_revise_condition_value
+            and self.fatigue < self.auto_revise_condition_value
+            and self.health < self.max_health
+        ):
+            self.health = min(
+                self.max_health, self.health + (self.auto_revise_value * time_scale)
+            )
 
         # 마나는 서서히 회복. damp가 클수록 회복량이 늘어남
-        self.mana = max(0.0, min(self.max_mana, self.mana + (self.mana_damp) * time_scale))
+        self.mana = max(
+            0.0, min(self.max_mana, self.mana + (self.mana_damp) * time_scale)
+        )
 
         # 건강 상태 직관적 라벨링
-        if self.health > 80: self.health_label = "최상"
-        elif self.health > 40: self.health_label = "보통"
-        elif self.health > 15: self.health_label = "쇠약함"
-        else: self.health_label = "위독함"
+        if self.health > 80:
+            self.health_label = "최상"
+        elif self.health > 40:
+            self.health_label = "보통"
+        elif self.health > 15:
+            self.health_label = "쇠약함"
+        else:
+            self.health_label = "위독함"
 
         # 위급 경고 메시지 동적 생성
         alerts = []

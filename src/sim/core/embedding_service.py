@@ -1,6 +1,8 @@
-import threading
 import os
+import threading
+
 from sentence_transformers import SentenceTransformer
+
 
 class EmbeddingService:
     _instance = None
@@ -20,12 +22,14 @@ class EmbeddingService:
                 # Resolve the absolute path to the models directory relative to this file
                 # src/sim/core/embedding_service.py -> src/models/bge-m3
                 base_dir = os.path.dirname(os.path.abspath(__file__))
-                model_path = os.path.abspath(os.path.join(base_dir, "..", "..", "models", "bge-m3"))
-                
+                model_path = os.path.abspath(
+                    os.path.join(base_dir, "..", "..", "models", "bge-m3")
+                )
+
                 # Fallback to relative path if absolute path is not found
                 if not os.path.exists(model_path):
                     model_path = "./models/bge-m3"
-                
+
                 self._model = SentenceTransformer(model_path)
             return self._model
 

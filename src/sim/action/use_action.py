@@ -2,6 +2,7 @@ from sim.action.base_action import BaseAction
 from sim.action.remove_action import RemoveAction
 from sim.object_meta.object_type import ObjectDetailType
 
+
 class UseAction(BaseAction):
     def __init__(self, world_system_manager):
         super().__init__(world_system_manager)
@@ -9,17 +10,23 @@ class UseAction(BaseAction):
     def execute(self, *args):
         # args: agent_name, object_id
         if len(args) != 2:
-            self.world_system_manager.log_system_event("skip function call: use, args length not 2")
+            self.world_system_manager.log_system_event(
+                "skip function call: use, args length not 2"
+            )
             return False
 
         agent_name = args[0]
         object_id = args[1]
         agent = self.world_system_manager.agent_manager.get_agent_by_name(agent_name)
         if not agent:
-            self.world_system_manager.log_system_event("skip function call: use, agent null")
+            self.world_system_manager.log_system_event(
+                "skip function call: use, agent null"
+            )
             return False
 
-        target_object = self.world_system_manager.object_manager.get_object_by_id(object_id)
+        target_object = self.world_system_manager.object_manager.get_object_by_id(
+            object_id
+        )
         if not target_object:
             target_object = agent.inventory.get_object_by_id(object_id)
 
@@ -33,12 +40,18 @@ class UseAction(BaseAction):
 
                 remove_action = RemoveAction(self.world_system_manager)
                 remove_action.execute(object_id)
-                self.world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 소모.")
+                self.world_system_manager.log_world_event(
+                    f"{agent.name}가 {target_object.name}을 소모."
+                )
                 return True
             else:
                 # 소모되지 않는 도구들
-                self.world_system_manager.log_world_event(f"{agent.name}가 {target_object.name}을 사용.")
+                self.world_system_manager.log_world_event(
+                    f"{agent.name}가 {target_object.name}을 사용."
+                )
                 return True
         else:
-            self.world_system_manager.log_world_event(f"{agent.name}가 {object_id}을 사용할 수 없음.")
+            self.world_system_manager.log_world_event(
+                f"{agent.name}가 {object_id}을 사용할 수 없음."
+            )
             return False

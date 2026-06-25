@@ -1,5 +1,6 @@
 import threading
 
+
 class UIEventType:
     WORLD_DETAIL_UPDATED = "world_detail_updated"
     AGENT_CHAT_LOG_APPENDED = "agent_chat_log_appended"
@@ -10,6 +11,7 @@ class UIEventType:
     WORLD_TICKED = "world_ticked"
     AGENT_THINKING_LOG_APPENDED = "agent_thinking_log_appended"
     AGENT_PERCEPTION_UPDATED = "agent_perception_updated"
+
 
 class EventBus:
     _instance = None
@@ -45,4 +47,8 @@ class EventBus:
                 callback(*args, **kwargs)
             except Exception as e:
                 import sys
-                print(f"Error executing callback for event {event_type}: {e}", file=sys.stderr)
+
+                print(
+                    f"Error executing callback for event {event_type}: {e}",
+                    file=sys.stderr,
+                )

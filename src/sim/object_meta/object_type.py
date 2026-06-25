@@ -3,9 +3,10 @@ class ObjectType:
     ITEM = 1
     BUILDING = 2
 
+
 class ObjectDetailType:
     NONE = 0
-    
+
     # Default details type
     DEFAULT_SPACE = 100
     DEFAULT_BUILDING = 101

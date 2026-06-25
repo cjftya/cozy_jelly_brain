@@ -1,6 +1,7 @@
-from sim.world.world_data.world_type import WorldType
 from sim.world.world_data.castway_world_builder import CastAwayWorldBuilder
 from sim.world.world_data.nebula_tower_world_builder import NebulaTowerWorldBuilder
+from sim.world.world_data.world_type import WorldType
+
 
 class WorldDataFactory:
     def __init__(self):

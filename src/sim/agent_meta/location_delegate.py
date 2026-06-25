@@ -17,7 +17,7 @@ class LocationDelegate:
 
     def add_location(self, location):
         self.available_locations.append(location)
-    
+
     def remove_location(self, location):
         self.available_locations.remove(location)
 

@@ -1,5 +1,6 @@
 from log import Logger
 
+
 class RelationShipScoreDelegate:
 
     def __init__(self):
@@ -13,22 +14,22 @@ class RelationShipScoreDelegate:
             # 처음 상호작용하는 대상이라면 기본 호감도 50으로 세팅
             if name not in self.matrix:
                 self.matrix[name] = 50.0
-            
+
             try:
                 dir_val = int(direction)
-                
+
                 # 강한 호전/악화 (목숨을 구해주거나, 크게 배신했을 때)
                 if dir_val == 2:
                     self.matrix[name] = min(100.0, self.matrix[name] + critical_step)
                 elif dir_val == -2:
                     self.matrix[name] = max(0.0, self.matrix[name] - critical_step)
-                
+
                 # 일반적인 상호작용 (대화, 가벼운 도움 등)
                 elif dir_val == 1:
                     self.matrix[name] = min(100.0, self.matrix[name] + base_step)
                 elif dir_val == -1:
                     self.matrix[name] = max(0.0, self.matrix[name] - base_step)
-                    
+
             except ValueError:
                 pass
 

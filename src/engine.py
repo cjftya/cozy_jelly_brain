@@ -1,6 +1,7 @@
 from llm_requester import LLMRequester
 from sim.simulate import Simulator
 
+
 class Engine:
     def __init__(self):
         self.llm_requester = None
@@ -19,7 +20,7 @@ class Engine:
         if self.llm_requester:
             self.llm_requester.init_client()
             self.llm_requester.set_api_key(api_key)
-        
+
         if self.simulator:
             self.simulator.set_serper_api_key(serper_api_key)
             self.simulator.set_enabled_web_search(use_web_search)

@@ -1,5 +1,6 @@
 debug_mode = True
 
+
 class Logger:
 
     @staticmethod

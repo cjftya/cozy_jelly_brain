@@ -65,7 +65,10 @@ class GoogleStudioManager(BaseClient):
                 top_p=op.get("top_p"),
                 top_k=op.get("top_k"),
                 response_mime_type="application/json",
-                response_schema=OrganicCognitiveResponse
+                response_schema=OrganicCognitiveResponse,
+                thinking_config=types.ThinkingConfig(
+                    thinking_level=types.ThinkingLevel.MEDIUM
+                )
             )
 
             response_stream = self.client.models.generate_content_stream(

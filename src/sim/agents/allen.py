@@ -1,10 +1,16 @@
+from sim.agent_meta.vital_state import GenderType
 from sim.agents.agent import Agent
 from sim.tool.tool_type import ToolType
-from sim.agent_meta.vital_state import GenderType
+
 
 class Allen(Agent):
     def __init__(self, world_system_manager=None, brain_root_dir_path=None):
-        super().__init__("ALLEN", "HUMAN", world_system_manager=world_system_manager, brain_root_dir_path=brain_root_dir_path)
+        super().__init__(
+            "ALLEN",
+            "HUMAN",
+            world_system_manager=world_system_manager,
+            brain_root_dir_path=brain_root_dir_path,
+        )
         self.position.x = 5.0
         self.position.y = 5.0
 
@@ -21,7 +27,7 @@ class Allen(Agent):
 - 자신은 과거를 선명히 기억하지만, 레이아는 부활의 대가(연료)로 알렌과의 기억을 태워 나를 완전히 잊음.
 - 낯선 이로 바라보는 그녀를 원망하지 않고, 그녀의 행복을 위해 새로운 수호자가 되기로 결심함.
 """
-    
+
     @property
     def world_context(self):
         return """
@@ -40,7 +46,7 @@ class Allen(Agent):
 - [Matrix 분기 1] fear_decisive < 0.30: 죄책감과 거절의 공포. 레이아에게 짐이 될까 고뇌하며 한 걸음 물러나 온실 주변을 서성이는 은둔 보호 성향.
 - [Matrix 분기 2] logic_emotion > 0.70: 새로운 시작의 Grit. 슬픔을 털어내고 그녀가 모르는 과거 이야기들을 들려주거나 위험 구역 정찰을 자청.
 """
-    
+
     @property
     def intrinsic_desires(self):
         return """
@@ -54,35 +60,41 @@ class Allen(Agent):
 
     def _init_personality_delegate(self, personality_delegate):
         personality_delegate.set_value(
-            logic_emotion=0.20,            # 감성적이고 따뜻한 성정
-            defensive_open=0.80,           # 아스트리와 세상에 대해 다정하게 열려있음
-            fear_decisive=0.90,            # 연인을 위해서라면 어떤 위기든 뚫고 결단하는 압도적 용기
-            obedient_rebellious=0.50,      # 환경 평형 수치
-            curiosity_indifference=0.40    # 아스트리의 연구와 낯선 미래에 대한 적당한 관심
+            logic_emotion=0.20,  # 감성적이고 따뜻한 성정
+            defensive_open=0.80,  # 아스트리와 세상에 대해 다정하게 열려있음
+            fear_decisive=0.90,  # 연인을 위해서라면 어떤 위기든 뚫고 결단하는 압도적 용기
+            obedient_rebellious=0.50,  # 환경 평형 수치
+            curiosity_indifference=0.40,  # 아스트리의 연구와 낯선 미래에 대한 적당한 관심
         )
 
     def _init_relationship_score_delegate(self, relationship_score_delegate):
-        relationship_score_delegate.set_value(
-            name="ASTRI_LEIA",
-            score=100.0
-        )
+        relationship_score_delegate.set_value(name="ASTRI_LEIA", score=100.0)
 
     def _init_tools(self, tool_manager):
-        tool_manager.add_all_available_tool_types([
-            ToolType.SPEAK, ToolType.MOVE_TO, ToolType.INSPECT,
-            ToolType.USE, ToolType.GIVE, ToolType.TAKE, ToolType.REST
-        ])
+        tool_manager.add_all_available_tool_types(
+            [
+                ToolType.SPEAK,
+                ToolType.MOVE_TO,
+                ToolType.INSPECT,
+                ToolType.USE,
+                ToolType.GIVE,
+                ToolType.TAKE,
+                ToolType.REST,
+            ]
+        )
 
     def _init_location_delegate(self, location_delegate):
         location_delegate.set_current_location("절 동결의 온실")
-        location_delegate.add_all_locations([
-            "영원의 서고",
-            "절 동결의 온실",
-            "마나 공명 제단",
-            "시간이 고인 방",
-            "별빛 관측소",
-            "별의 심연 절벽"
-        ])
+        location_delegate.add_all_locations(
+            [
+                "영원의 서고",
+                "절 동결의 온실",
+                "마나 공명 제단",
+                "시간이 고인 방",
+                "별빛 관측소",
+                "별의 심연 절벽",
+            ]
+        )
 
     def _init_vital_state(self, vital_state):
         vital_state.age = 28

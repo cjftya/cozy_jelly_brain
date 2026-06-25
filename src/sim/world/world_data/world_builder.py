@@ -1,7 +1,9 @@
 import os
-from sim.world.weather_engine import WeatherEngine, WeatherType
+
 from sim.world.time_engine import TimeEngine
+from sim.world.weather_engine import WeatherEngine, WeatherType
 from sim.world.world_data.world_type import WorldTypeName
+
 
 class WorldBuilder:
     def __init__(self, world_type):
@@ -13,7 +15,7 @@ class WorldBuilder:
         self._world_root_path = f"../assets/world_assets"
         self._world_assets_path = f"{self._world_root_path}/{self._world_prefix}"
         self._world_agents_brain_db_path = f"{self._world_assets_path}/agents_brain_db"
-        
+
         if not os.path.exists(self._world_root_path):
             os.makedirs(self._world_root_path)
         if not os.path.exists(self._world_assets_path):
@@ -51,6 +53,12 @@ class WorldBuilder:
         self._create_agents(world_system_manager)
         self._create_objects(world_system_manager)
         world_role = self._create_world_role()
-        return [self._agents, self._objects, time_engine, weather_engine, self._world_assets_path, self._world_agents_brain_db_path, world_role]
-
-    
+        return [
+            self._agents,
+            self._objects,
+            time_engine,
+            weather_engine,
+            self._world_assets_path,
+            self._world_agents_brain_db_path,
+            world_role,
+        ]
